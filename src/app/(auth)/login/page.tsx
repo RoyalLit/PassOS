@@ -7,8 +7,8 @@ import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 
 export default function Login() {
   const router = useRouter();
-  const [email, setEmail] = useState('student@passos.local');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -61,7 +61,8 @@ export default function Login() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full border rounded-lg px-4 py-2 bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-shadow"
+              placeholder="name@example.com"
+              className="w-full border rounded-lg px-4 py-2 bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-shadow placeholder:text-slate-400"
               required
             />
           </div>
@@ -71,7 +72,8 @@ export default function Login() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full border rounded-lg px-4 py-2 bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-shadow"
+              placeholder="••••••••"
+              className="w-full border rounded-lg px-4 py-2 bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-shadow placeholder:text-slate-400"
               required
             />
           </div>

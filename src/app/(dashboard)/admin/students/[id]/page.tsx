@@ -12,7 +12,11 @@ import { clsx } from 'clsx';
 import { STATUS_CONFIG, REQUEST_TYPES } from '@/lib/constants';
 import { RequestIcon } from '@/components/requests/request-icon';
 
-export default async function StudentDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function StudentDetailPage({ 
+  params 
+}: { 
+  params: Promise<{ id: string }> 
+}) {
   await requireRole('admin');
   
   // In Next.js 15+, params is a Promise that must be awaited
