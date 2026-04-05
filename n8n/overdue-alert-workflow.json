@@ -1,0 +1,104 @@
+{
+  "name": "PassOS Overdue Alert Protocol",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "*/15 * * * *"
+            }
+          ]
+        }
+      },
+      "name": "Cron (15 min)",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "http://passos-app/api/alerts",
+        "authentication": "headerAuth",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer dev-secret"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Trigger API Sweep",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{$json.count}}",
+              "operation": "larger",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "name": "If Overdue Students",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "channel": "security-alerts",
+        "text": "=⚠️ ALERT: {{$json.count}} students are overdue. Please check PassOS Admin Dashboard.",
+        "icon": ":rotating_light:"
+      },
+      "name": "Slack Notification",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2,
+      "position": [900, 200]
+    }
+  ],
+  "connections": {
+    "Cron (15 min)": {
+      "main": [
+        [
+          {
+            "node": "Trigger API Sweep",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger API Sweep": {
+      "main": [
+        [
+          {
+            "node": "If Overdue Students",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Overdue Students": {
+      "main": [
+        [
+          {
+            "node": "Slack Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

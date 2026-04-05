@@ -1,0 +1,78 @@
+{
+  "name": "PassOS Daily Digest",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 18 * * *"
+            }
+          ]
+        }
+      },
+      "name": "Cron (6 PM)",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "http://passos-app/api/analytics",
+        "authentication": "headerAuth",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer dev-secret"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Fetch Dashboard Stats",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "passos@university.edu",
+        "toEmail": "admin@university.edu",
+        "subject": "=[PassOS] Campus Mobility Daily Digest",
+        "html": "=<h3>End of Day Report</h3>\n<ul>\n<li>Active Passes: {{$json.stats.active_passes}}</li>\n<li>Students Currently Outside: {{$json.stats.outside}}</li>\n<li>Overdue Students: {{$json.stats.overdue}} <span style=\"color:red\">(Requires attention)</span></li>\n<li>Pending Requests: {{$json.stats.pending_requests}}</li>\n</ul>\n<br>\n<a href=\"https://passos.edu/admin/analytics\">View Full Analytics</a>",
+        "options": {}
+      },
+      "name": "Send Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [650, 300]
+    }
+  ],
+  "connections": {
+    "Cron (6 PM)": {
+      "main": [
+        [
+          {
+            "node": "Fetch Dashboard Stats",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Dashboard Stats": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

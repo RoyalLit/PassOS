@@ -1,0 +1,43 @@
+{
+  "name": "PassOS Parent Approval Tracker",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "parent-approval",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "passos@university.edu",
+        "toEmail": "={{$json.body.parent_email}}",
+        "subject": "=[PassOS] Gate Pass Request for {{$json.body.student_name}}",
+        "html": "=<h3>Gate Pass Approval Required</h3><p>Your ward <b>{{$json.body.student_name}}</b> has requested a pass.</p><p>Destination: {{$json.body.destination}}</p><p>Out: {{$json.body.departure_at}}</p><p>In: {{$json.body.return_by}}</p><br><p>Reason: {{$json.body.reason}}</p><br><a href=\"{{$json.body.approval_link}}\" style=\"padding:10px;background:blue;color:white;text-decoration:none;border-radius:5px;\">Review Request</a>",
+        "options": {}
+      },
+      "name": "Send Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [500, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

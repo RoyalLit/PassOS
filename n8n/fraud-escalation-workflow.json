@@ -1,0 +1,84 @@
+{
+  "name": "PassOS Fraud Escalation Protocol",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "fraud-alert",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "name": "Webhook (Fraud Flag)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.body.severity}}",
+              "value2": "critical"
+            }
+          ]
+        }
+      },
+      "name": "If Critical",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "channel": "high-priority-fraud",
+        "text": "=🚨 CRITICAL FRAUD DETECTED 🚨\nStudent: {{$json.body.student_id}}\nReason: {{$json.body.flag_type}}\nDetails: {{$json.body.details}}\n\nReview immediately in PassOS Admin Dashboard!"
+      },
+      "name": "Slack High Priority",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2,
+      "position": [800, 200]
+    },
+    {
+      "parameters": {
+        "channel": "security-logs",
+        "text": "=Fraud Flag Logged:\nType: {{$json.body.flag_type}} (Severity: {{$json.body.severity}})"
+      },
+      "name": "Slack Info Level",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2,
+      "position": [800, 400]
+    }
+  ],
+  "connections": {
+    "Webhook (Fraud Flag)": {
+      "main": [
+        [
+          {
+            "node": "If Critical",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Critical": {
+      "main": [
+        [
+          {
+            "node": "Slack High Priority",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Slack Info Level",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
