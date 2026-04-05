@@ -1,4 +1,5 @@
 import * as jose from 'jose';
+import { JOSEError, JWTExpired } from 'jose/errors';
 import { createHmac, randomBytes } from 'crypto';
 import type { QRPayload } from '@/types';
 
@@ -64,7 +65,7 @@ export async function verifyQRPayload(token: string): Promise<QRVerifyResult> {
     };
   } catch (err: any) {
     // If expired, we still want to decode it to show the student's name/ID for better UX
-    if (err instanceof jose.errors.JWTExpired) {
+    if (err instanceof JWTExpired) {
       try {
         const decoded = jose.decodeJwt(token);
         return {
@@ -85,7 +86,7 @@ export async function verifyQRPayload(token: string): Promise<QRVerifyResult> {
     // Other errors (invalid signature, tampered content, etc.)
     return { 
       success: false, 
-      error: err instanceof jose.errors.JOSEError ? 'invalid' : 'unknown' 
+      error: err instanceof JOSEError ? 'invalid' : 'unknown' 
     };
   }
 }
