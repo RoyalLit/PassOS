@@ -85,7 +85,7 @@ export async function verifyQRPayload(token: string): Promise<QRVerifyResult> {
     // Other errors (invalid signature, tampered content, etc.)
     return { 
       success: false, 
-      error: err instanceof jose.errors.jose_error ? 'invalid' : 'unknown' 
+      error: err instanceof jose.errors.JOSEError ? 'invalid' : 'unknown' 
     };
   }
 }
