@@ -16,8 +16,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} min-h-screen bg-gray-50 text-slate-900`}>
-        {children}
+      <body className={`${inter.className} min-h-screen bg-gray-50 text-slate-900 flex flex-col`}>
+        <main className="flex-1">
+          {children}
+        </main>
+        <footer className="py-6 border-t bg-white/50 backdrop-blur-sm">
+          <div className="max-w-7xl mx-auto px-4 text-center">
+            <p className="text-xs font-medium text-slate-400 tracking-widest uppercase">
+              built with purpose by pahul
+            </p>
+          </div>
+        </footer>
       </body>
     </html>
   );
