@@ -13,6 +13,10 @@ export interface AppSettings {
   campus_lng: number;
   campus_radius_meters: number;
   parent_approval_mode: ParentApprovalMode;
+  gatepass_reasons?: {
+    day_outing: string[];
+    overnight: string[];
+  };
   updated_at: string;
   updated_by?: string;
 }
@@ -43,6 +47,21 @@ export async function getSettings(): Promise<AppSettings> {
       campus_lng: 77.2090,
       campus_radius_meters: 500,
       parent_approval_mode: 'smart',
+      gatepass_reasons: {
+        day_outing: [
+          "Personal work",
+          "Medical appointment",
+          "Family visit",
+          "Shopping / errands",
+          "Academic (exam, college work outside campus)"
+        ],
+        overnight: [
+          "Home visit",
+          "Family function/event",
+          "Medical (extended)",
+          "Tournament / competition"
+        ]
+      },
       updated_at: new Date().toISOString(),
     };
   }

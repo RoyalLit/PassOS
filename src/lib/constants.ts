@@ -8,20 +8,17 @@ export const REQUEST_TYPES = {
 
 export const PREDEFINED_REASONS = {
   day_outing: [
-    'Shopping & Supplies',
-    'Local Visit / Meeting',
-    'Coaching / External Class',
-    'Recreation / Movie',
-    'Religious Place',
-    'Other (Specify in destination)'
+    "Personal work",
+    "Medical appointment",
+    "Family visit",
+    "Shopping / errands",
+    "Academic (exam, college work outside campus)"
   ],
   overnight: [
-    'Home Visit',
-    'Family Event / Wedding',
-    'Weekend Leave',
-    'Academic Internship / Project',
-    'Medical Treatment (Home)',
-    'Other (Specify in destination)'
+    "Home visit",
+    "Family function/event",
+    "Medical (extended)",
+    "Tournament / competition"
   ]
 } as const;
 

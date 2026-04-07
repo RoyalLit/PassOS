@@ -31,11 +31,13 @@ function NewRequestForm() {
       start_date: new Date().toISOString().split('T')[0],
       end_date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
       reason: '',
+      manual_reason: '',
       destination: '',
     }
   });
 
   const requestType = watch('request_type');
+  const selectedReason = watch('reason');
 
   useEffect(() => {
     async function init() {
@@ -92,9 +94,13 @@ function NewRequestForm() {
       return_by = new Date(`${formData.end_date}T${formData.time_in}`).toISOString();
     }
 
+    const finalReason = formData.reason === 'Other' 
+      ? `Other: ${formData.manual_reason}` 
+      : formData.reason;
+
     const payload: CreateRequestInput = {
       request_type: formData.request_type,
-      reason: extensionOf ? `EXTENSION of ${extensionOf}: ${formData.reason}` : formData.reason,
+      reason: extensionOf ? `EXTENSION of ${extensionOf}: ${finalReason}` : finalReason,
       destination: formData.destination,
       departure_at,
       return_by,
@@ -249,33 +255,51 @@ function NewRequestForm() {
           </div>
 
           {/* Section 3: Details */}
-          <div className="p-8 space-y-6">
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700">Destination</label>
-              <div className="relative">
-                <MapPin className="absolute left-4 top-3.5 h-5 w-5 text-slate-400" />
-                <input 
-                  type="text" 
-                  placeholder="Where are you going?"
-                  className="w-full rounded-xl border-slate-200 border pl-12 pr-4 py-3.5 bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium placeholder:text-slate-400"
-                  {...register('destination')}
-                />
+            <div className="p-8 space-y-6">
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-700">Destination</label>
+                <div className="relative">
+                  <MapPin className="absolute left-4 top-3.5 h-5 w-5 text-slate-400" />
+                  <input 
+                    type="text"
+                    required
+                    placeholder="Where are you going?"
+                    className="w-full rounded-xl border-slate-200 border pl-12 pr-4 py-3.5 bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium placeholder:text-slate-400"
+                    {...register('destination')}
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700">Reason</label>
-              <select 
-                className="w-full rounded-xl border-slate-200 border px-4 py-3.5 bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium appearance-none"
-                {...register('reason')}
-              >
-                <option value="">Select a reason...</option>
-                {PREDEFINED_REASONS[requestType as keyof typeof PREDEFINED_REASONS]?.map((r: string) => (
-                  <option key={r} value={r}>{r}</option>
-                ))}
-              </select>
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-700">Reason</label>
+                <select 
+                  required
+                  className="w-full rounded-xl border-slate-200 border px-4 py-3.5 bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium appearance-none"
+                  {...register('reason')}
+                >
+                  <option value="">Select a reason...</option>
+                  {(settings?.gatepass_reasons?.[requestType as 'day_outing' | 'overnight'] || 
+                    PREDEFINED_REASONS[requestType as keyof typeof PREDEFINED_REASONS])?.map((r: string) => (
+                    <option key={r} value={r}>{r}</option>
+                  ))}
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              {selectedReason === 'Other' && (
+                <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+                  <label className="text-sm font-bold text-slate-700 px-1 flex justify-between">
+                    Specify Reason <span className="text-red-500 text-[10px] font-black uppercase">Mandatory</span>
+                  </label>
+                  <textarea 
+                    required
+                    placeholder="Please explain your outing in detail..."
+                    className="w-full rounded-xl border-slate-200 border px-4 py-3 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium placeholder:text-slate-400 min-h-[100px] resize-none"
+                    {...register('manual_reason', { required: selectedReason === 'Other' })}
+                  />
+                </div>
+              )}
             </div>
-          </div>
 
           {/* Section 4: Location Check */}
           {geoStatus !== 'disabled' && (

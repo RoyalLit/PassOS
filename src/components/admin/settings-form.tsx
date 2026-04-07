@@ -115,6 +115,122 @@ export function SettingsForm({ initialSettings }: { initialSettings: AppSettings
         </div>
       </div>
 
+      {/* Gatepass Reasons Section */}
+      <div className="bg-white rounded-2xl border shadow-sm p-6 sm:p-8">
+        <div className="flex items-start gap-4 mb-8">
+          <div className="p-3 rounded-xl bg-blue-50 text-blue-600">
+            <Zap className="w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="font-bold text-slate-900 text-lg">Gatepass Reasons</h3>
+            <p className="text-slate-500 text-sm">Configure the predefined reasons students can choose from.</p>
+          </div>
+        </div>
+
+        <div className="space-y-8">
+          {/* Day Outing Reasons */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-blue-500" />
+                Day Outing Reasons
+              </h4>
+              <button
+                type="button"
+                onClick={() => {
+                  const reason = prompt('Enter new reason:');
+                  if (reason && reason.trim()) {
+                    setSettings(prev => ({
+                      ...prev,
+                      gatepass_reasons: {
+                        ...prev.gatepass_reasons!,
+                        day_outing: [...(prev.gatepass_reasons?.day_outing || []), reason.trim()]
+                      }
+                    }));
+                  }
+                }}
+                className="text-xs font-bold text-blue-600 hover:text-blue-700 uppercase tracking-widest bg-blue-50 px-3 py-1.5 rounded-lg transition-colors"
+              >
+                + Add Reason
+              </button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {(settings.gatepass_reasons?.day_outing || []).map((reason, idx) => (
+                <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border group hover:border-slate-200 transition-all">
+                  <span className="text-sm font-medium text-slate-700">{reason}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSettings(prev => ({
+                        ...prev,
+                        gatepass_reasons: {
+                          ...prev.gatepass_reasons!,
+                          day_outing: prev.gatepass_reasons?.day_outing.filter((_, i) => i !== idx) || []
+                        }
+                      }));
+                    }}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100"
+                  >
+                    <Radius className="w-4 h-4 rotate-45" /> {/* Use Radius as a 'delete' icon for now or just an X */}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Overnight Reasons */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-purple-500" />
+                Overnight Reasons
+              </h4>
+              <button
+                type="button"
+                onClick={() => {
+                  const reason = prompt('Enter new reason:');
+                  if (reason && reason.trim()) {
+                    setSettings(prev => ({
+                      ...prev,
+                      gatepass_reasons: {
+                        ...prev.gatepass_reasons!,
+                        overnight: [...(prev.gatepass_reasons?.overnight || []), reason.trim()]
+                      }
+                    }));
+                  }
+                }}
+                className="text-xs font-bold text-purple-600 hover:text-purple-700 uppercase tracking-widest bg-purple-50 px-3 py-1.5 rounded-lg transition-colors"
+              >
+                + Add Reason
+              </button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {(settings.gatepass_reasons?.overnight || []).map((reason, idx) => (
+                <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border group hover:border-slate-200 transition-all">
+                  <span className="text-sm font-medium text-slate-700">{reason}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSettings(prev => ({
+                        ...prev,
+                        gatepass_reasons: {
+                          ...prev.gatepass_reasons!,
+                          overnight: prev.gatepass_reasons?.overnight.filter((_, i) => i !== idx) || []
+                        }
+                      }));
+                    }}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100"
+                  >
+                    <Radius className="w-4 h-4 rotate-45" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+          <p className="text-[10px] text-slate-400 italic">"Other" is automatically appended to the end of both lists and provides a text field for students.</p>
+        </div>
+      </div>
+
       {/* Geofencing Section */}
       <div className="bg-white rounded-2xl border shadow-sm p-6 sm:p-8">
         <div className="flex items-center justify-between gap-4 mb-6 pb-6 border-b">
