@@ -205,13 +205,10 @@ export default async function StudentDashboard() {
           </div>
 
           <div className="bg-slate-900 rounded-2xl p-6 text-white shadow-xl shadow-slate-200">
-            <h3 className="font-bold mb-2">Need Help?</h3>
-            <p className="text-slate-400 text-xs leading-relaxed mb-4">
-              If you're having trouble with your parent connection or pass validation, please visit the warden's office.
+            <h3 className="font-bold mb-2 text-lg">Need Assistance?</h3>
+            <p className="text-slate-400 text-sm leading-relaxed">
+              If you're having trouble with your parent connection or pass validation, please visit the warden's office for support.
             </p>
-            <button className="w-full py-2 bg-white/10 hover:bg-white/20 rounded-xl text-sm font-bold transition-colors">
-              Support Center
-            </button>
           </div>
         </div>
       </div>
