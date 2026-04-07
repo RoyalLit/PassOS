@@ -31,9 +31,9 @@ export async function POST(request: Request) {
       }, { status: 400 });
     }
 
-    // 2. Extact identifiers (even if expired, verification.payload will have them)
+    // Capture if the signature is expired but otherwise valid
+    const isExpired = !verification.success && verification.error === 'expired';
     const pass_id = verification.payload?.pass_id;
-    const student_id = verification.payload?.student_id;
 
     if (!pass_id) {
        return NextResponse.json({ 
@@ -42,8 +42,6 @@ export async function POST(request: Request) {
         message: 'QR code contains malformed data' 
       }, { status: 400 });
     }
-
-    // 3. Database Verification & Profile Retrieval
     // We fetch the student profile even if the token is expired to provide a better UX for the guard
     const { data: pass } = await supabase
       .from('passes')
@@ -57,46 +55,27 @@ export async function POST(request: Request) {
       }, { status: 404 });
     }
 
-    // Capture the student profile for the response
     const student = pass.student;
 
-    // 4. Handle Clock/Signature Expiry
-    if (!verification.success && verification.error === 'expired') {
-      await logScan(supabase, pass.id, profile.id, scan_type, 'expired');
-      await supabase.from('passes').update({ status: 'expired' }).eq('id', pass.id);
-      return NextResponse.json({ 
-        valid: false, 
-        result: 'expired', 
-        message: 'Pass signature has expired',
-        student 
-      });
-    }
-
-    // 5. Database-level Status and Expiry Logic
+    // 3. Database-level status check (High Priority)
     if (pass.status === 'revoked') {
       await logScan(supabase, pass.id, profile.id, scan_type, 'revoked');
       return NextResponse.json({ 
-        valid: false, 
-        result: 'revoked', 
-        message: 'Pass has been revoked by admin',
-        student 
+        valid: false, result: 'revoked', message: 'Pass has been revoked', student 
       });
     }
 
-    // Check database-side expiration (just in case it differs from JWT)
-    if (new Date() > new Date(pass.valid_until)) {
-      await logScan(supabase, pass.id, profile.id, scan_type, 'expired');
-      await supabase.from('passes').update({ status: 'expired' }).eq('id', pass.id);
-      return NextResponse.json({ 
-        valid: false, 
-        result: 'expired', 
-        message: 'Pass validity period has ended',
-        student 
-      });
-    }
-
-    // 6. Scan Context Logic (State machine enforcement)
+    // 4. Scan Type Specific Logic
     if (scan_type === 'exit') {
+      // ⚠️ STRICT: No exit allowed if expired (either JWT or DB)
+      if (isExpired || new Date() > new Date(pass.valid_until)) {
+        await logScan(supabase, pass.id, profile.id, scan_type, 'expired');
+        await supabase.from('passes').update({ status: 'expired' }).eq('id', pass.id);
+        return NextResponse.json({ 
+          valid: false, result: 'expired', message: 'Pass has expired. Exit denied.', student 
+        });
+      }
+
       if (pass.status !== 'active') {
         const alreadyUsed = pass.status === 'used_exit' || pass.status === 'used_entry';
         await logScan(supabase, pass.id, profile.id, scan_type, alreadyUsed ? 'already_used' : 'error');
@@ -117,23 +96,45 @@ export async function POST(request: Request) {
     }
 
     if (scan_type === 'entry') {
-      if (pass.status !== 'used_exit') {
+      // ✅ RELAXED: Entry allowed even if expired to ensure student can return to campus
+      const dbExpired = new Date() > new Date(pass.valid_until);
+      const lateEntry = isExpired || dbExpired || pass.status === 'expired';
+
+      if (pass.status !== 'used_exit' && pass.status !== 'expired' && pass.status !== 'active') {
+        // Note: We allow entry from 'active' if they never scanned out but are coming back (failsafe)
+        // or from 'used_exit' (normal) or 'expired' (since they are returning late)
         const alreadyUsed = pass.status === 'used_entry';
         await logScan(supabase, pass.id, profile.id, scan_type, alreadyUsed ? 'already_used' : 'error');
         return NextResponse.json({ 
           valid: false, 
           result: alreadyUsed ? 'already_used' : 'error', 
-          message: alreadyUsed ? 'Pass already used for entry' : 'Pass not marked as exited',
+          message: alreadyUsed ? 'Pass already used for entry' : 'Pass not in valid return state',
           student 
         });
       }
 
-      // Record successful entry
-      await supabase.from('passes').update({ status: 'used_entry', entry_at: new Date().toISOString() }).eq('id', pass.id);
-      await supabase.from('student_states').upsert({ student_id: pass.student_id, current_state: 'inside', active_pass_id: null, last_entry: new Date().toISOString() });
-      await logScan(supabase, pass.id, profile.id, scan_type, 'valid', { lat: geo_lat, lng: geo_lng });
+      // Record entry (flag as late_entry in logs if expired)
+      await supabase.from('passes').update({ 
+        status: 'used_entry', 
+        entry_at: new Date().toISOString() 
+      }).eq('id', pass.id);
 
-      return NextResponse.json({ valid: true, result: 'valid', pass, student, message: 'Welcome back' });
+      await supabase.from('student_states').upsert({ 
+        student_id: pass.student_id, 
+        current_state: 'inside', 
+        active_pass_id: null, 
+        last_entry: new Date().toISOString() 
+      });
+
+      await logScan(supabase, pass.id, profile.id, scan_type, lateEntry ? 'late_entry' : 'valid', { lat: geo_lat, lng: geo_lng });
+
+      return NextResponse.json({ 
+        valid: true, 
+        result: 'valid', 
+        pass, 
+        student, 
+        message: lateEntry ? 'Welcome back (Late Arrival)' : 'Welcome back' 
+      });
     }
 
     return NextResponse.json({ error: 'Unknown scan type' }, { status: 400 });

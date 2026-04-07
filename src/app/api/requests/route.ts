@@ -31,11 +31,11 @@ export async function POST(request: Request) {
     if (isExtension) {
       // We skip the check because we are technically updating an existing flow
     } else {
-      const { data: activeRequest, error: activeCheckError } = await query.maybeSingle();
+      const { data: activeRequests, error: activeCheckError } = await query;
 
       if (activeCheckError) throw new Error('Active Check Failed: ' + JSON.stringify(activeCheckError));
       
-      if (activeRequest) {
+      if (activeRequests && activeRequests.length > 0) {
         return NextResponse.json({ 
           error: "You already have an active or pending pass request. Please complete or cancel it before requesting a new one." 
         }, { status: 429 });
