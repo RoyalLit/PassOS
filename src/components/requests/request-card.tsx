@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { format } from 'date-fns';
-import { Calendar, MapPin, Clock, ShieldAlert, Loader2 } from 'lucide-react';
+import { Calendar, MapPin, Clock, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -10,7 +10,7 @@ export function RequestCard({ request, isAdminView = false }: { request: any, is
   const router = useRouter();
   const [loading, setLoading] = useState<'approved' | 'rejected' | null>(null);
   
-  const isPending = ['pending', 'ai_review', 'parent_pending', 'admin_pending'].includes(request.status);
+  const isPending = ['pending', 'parent_pending', 'admin_pending'].includes(request.status);
   
   const handleApproval = async (decision: 'approved' | 'rejected') => {
     setLoading(decision);
@@ -60,16 +60,6 @@ export function RequestCard({ request, isAdminView = false }: { request: any, is
             }`}>
               {request.status.replace('_', ' ')}
             </span>
-            {isAdminView && request.ai_analysis?.[0] && (
-              <span className={`flex items-center gap-1 px-2.5 py-1 text-[10px] font-black rounded-full uppercase tracking-tighter border ${
-                request.ai_analysis[0].risk_level === 'low' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
-                request.ai_analysis[0].risk_level === 'medium' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
-                'bg-red-500/10 text-red-500 border-red-500/20'
-              }`}>
-                <ShieldAlert className="w-3 h-3" />
-                {request.ai_analysis[0].risk_level} risk
-              </span>
-            )}
           </div>
         </div>
       </div>

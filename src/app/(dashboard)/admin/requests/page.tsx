@@ -10,8 +10,7 @@ export default async function AdminRequestsPage() {
     .from('pass_requests')
     .select(`
       *,
-      student:profiles (full_name, hostel, room_number),
-      ai_analysis (risk_level, flags)
+      student:profiles (full_name, hostel, room_number)
     `)
     .order('created_at', { ascending: false });
 

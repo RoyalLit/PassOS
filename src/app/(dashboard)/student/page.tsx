@@ -33,7 +33,7 @@ export default async function StudentDashboard() {
     .from('pass_requests')
     .select('id')
     .eq('student_id', profile.id)
-    .in('status', ['pending', 'ai_review', 'parent_pending', 'admin_pending', 'approved'])
+    .in('status', ['pending', 'parent_pending', 'admin_pending', 'approved'])
     .limit(1);
 
   // Parent Info

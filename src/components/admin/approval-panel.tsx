@@ -3,16 +3,14 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { Check, X, Loader2, Bot, User, Clock, FileWarning } from 'lucide-react';
-import { RiskBadge } from './risk-badge';
-import type { PassRequest, AIAnalysis, Profile, Approval } from '@/types';
+import { Check, X, Loader2, User, Clock } from 'lucide-react';
+import type { PassRequest, Profile, Approval } from '@/types';
 import { REQUEST_TYPES } from '@/lib/constants';
 import { RequestIcon } from '@/components/requests/request-icon';
 import { clsx } from 'clsx';
 
 interface ExtendedRequest extends PassRequest {
   student: Profile;
-  ai_analysis?: AIAnalysis[];
   approvals?: Approval[];
 }
 
@@ -21,7 +19,6 @@ export function ApprovalPanel({ request }: { request: ExtendedRequest }) {
   const [submitting, setSubmitting] = useState(false);
   const [reason, setReason] = useState('');
 
-  const aiResult = request.ai_analysis?.[0];
   const parentApproval = request.approvals?.find(a => a.approver_type === 'parent');
   const typeConfig = REQUEST_TYPES[request.request_type as keyof typeof REQUEST_TYPES];
 
@@ -106,29 +103,8 @@ export function ApprovalPanel({ request }: { request: ExtendedRequest }) {
           </div>
         </div>
 
-        {/* AI & Parent Signals */}
+        {/* Parent Signal */}
         <div className="space-y-3 pt-2">
-          {aiResult && (
-            <div className="flex items-start gap-3 p-4 rounded-xl border bg-blue-500/5 border-blue-500/20 shadow-sm">
-              <Bot className="w-5 h-5 text-blue-500 mt-0.5 shrink-0" />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs font-bold text-foreground">AI Intelligence Report</p>
-                  <RiskBadge level={aiResult.risk_level} score={aiResult.anomaly_score} />
-                </div>
-                <p className="text-xs text-muted-foreground leading-relaxed italic">"{aiResult.reasoning}"</p>
-                {aiResult.flags.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    {aiResult.flags.map((flag, i) => (
-                      <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest bg-red-500/10 text-red-500 border border-red-500/20">
-                        <FileWarning className="w-3 h-3" /> {flag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
 
           {parentApproval && (
             <div className={`flex items-start gap-3 p-4 rounded-xl border shadow-sm ${
@@ -157,7 +133,7 @@ export function ApprovalPanel({ request }: { request: ExtendedRequest }) {
         </div>
       </div>
 
-      {['pending', 'ai_review', 'admin_pending', 'parent_pending'].includes(request.status) && (
+      {['pending', 'admin_pending', 'parent_pending'].includes(request.status) && (
         <div className="p-5 border-t border-border bg-muted/30 space-y-3">
           <input
             type="text"

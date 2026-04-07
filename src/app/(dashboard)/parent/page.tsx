@@ -89,10 +89,10 @@ export default function ParentPortal() {
   };
 
   const pendingRequests = data?.requests.filter(r => 
-    ['parent_pending', 'ai_review', 'pending'].includes(r.status)
+    ['parent_pending', 'pending'].includes(r.status)
   ) || [];
   const historyRequests = data?.requests.filter(r =>
-    !['parent_pending', 'ai_review', 'pending'].includes(r.status)
+    !['parent_pending', 'pending'].includes(r.status)
   ) || [];
 
   if (loading) {

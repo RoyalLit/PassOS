@@ -22,25 +22,27 @@ export async function POST(request: Request) {
 
     // 2. One Active Request Rule
     if (!isExtension) {
-      // a) Check for requests still in the approval pipeline
-      const { data: pendingRequests, error: pendingError } = await supabase
-        .from('pass_requests')
-        .select('id')
-        .eq('student_id', profile.id)
-        .in('status', ['pending', 'ai_review', 'parent_pending', 'parent_approved', 'admin_pending'])
-        .limit(1);
+      // Run both checks in parallel — cuts 2 sequential round-trips down to 1
+      const [
+        { data: pendingRequests, error: pendingError },
+        { data: activePasses,   error: passError },
+      ] = await Promise.all([
+        supabase
+          .from('pass_requests')
+          .select('id')
+          .eq('student_id', profile.id)
+          .in('status', ['pending', 'parent_pending', 'parent_approved', 'admin_pending'])
+          .limit(1),
+        supabase
+          .from('passes')
+          .select('id')
+          .eq('student_id', profile.id)
+          .in('status', ['active', 'used_exit'])
+          .limit(1),
+      ]);
 
       if (pendingError) throw new Error('Pending Check Failed: ' + JSON.stringify(pendingError));
-      
-      // b) Check for passes currently active or haven't returned yet
-      const { data: activePasses, error: passError } = await supabase
-        .from('passes')
-        .select('id')
-        .eq('student_id', profile.id)
-        .in('status', ['active', 'used_exit'])
-        .limit(1);
-
-      if (passError) throw new Error('Pass Check Failed: ' + JSON.stringify(passError));
+      if (passError)    throw new Error('Pass Check Failed: '    + JSON.stringify(passError));
 
       if ((pendingRequests && pendingRequests.length > 0) || (activePasses && activePasses.length > 0)) {
         return NextResponse.json({ 
@@ -58,9 +60,23 @@ export async function POST(request: Request) {
       }
     }
 
-    // 3. Rate limiting check (Daily Max)
+    // 3. Rate Limiting — enforce MAX_REQUESTS_PER_DAY (defined in constants.ts)
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { count: dailyCount, error: rateError } = await supabase
+      .from('pass_requests')
+      .select('id', { count: 'exact', head: true })
+      .eq('student_id', profile.id)
+      .gte('created_at', oneDayAgo);
 
-    let initialStatus = 'ai_review';
+    if (rateError) throw new Error('Rate limit check failed: ' + JSON.stringify(rateError));
+
+    if ((dailyCount ?? 0) >= MAX_REQUESTS_PER_DAY) {
+      return NextResponse.json({
+        error: `You have reached the daily limit of ${MAX_REQUESTS_PER_DAY} requests. Please try again tomorrow.`,
+      }, { status: 429 });
+    }
+
+    let initialStatus = 'pending';
 
     const { data: insertedRequest, error: insertError } = await supabase
       .from('pass_requests')
@@ -82,14 +98,6 @@ export async function POST(request: Request) {
 
     if (insertError) throw new Error('Insert Failed: ' + JSON.stringify(insertError));
 
-    // Fire off async webhook for AI analysis
-    // In production, you would probably hit a background queue here.
-    // For now, we trigger the endpoint without waiting.
-    fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/ai/analyze`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ request_id: insertedRequest.id }),
-    }).catch(e => console.error('Failed to trigger AI review:', e));
 
     return NextResponse.json({ data: insertedRequest }, { status: 201 });
   } catch (error: any) {

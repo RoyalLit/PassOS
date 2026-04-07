@@ -8,7 +8,6 @@ export type RequestType = 'day_outing' | 'overnight' | 'emergency' | 'medical' |
 
 export type RequestStatus =
   | 'pending'
-  | 'ai_review'
   | 'parent_pending'
   | 'parent_approved'
   | 'parent_rejected'
@@ -21,7 +20,6 @@ export type PassStatus = 'active' | 'used_exit' | 'used_entry' | 'expired' | 're
 
 export type StudentState = 'inside' | 'outside' | 'overdue';
 
-export type RiskLevel = 'low' | 'medium' | 'high' | 'critical';
 
 export type ScanType = 'exit' | 'entry';
 
@@ -75,22 +73,9 @@ export interface PassRequest {
   updated_at: string;
   // Joined fields
   student?: Profile;
-  ai_analysis?: AIAnalysis[];
   approvals?: Approval[];
 }
 
-export interface AIAnalysis {
-  id: string;
-  request_id: string;
-  risk_level: RiskLevel;
-  anomaly_score: number;
-  flags: string[];
-  reasoning: string | null;
-  raw_response: Record<string, unknown> | null;
-  model_version: string | null;
-  latency_ms: number | null;
-  created_at: string;
-}
 
 export interface Approval {
   id: string;
@@ -187,12 +172,6 @@ export interface Notification {
 // API Types
 // ============================================================
 
-export interface AIRiskResponse {
-  risk_level: RiskLevel;
-  anomaly_score: number;
-  flags: string[];
-  reasoning: string;
-}
 
 export interface QRPayload {
   pass_id: string;

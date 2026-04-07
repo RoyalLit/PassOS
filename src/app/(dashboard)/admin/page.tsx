@@ -7,11 +7,11 @@ export default async function AdminDashboard() {
   await requireRole('admin');
   const supabase = await createServerSupabaseClient();
 
-  // Fetch requests that require admin attention (AI reviewed, parent pending, or admin pending)
+  // Fetch requests that require admin attention (parent pending or admin pending)
   const { data: requests } = await supabase
     .from('pass_requests')
-    .select('*, student:profiles(*), ai_analysis(*), approvals(*)')
-    .in('status', ['ai_review', 'admin_pending', 'parent_pending', 'parent_approved'])
+    .select('*, student:profiles(*), approvals(*)')
+    .in('status', ['pending', 'admin_pending', 'parent_pending', 'parent_approved'])
     .order('created_at', { ascending: false });
 
   // Get active passes count

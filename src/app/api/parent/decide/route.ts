@@ -49,7 +49,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Request not found or not linked to your student' }, { status: 404 });
     }
 
-    if (!['parent_pending', 'ai_review', 'pending'].includes(passReq.status)) {
+    if (!['parent_pending', 'pending'].includes(passReq.status)) {
       return NextResponse.json({ error: 'Request is not awaiting parent approval' }, { status: 400 });
     }
 

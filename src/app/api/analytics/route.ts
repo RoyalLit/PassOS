@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { requireRole } from '@/lib/auth/rbac';
 
 export async function GET() {
+  // Guard: only signed-in admins can read aggregate analytics
+  await requireRole('admin');
   const supabase = createAdminClient();
 
   try {
@@ -29,7 +32,7 @@ export async function GET() {
     const { count: pendingRequests } = await supabase
       .from('pass_requests')
       .select('*', { count: 'exact', head: true })
-      .in('status', ['pending', 'ai_review', 'parent_pending', 'admin_pending']);
+      .in('status', ['pending', 'parent_pending', 'admin_pending']);
 
     // 5. Active Fraud Flags
     const { count: activeFlags } = await supabase

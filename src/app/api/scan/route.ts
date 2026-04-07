@@ -87,10 +87,16 @@ export async function POST(request: Request) {
         });
       }
 
-      // Record successful exit
-      await supabase.from('passes').update({ status: 'used_exit', exit_at: new Date().toISOString() }).eq('id', pass.id);
-      await supabase.from('student_states').upsert({ student_id: pass.student_id, current_state: 'outside', last_exit: new Date().toISOString() });
-      await logScan(supabase, pass.id, profile.id, scan_type, 'valid', { lat: geo_lat, lng: geo_lng });
+      // Record successful exit — single atomic RPC (1 round-trip, locked transaction)
+      const { error: exitRpcError } = await supabase.rpc('process_scan', {
+        p_pass_id:     pass.id,
+        p_guard_id:    profile.id,
+        p_scan_type:   'exit',
+        p_scan_result: 'valid',
+        p_geo_lat:     geo_lat ?? null,
+        p_geo_lng:     geo_lng ?? null,
+      });
+      if (exitRpcError) throw exitRpcError;
 
       return NextResponse.json({ valid: true, result: 'valid', pass, student, message: 'Exit granted' });
     }
@@ -113,20 +119,16 @@ export async function POST(request: Request) {
         });
       }
 
-      // Record entry (flag as late_entry in logs if expired)
-      await supabase.from('passes').update({ 
-        status: 'used_entry', 
-        entry_at: new Date().toISOString() 
-      }).eq('id', pass.id);
-
-      await supabase.from('student_states').upsert({ 
-        student_id: pass.student_id, 
-        current_state: 'inside', 
-        active_pass_id: null, 
-        last_entry: new Date().toISOString() 
+      // Record entry — single atomic RPC (1 round-trip, locked transaction)
+      const { error: entryRpcError } = await supabase.rpc('process_scan', {
+        p_pass_id:     pass.id,
+        p_guard_id:    profile.id,
+        p_scan_type:   'entry',
+        p_scan_result: lateEntry ? 'late_entry' : 'valid',
+        p_geo_lat:     geo_lat ?? null,
+        p_geo_lng:     geo_lng ?? null,
       });
-
-      await logScan(supabase, pass.id, profile.id, scan_type, lateEntry ? 'late_entry' : 'valid', { lat: geo_lat, lng: geo_lng });
+      if (entryRpcError) throw entryRpcError;
 
       return NextResponse.json({ 
         valid: true, 
@@ -145,7 +147,10 @@ export async function POST(request: Request) {
   }
 }
 
+// logScan helper kept for error/rejection paths where we still do a direct insert
+// (the happy-path is now handled by the process_scan RPC in the success branches above)
 async function logScan(supabase: any, passId: string | null, guardId: string, scanType: string, result: string, geo?: {lat?: number, lng?: number}) {
+  if (!passId) return; // pass_scans.pass_id is NOT NULL — skip logging when no pass exists
   await supabase.from('pass_scans').insert({
     pass_id: passId,
     guard_id: guardId,
