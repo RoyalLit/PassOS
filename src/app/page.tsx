@@ -31,7 +31,7 @@ export default function LandingPage() {
         
         <p className="max-w-[600px] text-lg text-muted-foreground mb-10 leading-relaxed">
           The real-time, secure, and intelligent access control system for modern campuses. 
-          Powered by multi-level approvals, AI risk intelligence, and secure QR passes.
+          Powered by multi-level approvals, real-time monitoring, and secure QR passes.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 mb-20">
@@ -56,8 +56,8 @@ export default function LandingPage() {
           </div>
           <div className="p-8 bg-card rounded-2xl border border-border shadow-sm hover:border-indigo-500/30 transition-colors group">
             <Server className="h-10 w-10 text-indigo-500 mb-6 group-hover:scale-110 transition-transform" />
-            <h3 className="text-xl font-bold mb-2 text-foreground">AI Intelligence</h3>
-            <p className="text-muted-foreground leading-relaxed text-sm">Real-time risk scoring, anomaly detection, and fraud pattern recognition via Claude.</p>
+            <h3 className="text-xl font-bold mb-2 text-foreground">Real-Time Monitoring</h3>
+            <p className="text-muted-foreground leading-relaxed text-sm">Live pass status tracking, audit logs, and instant alerts for security and compliance.</p>
           </div>
         </div>
       </main>

@@ -38,11 +38,11 @@ export default async function FraudDashboard() {
         </div>
         <div className="bg-card border border-border rounded-2xl p-6 flex items-start gap-4 shadow-sm md:col-span-2">
           <div className="flex-1">
-             <h3 className="font-bold text-foreground">Automated Detection Rules</h3>
+             <h3 className="font-bold text-foreground">Detection Rules</h3>
              <ul className="mt-2 text-sm text-muted-foreground space-y-1 list-disc list-inside">
                <li>Rapid Requests: &gt; 3 requests in 24 hours</li>
                <li>Late Returns: Returning late &gt; 2 times in 7 days</li>
-               <li>Suspicious Anomalies: Detected via Claude Risk Analyzer</li>
+               <li>Suspicious Anomalies: Flagged by the system</li>
              </ul>
           </div>
         </div>
