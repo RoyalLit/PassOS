@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import type { UserRole } from '@/types';
+import { ThemeToggle } from './theme-toggle';
 
 interface SidebarProps {
   role: UserRole;
@@ -123,14 +124,17 @@ export function Sidebar({ role, userName }: SidebarProps) {
             </div>
           </div>
           
-          <button
-            onClick={handleLogout}
-            disabled={loggingOut}
-            className="flex items-center justify-between w-full px-3 py-2 text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 rounded-md transition-colors disabled:opacity-50"
-          >
-            <span>{loggingOut ? 'Signing out...' : 'Log out'}</span>
-            <LogOut size={16} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleLogout}
+              disabled={loggingOut}
+              className="flex-1 flex items-center justify-between px-3 py-2 text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 rounded-md transition-colors disabled:opacity-50"
+            >
+              <span>{loggingOut ? 'Signing out...' : 'Log out'}</span>
+              <LogOut size={16} />
+            </button>
+            <ThemeToggle />
+          </div>
         </div>
       </div>
 

@@ -3,26 +3,41 @@
 @theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-primary: var(--primary);
 }
 
 @layer base {
   :root {
-    --background: #f8fafc; /* slate-50 */
-    --foreground: #0f172a; /* slate-900 */
+    --background: #f8fafc;
+    --foreground: #0f172a;
+    --card: #ffffff;
+    --card-foreground: #0f172a;
+    --border: #e2e8f0;
+    --muted-foreground: #64748b;
+    --primary: #2563eb;
   }
 
   .dark {
-    --background: #0f172a;
+    --background: #020617;
     --foreground: #f8fafc;
+    --card: #0f172a;
+    --card-foreground: #f8fafc;
+    --border: #1e293b;
+    --muted-foreground: #94a3b8;
+    --primary: #3b82f6;
   }
 }
 
 @layer base {
   * {
-    @apply border-gray-200;
+    @apply border-border;
   }
   body {
-    @apply bg-background text-foreground bg-gray-50;
+    @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }

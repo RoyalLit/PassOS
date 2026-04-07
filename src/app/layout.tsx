@@ -9,24 +9,33 @@ export const metadata: Metadata = {
   description: 'Production-grade campus access control and student mobility system',
 };
 
+import { ThemeProvider } from '@/components/theme-provider';
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} min-h-screen bg-gray-50 text-slate-900 flex flex-col`}>
-        <main className="flex-1">
-          {children}
-        </main>
-        <footer className="py-6 border-t bg-white/50 backdrop-blur-sm">
-          <div className="max-w-7xl mx-auto px-4 text-center">
-            <p className="text-xs font-medium text-slate-400 tracking-widest uppercase">
-              built with purpose by pahul
-            </p>
-          </div>
-        </footer>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.className} min-h-screen bg-background text-foreground flex flex-col transition-colors duration-300`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <main className="flex-1">
+            {children}
+          </main>
+          <footer className="py-6 border-t border-border bg-card/50 backdrop-blur-sm">
+            <div className="max-w-7xl mx-auto px-4 text-center">
+              <p className="text-xs font-medium text-muted-foreground tracking-widest uppercase">
+                built with purpose by pahul
+              </p>
+            </div>
+          </footer>
+        </ThemeProvider>
       </body>
     </html>
   );

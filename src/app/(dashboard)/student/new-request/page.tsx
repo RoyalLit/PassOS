@@ -133,31 +133,31 @@ function NewRequestForm() {
     <div className="p-6 max-w-3xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">
+          <h1 className="text-3xl font-black text-foreground tracking-tight">
             {extensionOf ? 'Request Extension' : 'New Pass Request'}
           </h1>
-          <p className="text-slate-500 font-medium mt-1">
+          <p className="text-muted-foreground font-medium mt-1">
             {extensionOf ? 'Update your return time for your active pass.' : 'Select your outing type and details below.'}
           </p>
         </div>
         <Link 
           href="/student" 
-          className="p-2.5 rounded-xl bg-white border shadow-sm hover:bg-slate-50 transition-colors"
+          className="p-2.5 rounded-xl bg-card border border-border shadow-sm hover:bg-muted transition-colors"
         >
-          <ArrowLeft className="w-5 h-5 text-slate-600" />
+          <ArrowLeft className="w-5 h-5 text-foreground" />
         </Link>
       </div>
 
-      <div className="bg-white rounded-3xl border shadow-xl shadow-slate-200/50 overflow-hidden">
-        <form onSubmit={handleSubmit(onSubmit)} className="divide-y divide-slate-100">
+      <div className="bg-card rounded-3xl border border-border shadow-xl shadow-black/5 overflow-hidden">
+        <form onSubmit={handleSubmit(onSubmit)} className="divide-y divide-border">
           
           {/* Section 1: Type Selection */}
           <div className="p-8 space-y-6">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
                 <Calendar className="w-4 h-4 text-blue-600" />
               </div>
-              <h2 className="font-bold text-slate-900 uppercase tracking-widest text-xs">Outing Type</h2>
+              <h2 className="font-bold text-foreground uppercase tracking-widest text-xs">Outing Type</h2>
             </div>
             
             <div className="grid grid-cols-2 gap-4">
@@ -165,8 +165,8 @@ function NewRequestForm() {
                 <label key={key} className={clsx(
                   "relative border-2 rounded-2xl p-5 cursor-pointer transition-all group flex flex-col items-center gap-3 text-center",
                   requestType === key 
-                    ? "border-blue-600 bg-blue-50/50 ring-4 ring-blue-50" 
-                    : "border-slate-100 hover:border-slate-200 hover:bg-slate-50"
+                    ? "border-blue-600 bg-blue-500/5 ring-4 ring-blue-500/10" 
+                    : "border-border hover:border-blue-500/30 hover:bg-muted/50"
                 )}>
                   <input 
                     type="radio" 
@@ -183,9 +183,9 @@ function NewRequestForm() {
                   <div>
                     <span className={clsx(
                       "block font-bold text-lg",
-                      requestType === key ? "text-blue-900" : "text-slate-600"
+                      requestType === key ? "text-blue-600 dark:text-blue-400" : "text-muted-foreground"
                     )}>{config.label}</span>
-                    <span className="text-xs font-medium text-slate-400">
+                    <span className="text-xs font-medium text-muted-foreground/60">
                       {key === 'day_outing' ? 'Single day return' : 'Multi-day stay'}
                     </span>
                   </div>
@@ -195,38 +195,38 @@ function NewRequestForm() {
           </div>
 
           {/* Section 2: Timing */}
-          <div className="p-8 space-y-6 bg-slate-50/30">
+          <div className="p-8 space-y-6 bg-muted/5">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
                 <Clock className="w-4 h-4 text-emerald-600" />
               </div>
-              <h2 className="font-bold text-slate-900 uppercase tracking-widest text-xs">Schedule</h2>
+              <h2 className="font-bold text-foreground uppercase tracking-widest text-xs">Schedule</h2>
             </div>
 
             {requestType === 'day_outing' ? (
               <div className="grid gap-6">
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-700">Outing Date</label>
+                  <label className="text-sm font-bold text-foreground/80">Outing Date</label>
                   <input 
                     type="date" 
-                    className="w-full rounded-xl border-slate-200 border px-4 py-3 bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium"
+                    className="w-full rounded-xl border-border border px-4 py-3 bg-background focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium"
                     {...register('outing_date')}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700">Time Out</label>
+                    <label className="text-sm font-bold text-foreground/80">Time Out</label>
                     <input 
                       type="time" 
-                      className="w-full rounded-xl border-slate-200 border px-4 py-3 bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium"
+                      className="w-full rounded-xl border-border border px-4 py-3 bg-background focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium"
                       {...register('time_out')}
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700">Time In</label>
+                    <label className="text-sm font-bold text-foreground/80">Time In</label>
                     <input 
                       type="time" 
-                      className="w-full rounded-xl border-slate-200 border px-4 py-3 bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium"
+                      className="w-full rounded-xl border-border border px-4 py-3 bg-background focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium"
                       {...register('time_in')}
                     />
                   </div>
@@ -235,18 +235,18 @@ function NewRequestForm() {
             ) : (
               <div className="grid gap-6">
                 <div className="grid sm:grid-cols-2 gap-6">
-                  <div className="space-y-4 p-4 rounded-2xl bg-white border border-slate-100 shadow-sm">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Departure</p>
+                  <div className="space-y-4 p-4 rounded-2xl bg-card border border-border shadow-sm">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Departure</p>
                     <div className="space-y-2">
-                      <input type="date" className="w-full border-none p-0 focus:ring-0 font-bold text-lg" {...register('start_date')} />
-                      <input type="time" className="w-full border-none p-0 focus:ring-0 text-slate-500 font-medium" {...register('time_out')} />
+                      <input type="date" className="w-full border-none p-0 focus:ring-0 font-bold text-lg bg-transparent" {...register('start_date')} />
+                      <input type="time" className="w-full border-none p-0 focus:ring-0 text-muted-foreground font-medium bg-transparent" {...register('time_out')} />
                     </div>
                   </div>
-                  <div className="space-y-4 p-4 rounded-2xl bg-white border border-slate-100 shadow-sm">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Return By</p>
+                  <div className="space-y-4 p-4 rounded-2xl bg-card border border-border shadow-sm">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Return By</p>
                     <div className="space-y-2">
-                      <input type="date" className="w-full border-none p-0 focus:ring-0 font-bold text-lg" {...register('end_date')} />
-                      <input type="time" className="w-full border-none p-0 focus:ring-0 text-slate-500 font-medium" {...register('time_in')} />
+                      <input type="date" className="w-full border-none p-0 focus:ring-0 font-bold text-lg bg-transparent" {...register('end_date')} />
+                      <input type="time" className="w-full border-none p-0 focus:ring-0 text-muted-foreground font-medium bg-transparent" {...register('time_in')} />
                     </div>
                   </div>
                 </div>
@@ -257,44 +257,44 @@ function NewRequestForm() {
           {/* Section 3: Details */}
             <div className="p-8 space-y-6">
               <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700">Destination</label>
+                <label className="text-sm font-bold text-foreground/80">Destination</label>
                 <div className="relative">
-                  <MapPin className="absolute left-4 top-3.5 h-5 w-5 text-slate-400" />
+                  <MapPin className="absolute left-4 top-3.5 h-5 w-5 text-muted-foreground/50" />
                   <input 
                     type="text"
                     required
                     placeholder="Where are you going?"
-                    className="w-full rounded-xl border-slate-200 border pl-12 pr-4 py-3.5 bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium placeholder:text-slate-400"
+                    className="w-full rounded-xl border-border border pl-12 pr-4 py-3.5 bg-background focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium placeholder:text-muted-foreground/40"
                     {...register('destination')}
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700">Reason</label>
+                <label className="text-sm font-bold text-foreground/80">Reason</label>
                 <select 
                   required
-                  className="w-full rounded-xl border-slate-200 border px-4 py-3.5 bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium appearance-none"
+                  className="w-full rounded-xl border-border border px-4 py-3.5 bg-background focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium appearance-none"
                   {...register('reason')}
                 >
-                  <option value="">Select a reason...</option>
+                  <option value="" className="bg-card">Select a reason...</option>
                   {(settings?.gatepass_reasons?.[requestType as 'day_outing' | 'overnight'] || 
                     PREDEFINED_REASONS[requestType as keyof typeof PREDEFINED_REASONS])?.map((r: string) => (
-                    <option key={r} value={r}>{r}</option>
+                    <option key={r} value={r} className="bg-card">{r}</option>
                   ))}
-                  <option value="Other">Other</option>
+                  <option value="Other" className="bg-card">Other</option>
                 </select>
               </div>
 
               {selectedReason === 'Other' && (
                 <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
-                  <label className="text-sm font-bold text-slate-700 px-1 flex justify-between">
+                  <label className="text-sm font-bold text-foreground/80 px-1 flex justify-between">
                     Specify Reason <span className="text-red-500 text-[10px] font-black uppercase">Mandatory</span>
                   </label>
                   <textarea 
                     required
                     placeholder="Please explain your outing in detail..."
-                    className="w-full rounded-xl border-slate-200 border px-4 py-3 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium placeholder:text-slate-400 min-h-[100px] resize-none"
+                    className="w-full rounded-xl border-border border px-4 py-3 bg-muted/20 focus:bg-background focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium placeholder:text-muted-foreground/40 min-h-[100px] resize-none"
                     {...register('manual_reason', { required: selectedReason === 'Other' })}
                   />
                 </div>
@@ -314,7 +314,7 @@ function NewRequestForm() {
                      geoStatus === 'valid' ? <MapPin className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
                   </div>
                   <div>
-                    <p className="text-xs font-black uppercase tracking-widest text-slate-400">Location Verification</p>
+                    <p className="text-xs font-black uppercase tracking-widest text-slate-500">Location Verification</p>
                     <p className="text-sm font-medium">
                       {geoStatus === 'checking' ? 'Establishing secure GPS link...' :
                        geoStatus === 'valid' ? 'Inside Campus Perimeter' :
@@ -331,11 +331,11 @@ function NewRequestForm() {
             </div>
           )}
 
-          <div className="p-8 bg-slate-50/50 flex flex-col sm:flex-row gap-4">
+          <div className="p-8 bg-muted/10 flex flex-col sm:flex-row gap-4">
             <button
               type="button"
               onClick={() => router.back()}
-              className="px-8 py-4 rounded-2xl font-bold text-slate-500 hover:bg-white hover:text-slate-900 transition-all border border-transparent hover:border-slate-200 active:scale-95"
+              className="px-8 py-4 rounded-2xl font-bold text-muted-foreground hover:bg-muted hover:text-foreground transition-all border border-transparent hover:border-border active:scale-95"
             >
               Cancel
             </button>
