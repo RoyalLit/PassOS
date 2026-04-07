@@ -19,22 +19,23 @@ export async function POST(request: Request) {
 
     const data = result.data;
 
-    // Rate limiting check
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const { count, error: countError } = await supabase
+    // 2. One Active Request Rule
+    const { data: activeRequest, error: activeCheckError } = await supabase
       .from('pass_requests')
-      .select('id', { count: 'exact' })
+      .select('id, status')
       .eq('student_id', profile.id)
-      .gte('created_at', today.toISOString());
+      .in('status', ['pending', 'ai_review', 'parent_pending', 'parent_approved', 'admin_pending', 'approved'])
+      .maybeSingle();
 
-    if (countError) throw new Error('Count Check Failed: ' + JSON.stringify(countError));
+    if (activeCheckError) throw new Error('Active Check Failed: ' + JSON.stringify(activeCheckError));
     
-    if ((count || 0) >= MAX_REQUESTS_PER_DAY) {
+    if (activeRequest) {
       return NextResponse.json({ 
-        error: `Rate limit exceeded. Maximum ${MAX_REQUESTS_PER_DAY} requests allowed per day.` 
+        error: "You already have an active or pending pass request. Please complete or cancel it before requesting a new one." 
       }, { status: 429 });
     }
+
+    // 3. Rate limiting check (Daily Max)
 
     let initialStatus = 'ai_review';
 

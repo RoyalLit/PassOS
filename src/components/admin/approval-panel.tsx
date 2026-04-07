@@ -54,20 +54,16 @@ export function ApprovalPanel({ request }: { request: ExtendedRequest }) {
             "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
             typeConfig?.color === 'blue' ? 'bg-blue-100 text-blue-700' :
             typeConfig?.color === 'purple' ? 'bg-purple-100 text-purple-700' :
-            typeConfig?.color === 'red' ? 'bg-red-100 text-red-700' :
-            typeConfig?.color === 'green' ? 'bg-green-100 text-green-700' :
-            'bg-amber-100 text-amber-700'
+            'bg-slate-100 text-slate-500'
           )}>
-            {typeConfig && <RequestIcon iconName={typeConfig.icon} className="w-5 h-5" />}
+            <RequestIcon iconName={typeConfig?.icon || 'AlertCircle'} className="w-5 h-5" />
           </div>
           <div>
             <h3 className="font-bold text-slate-900 leading-tight">{request.student?.full_name}</h3>
             <p className={clsx("text-xs font-semibold uppercase tracking-wider mt-0.5", 
               typeConfig?.color === 'blue' ? 'text-blue-600' :
               typeConfig?.color === 'purple' ? 'text-purple-600' :
-              typeConfig?.color === 'red' ? 'text-red-600' :
-              typeConfig?.color === 'green' ? 'text-green-600' :
-              'text-amber-600'
+              'text-slate-500'
             )}>
               {typeConfig?.label || request.request_type.replace('_', ' ')}
             </p>

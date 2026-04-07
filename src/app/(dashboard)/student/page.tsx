@@ -66,17 +66,25 @@ export default async function StudentDashboard() {
               <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
                 <CheckCircle2 className="w-32 h-32" />
               </div>
-              <div className="relative z-10 flex justify-between items-center">
+              <div className="relative z-10 flex justify-between items-center gap-4">
                 <div>
                   <h2 className="text-xl font-bold mb-1">Active Pass Available</h2>
-                  <p className="text-blue-100 text-sm">You have a valid pass ready to use at the gate.</p>
+                  <p className="text-blue-100 text-sm">Valid until {activePasses[0].valid_until && new Date(activePasses[0].valid_until).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                 </div>
-                <Link 
-                  href="/student/my-passes"
-                  className="bg-white text-blue-700 hover:bg-blue-50 px-5 py-2.5 rounded-xl font-bold transition-all text-sm shadow-sm active:scale-95"
-                >
-                  Show QR Code
-                </Link>
+                <div className="flex gap-3">
+                  <Link 
+                    href={`/student/new-request?extension_of=${activePasses[0].id}`}
+                    className="bg-blue-500/30 text-white hover:bg-blue-500/50 px-5 py-2.5 rounded-xl font-bold transition-all text-sm border border-white/20 active:scale-95"
+                  >
+                    Extend
+                  </Link>
+                  <Link 
+                    href="/student/my-passes"
+                    className="bg-white text-blue-700 hover:bg-blue-50 px-5 py-2.5 rounded-xl font-bold transition-all text-sm shadow-sm active:scale-95 whitespace-nowrap"
+                  >
+                    Show QR
+                  </Link>
+                </div>
               </div>
             </div>
           ) : (
@@ -107,19 +115,21 @@ export default async function StudentDashboard() {
             ) : (
               <div className="divide-y divide-slate-100">
                 {typedRequests.map((request) => {
-                  const statusConfig = STATUS_CONFIG[request.status];
-                  const typeConfig = REQUEST_TYPES[request.request_type];
+                  const statusConfig = STATUS_CONFIG[request.status as keyof typeof STATUS_CONFIG];
+                  const typeConfig = (REQUEST_TYPES as any)[request.request_type] || {
+                    label: request.request_type.replace('_', ' '),
+                    icon: 'AlertCircle',
+                    color: 'slate'
+                  };
                   
                   return (
                     <div key={request.id} className="p-6 flex flex-col sm:flex-row gap-4 justify-between hover:bg-slate-50/30 transition-colors">
                       <div className="flex items-start gap-4">
                         <div className={clsx(
-                          "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 mt-1",
+                          "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 mt-1 uppercase text-[10px] font-black",
                           typeConfig.color === 'blue' ? 'bg-blue-50 text-blue-600' :
                           typeConfig.color === 'purple' ? 'bg-purple-50 text-purple-600' :
-                          typeConfig.color === 'red' ? 'bg-red-50 text-red-600' :
-                          typeConfig.color === 'green' ? 'bg-green-50 text-green-600' :
-                          'bg-amber-50 text-amber-600'
+                          'bg-slate-100 text-slate-500'
                         )}>
                           <RequestIcon iconName={typeConfig.icon} className="w-5 h-5" />
                         </div>

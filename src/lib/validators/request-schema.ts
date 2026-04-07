@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const createRequestSchema = z.object({
-  request_type: z.enum(['day_outing', 'overnight', 'emergency', 'medical', 'academic']),
+  request_type: z.enum(['day_outing', 'overnight']),
   reason: z.string().min(10, 'Reason must be at least 10 characters').max(1000),
   destination: z.string().min(2, 'Destination is required').max(200),
   departure_at: z.string().refine((d) => new Date(d) > new Date(), {

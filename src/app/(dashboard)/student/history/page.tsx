@@ -65,11 +65,9 @@ export default async function StudentHistoryPage() {
                           "w-8 h-8 rounded-full flex items-center justify-center shrink-0",
                           typeConfig?.color === 'blue' ? 'bg-blue-50 text-blue-600' :
                           typeConfig?.color === 'purple' ? 'bg-purple-50 text-purple-600' :
-                          typeConfig?.color === 'red' ? 'bg-red-50 text-red-600' :
-                          typeConfig?.color === 'green' ? 'bg-green-50 text-green-600' :
-                          'bg-amber-50 text-amber-600'
+                          'bg-slate-100 text-slate-500'
                         )}>
-                          {typeConfig && <RequestIcon iconName={typeConfig.icon} className="w-4 h-4" />}
+                          <RequestIcon iconName={typeConfig?.icon || 'AlertCircle'} className="w-4 h-4" />
                         </div>
                         <span className="font-medium text-slate-900 capitalize">
                           {typeConfig?.label || req.request_type.replace('_', ' ')}

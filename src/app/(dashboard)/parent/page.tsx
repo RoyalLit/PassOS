@@ -225,7 +225,11 @@ export default function ParentPortal() {
             ) : (
               <div className="space-y-4">
                 {pendingRequests.map((req) => {
-                  const typeConfig = REQUEST_TYPES[req.request_type];
+                  const typeConfig = (REQUEST_TYPES as any)[req.request_type] || { 
+                    label: req.request_type.replace('_', ' '),
+                    icon: 'AlertTriangle',
+                    color: 'slate'
+                  };
                   const isExpanded = expandedId === req.id;
                   const isDeciding = deciding === req.id;
 
@@ -240,13 +244,11 @@ export default function ParentPortal() {
                       >
                         <div className={clsx(
                           "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0",
-                          typeConfig.color === 'blue' ? 'bg-blue-50 text-blue-600' :
-                          typeConfig.color === 'purple' ? 'bg-purple-50 text-purple-600' :
-                          typeConfig.color === 'red' ? 'bg-red-50 text-red-600' :
-                          typeConfig.color === 'green' ? 'bg-green-50 text-green-600' :
-                          'bg-amber-50 text-amber-600'
+                          typeConfig?.color === 'blue' ? 'bg-blue-50 text-blue-600' :
+                          typeConfig?.color === 'purple' ? 'bg-purple-50 text-purple-600' :
+                          'bg-slate-100 text-slate-500'
                         )}>
-                          <RequestIcon iconName={typeConfig.icon} className="w-6 h-6" />
+                          <RequestIcon iconName={typeConfig?.icon || 'AlertTriangle'} className="w-6 h-6" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <h3 className="font-bold text-slate-900 text-lg leading-tight">{typeConfig.label}</h3>
@@ -328,19 +330,21 @@ export default function ParentPortal() {
               </h2>
               <div className="bg-white rounded-3xl border shadow-sm overflow-hidden divide-y divide-slate-100">
                 {historyRequests.map((req) => {
-                  const typeConfig = REQUEST_TYPES[req.request_type];
-                  const statusConfig = STATUS_CONFIG[req.status];
+                  const typeConfig = (REQUEST_TYPES as any)[req.request_type] || {
+                    label: req.request_type.replace('_', ' '),
+                    icon: 'AlertTriangle',
+                    color: 'slate'
+                  };
+                  const statusConfig = STATUS_CONFIG[req.status as keyof typeof STATUS_CONFIG];
                   return (
                     <div key={req.id} className="p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 hover:bg-slate-50/50 transition-colors group">
                       <div className={clsx(
                         "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
-                        typeConfig.color === 'blue' ? 'bg-blue-50 text-blue-600' :
-                        typeConfig.color === 'purple' ? 'bg-purple-50 text-purple-600' :
-                        typeConfig.color === 'red' ? 'bg-red-50 text-red-600' :
-                        typeConfig.color === 'green' ? 'bg-green-50 text-green-600' :
-                        'bg-amber-50 text-amber-600'
+                        typeConfig?.color === 'blue' ? 'bg-blue-50 text-blue-600' :
+                        typeConfig?.color === 'purple' ? 'bg-purple-50 text-purple-600' :
+                        'bg-slate-100 text-slate-500'
                       )}>
-                        <RequestIcon iconName={typeConfig.icon} className="w-5 h-5" />
+                        <RequestIcon iconName={typeConfig?.icon || 'AlertTriangle'} className="w-5 h-5" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-bold text-slate-900">{typeConfig.label}</p>

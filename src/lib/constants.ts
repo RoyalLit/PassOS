@@ -4,9 +4,25 @@ export const APP_DESCRIPTION = 'Smart Gate Pass & Student Mobility System';
 export const REQUEST_TYPES = {
   day_outing: { label: 'Day Outing', icon: 'Sun', color: 'blue' },
   overnight: { label: 'Overnight', icon: 'Moon', color: 'purple' },
-  emergency: { label: 'Emergency', icon: 'AlertTriangle', color: 'red' },
-  medical: { label: 'Medical', icon: 'Activity', color: 'green' },
-  academic: { label: 'Academic', icon: 'BookOpen', color: 'amber' },
+} as const;
+
+export const PREDEFINED_REASONS = {
+  day_outing: [
+    'Shopping & Supplies',
+    'Local Visit / Meeting',
+    'Coaching / External Class',
+    'Recreation / Movie',
+    'Religious Place',
+    'Other (Specify in destination)'
+  ],
+  overnight: [
+    'Home Visit',
+    'Family Event / Wedding',
+    'Weekend Leave',
+    'Academic Internship / Project',
+    'Medical Treatment (Home)',
+    'Other (Specify in destination)'
+  ]
 } as const;
 
 export const STATUS_CONFIG = {
