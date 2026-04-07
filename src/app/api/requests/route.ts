@@ -21,23 +21,30 @@ export async function POST(request: Request) {
     const isExtension = body.extension_of !== undefined && body.extension_of !== null;
 
     // 2. One Active Request Rule
-    let query = supabase
-      .from('pass_requests')
-      .select('id, status')
-      .eq('student_id', profile.id)
-      .in('status', ['pending', 'ai_review', 'parent_pending', 'parent_approved', 'admin_pending', 'approved']);
+    if (!isExtension) {
+      // a) Check for requests still in the approval pipeline
+      const { data: pendingRequests, error: pendingError } = await supabase
+        .from('pass_requests')
+        .select('id')
+        .eq('student_id', profile.id)
+        .in('status', ['pending', 'ai_review', 'parent_pending', 'parent_approved', 'admin_pending'])
+        .limit(1);
 
-    // If it's an extension, we ignore checking for other active requests because we're extending the existing one
-    if (isExtension) {
-      // We skip the check because we are technically updating an existing flow
-    } else {
-      const { data: activeRequests, error: activeCheckError } = await query;
-
-      if (activeCheckError) throw new Error('Active Check Failed: ' + JSON.stringify(activeCheckError));
+      if (pendingError) throw new Error('Pending Check Failed: ' + JSON.stringify(pendingError));
       
-      if (activeRequests && activeRequests.length > 0) {
+      // b) Check for passes currently active or haven't returned yet
+      const { data: activePasses, error: passError } = await supabase
+        .from('passes')
+        .select('id')
+        .eq('student_id', profile.id)
+        .in('status', ['active', 'used_exit'])
+        .limit(1);
+
+      if (passError) throw new Error('Pass Check Failed: ' + JSON.stringify(passError));
+
+      if ((pendingRequests && pendingRequests.length > 0) || (activePasses && activePasses.length > 0)) {
         return NextResponse.json({ 
-          error: "You already have an active or pending pass request. Please complete or cancel it before requesting a new one." 
+          error: "You already have an active pass or a pending request. Please complete or cancel it before requesting a new one." 
         }, { status: 429 });
       }
     }
