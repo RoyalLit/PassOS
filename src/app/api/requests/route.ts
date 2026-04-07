@@ -18,21 +18,37 @@ export async function POST(request: Request) {
     }
 
     const data = result.data;
+    const isExtension = body.extension_of !== undefined && body.extension_of !== null;
 
     // 2. One Active Request Rule
-    const { data: activeRequest, error: activeCheckError } = await supabase
+    let query = supabase
       .from('pass_requests')
       .select('id, status')
       .eq('student_id', profile.id)
-      .in('status', ['pending', 'ai_review', 'parent_pending', 'parent_approved', 'admin_pending', 'approved'])
-      .maybeSingle();
+      .in('status', ['pending', 'ai_review', 'parent_pending', 'parent_approved', 'admin_pending', 'approved']);
 
-    if (activeCheckError) throw new Error('Active Check Failed: ' + JSON.stringify(activeCheckError));
-    
-    if (activeRequest) {
-      return NextResponse.json({ 
-        error: "You already have an active or pending pass request. Please complete or cancel it before requesting a new one." 
-      }, { status: 429 });
+    // If it's an extension, we ignore checking for other active requests because we're extending the existing one
+    if (isExtension) {
+      // We skip the check because we are technically updating an existing flow
+    } else {
+      const { data: activeRequest, error: activeCheckError } = await query.maybeSingle();
+
+      if (activeCheckError) throw new Error('Active Check Failed: ' + JSON.stringify(activeCheckError));
+      
+      if (activeRequest) {
+        return NextResponse.json({ 
+          error: "You already have an active or pending pass request. Please complete or cancel it before requesting a new one." 
+        }, { status: 429 });
+      }
+    }
+
+    // 3. Day Outing Same-Day Validation
+    if (data.request_type === 'day_outing') {
+      const depDate = new Date(data.departure_at).toLocaleDateString('en-GB');
+      const retDate = new Date(data.return_by).toLocaleDateString('en-GB');
+      if (depDate !== retDate) {
+        return NextResponse.json({ error: 'Day outings must be completed within the same day. Please use "Overnight" for multi-day stays.' }, { status: 400 });
+      }
     }
 
     // 3. Rate limiting check (Daily Max)

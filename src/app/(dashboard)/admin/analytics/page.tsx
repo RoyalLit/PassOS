@@ -48,8 +48,8 @@ export default function AnalyticsDashboard() {
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">System Analytics</h1>
-        <p className="text-slate-500">Real-time statistics and campus mobility trends</p>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">System Analytics</h1>
+        <p className="text-muted-foreground">Real-time statistics and campus mobility trends</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -60,41 +60,41 @@ export default function AnalyticsDashboard() {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6 mt-6">
-        <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border p-6">
-          <h2 className="text-lg font-bold text-slate-900 mb-6 font-medium text-slate-900">Pass Issuance (Last 7 Days)</h2>
+        <div className="lg:col-span-2 bg-card rounded-2xl shadow-sm border border-border p-6">
+          <h2 className="text-lg font-bold text-foreground mb-6">Pass Issuance (Last 7 Days)</h2>
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data.chart_data}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                <XAxis dataKey="date" tickFormatter={(val) => val.split('-').slice(1).join('/')} stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                <Tooltip cursor={{fill: '#f1f5f9'}} contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
-                <Bar dataKey="passes" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={50} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                <XAxis dataKey="date" tickFormatter={(val) => val.split('-').slice(1).join('/')} stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} />
+                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} />
+                <Tooltip cursor={{fill: 'hsl(var(--muted) / 0.1)'}} contentStyle={{backgroundColor: 'hsl(var(--card))', borderRadius: '12px', border: '1px solid hsl(var(--border))', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}} />
+                <Bar dataKey="passes" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} maxBarSize={50} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border p-6 flex flex-col">
-          <h2 className="text-lg font-bold text-slate-900 mb-4 font-medium text-slate-900">Quick Actions</h2>
+        <div className="bg-card rounded-2xl shadow-sm border border-border p-6 flex flex-col">
+          <h2 className="text-lg font-bold text-foreground mb-4">Quick Actions</h2>
           <div className="space-y-3 flex-1">
-            <div className="p-4 rounded-xl border bg-slate-50 flex items-center justify-between">
+            <div className="p-4 rounded-xl border border-border bg-muted/30 flex items-center justify-between">
               <div>
-                <p className="font-semibold text-slate-900">Pending Review</p>
-                <p className="text-sm text-slate-500">Approvals awaiting action</p>
+                <p className="font-semibold text-foreground">Pending Review</p>
+                <p className="text-sm text-muted-foreground">Approvals awaiting action</p>
               </div>
-              <span className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm">
+              <span className="w-8 h-8 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold text-sm border border-blue-500/20">
                 {data.stats.pending_requests}
               </span>
             </div>
-
+ 
             {data.stats.overdue > 0 && (
-              <div className="p-4 rounded-xl border border-red-200 bg-red-50 flex items-center justify-between">
+              <div className="p-4 rounded-xl border border-red-500/20 bg-red-500/10 flex items-center justify-between">
                 <div>
-                  <p className="font-semibold text-red-900">Trigger Alert Protocol</p>
-                  <p className="text-sm text-red-700">Notify overdue students</p>
+                  <p className="font-semibold text-red-500">Trigger Alert Protocol</p>
+                  <p className="text-sm text-red-500/70">Notify overdue students</p>
                 </div>
-                <AlertTriangle className="w-5 h-5 text-red-600" />
+                <AlertTriangle className="w-5 h-5 text-red-500" />
               </div>
             )}
           </div>
@@ -106,20 +106,20 @@ export default function AnalyticsDashboard() {
 
 function StatCard({ title, value, icon: Icon, color }: any) {
   const colorMap: Record<string, string> = {
-    blue: "bg-blue-100 text-blue-600",
-    green: "bg-green-100 text-green-600",
-    red: "bg-red-100 text-red-600",
-    orange: "bg-orange-100 text-orange-600",
+    blue: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+    green: "bg-green-500/10 text-green-500 border-green-500/20",
+    red: "bg-red-500/10 text-red-500 border-red-500/20",
+    orange: "bg-orange-500/10 text-orange-500 border-orange-500/20",
   };
 
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-sm border flex items-center gap-4">
-      <div className={clsx("w-12 h-12 rounded-xl flex items-center justify-center shrink-0", colorMap[color])}>
+    <div className="bg-card p-6 rounded-2xl shadow-sm border border-border flex items-center gap-4">
+      <div className={clsx("w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border", colorMap[color])}>
         <Icon className="w-6 h-6" />
       </div>
       <div>
-        <p className="text-sm font-medium text-slate-500">{title}</p>
-        <p className="text-2xl font-bold text-slate-900">{value}</p>
+        <p className="text-xs font-black text-muted-foreground uppercase tracking-widest">{title}</p>
+        <p className="text-2xl font-bold text-foreground">{value}</p>
       </div>
     </div>
   );

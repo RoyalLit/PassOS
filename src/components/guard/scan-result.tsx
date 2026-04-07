@@ -12,47 +12,52 @@ export function ScanResultView({ result, onClose }: ScanResultViewProps) {
   const { valid, pass, student, message } = result;
   
   return (
-    <div className="bg-white rounded-3xl shadow-xl overflow-hidden animate-in zoom-in-95 fade-in duration-200 border">
+    <div className="bg-card rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-300 border border-border">
       <div className={clsx(
-        "p-6 h-32 flex flex-col items-center justify-center text-white text-center",
-        valid ? "bg-green-600" : "bg-red-600"
+        "p-8 h-40 flex flex-col items-center justify-center text-white text-center relative overflow-hidden",
+        valid ? "bg-green-600 shadow-[inset_0_0_80px_rgba(0,0,0,0.1)]" : "bg-red-600 shadow-[inset_0_0_80px_rgba(0,0,0,0.1)]"
       )}>
-        {valid ? <CheckCircle className="w-12 h-12 mb-2" /> : <XCircle className="w-12 h-12 mb-2" />}
-        <h2 className="text-xl font-bold">{valid ? 'Access Granted' : 'Access Denied'}</h2>
+        <div className="absolute inset-0 opacity-10 pointer-events-none">
+          {valid ? <CheckCircle className="w-48 h-48 -rotate-12 translate-x-12" /> : <XCircle className="w-48 h-48 -rotate-12 translate-x-12" />}
+        </div>
+        {valid ? <CheckCircle className="w-14 h-14 mb-3 relative z-10" /> : <XCircle className="w-14 h-14 mb-3 relative z-10" />}
+        <h2 className="text-2xl font-black relative z-10 tracking-tight">{valid ? 'Access Granted' : 'Access Denied'}</h2>
       </div>
 
       <div className="p-6 relative">
-        <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-24 h-24 bg-white rounded-full border-4 border-white shadow-sm flex items-center justify-center overflow-hidden">
+        <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-24 h-24 bg-card rounded-full border-4 border-card shadow-2xl flex items-center justify-center overflow-hidden">
           {student?.avatar_url ? (
             <img src={student.avatar_url} alt="Student" className="w-full h-full object-cover" />
           ) : (
-            <User className="w-10 h-10 text-slate-400" />
+            <div className="w-full h-full bg-muted flex items-center justify-center">
+              <User className="w-10 h-10 text-muted-foreground/30" />
+            </div>
           )}
         </div>
 
         <div className="pt-12 text-center">
-          <h3 className="text-xl font-bold text-slate-900">{student?.full_name || 'Unknown User'}</h3>
-          <p className="text-sm font-medium text-slate-500 mt-1 uppercase tracking-wider">{valid ? message : 'Invalid Pass'}</p>
+          <h3 className="text-2xl font-black text-foreground tracking-tight">{student?.full_name || 'Unknown User'}</h3>
+          <p className="text-[10px] font-black text-muted-foreground mt-2 uppercase tracking-widest leading-none">{valid ? message : 'Invalid Pass System Error'}</p>
           
           {!valid && (
-            <div className="mt-4 p-3 bg-red-50 text-red-700 rounded-xl text-sm font-medium inline-block">
+            <div className="mt-4 p-4 bg-red-500/10 text-red-500 border border-red-500/20 rounded-xl text-sm font-bold inline-block shadow-sm">
               {message}
             </div>
           )}
 
           {valid && pass && (
-            <div className="mt-6 flex gap-4 text-left">
-              <div className="flex-1 bg-slate-50 p-4 rounded-2xl border">
-                <p className="text-xs text-slate-500 uppercase font-medium mb-1 flex items-center gap-1">
-                  <LogOut className="w-3 h-3" /> Expiry
+            <div className="mt-8 grid grid-cols-2 gap-4 text-left">
+              <div className="bg-muted/30 p-4 rounded-2xl border border-border shadow-sm">
+                <p className="text-[9px] text-muted-foreground/60 uppercase font-black tracking-widest mb-2 flex items-center gap-1.5">
+                  <LogOut className="w-3.5 h-3.5" /> Expiry
                 </p>
-                <p className="font-semibold text-slate-900">{format(new Date(pass.valid_until), 'HH:mm - MMM d')}</p>
+                <p className="font-bold text-foreground text-sm">{format(new Date(pass.valid_until), 'HH:mm - MMM d')}</p>
               </div>
-              <div className="flex-1 bg-slate-50 p-4 rounded-2xl border">
-                <p className="text-xs text-slate-500 uppercase font-medium mb-1 flex items-center gap-1">
-                  <Activity className="w-3 h-3" /> State
+              <div className="bg-muted/30 p-4 rounded-2xl border border-border shadow-sm">
+                <p className="text-[9px] text-muted-foreground/60 uppercase font-black tracking-widest mb-2 flex items-center gap-1.5">
+                  <Activity className="w-3.5 h-3.5" /> State
                 </p>
-                <p className="font-semibold text-slate-900 capitalize flex items-center gap-1.5">
+                <p className="font-bold text-foreground text-sm capitalize flex items-center gap-2">
                   <span className={clsx("w-2 h-2 rounded-full", pass.status === 'used_exit' ? 'bg-blue-500' : 'bg-green-500')} />
                   {pass.status === 'used_exit' ? 'Returning' : 'Exiting'}
                 </p>
@@ -63,7 +68,7 @@ export function ScanResultView({ result, onClose }: ScanResultViewProps) {
 
         <button
           onClick={onClose}
-          className="w-full mt-8 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-900 font-semibold rounded-xl transition-colors"
+          className="w-full mt-10 py-4 bg-foreground text-background font-black text-xs uppercase tracking-widest rounded-2xl transition-all shadow-xl shadow-foreground/10 hover:opacity-90 active:scale-95"
         >
           Scan Next Pass
         </button>

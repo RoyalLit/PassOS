@@ -8,6 +8,8 @@
   --color-border: var(--border);
   --color-muted-foreground: var(--muted-foreground);
   --color-primary: var(--primary);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
 }
 
 @layer base {
@@ -19,6 +21,8 @@
     --border: #e2e8f0;
     --muted-foreground: #64748b;
     --primary: #2563eb;
+    --input: #ffffff;
+    --ring: #3b82f6;
   }
 
   .dark {
@@ -29,6 +33,8 @@
     --border: #1e293b;
     --muted-foreground: #94a3b8;
     --primary: #3b82f6;
+    --input: #0f172a;
+    --ring: #1d4ed8;
   }
 }
 
@@ -37,7 +43,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground transition-colors duration-300;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }

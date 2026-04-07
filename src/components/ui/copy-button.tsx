@@ -24,8 +24,8 @@ export function CopyButton({ value }: { value: string }) {
       className={clsx(
         "p-2 rounded-xl border transition-all active:scale-95",
         copied 
-          ? "bg-green-50 border-green-200 text-green-600" 
-          : "bg-white hover:border-blue-200 text-slate-400 hover:text-blue-600"
+          ? "bg-green-500/10 border-green-500/20 text-green-600" 
+          : "bg-card border-border text-muted-foreground hover:border-blue-500/30 hover:text-blue-600 hover:bg-muted/50"
       )}
       title="Copy to clipboard"
     >

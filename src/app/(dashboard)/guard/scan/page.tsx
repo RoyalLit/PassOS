@@ -62,21 +62,21 @@ export default function GuardScanPage() {
       
       {!result && (
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold text-slate-900 mb-6">Scanner Mode</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-6">Scanner Mode</h1>
           
-          <div className="flex bg-slate-200 p-1 rounded-xl w-full max-w-xs mx-auto relative z-10">
+          <div className="flex bg-muted p-1 rounded-xl w-full max-w-xs mx-auto relative z-10 border border-border shadow-sm">
             <button
               onClick={() => setScanType('exit')}
-              className={`flex-1 py-2 font-medium text-sm rounded-lg transition-all ${
-                scanType === 'exit' ? 'bg-white shadow-sm text-blue-700' : 'text-slate-500 hover:text-slate-700'
+              className={`flex-1 py-2 font-bold text-sm rounded-lg transition-all ${
+                scanType === 'exit' ? 'bg-card shadow-sm text-blue-600' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               Exit Campus
             </button>
             <button
               onClick={() => setScanType('entry')}
-              className={`flex-1 py-2 font-medium text-sm rounded-lg transition-all ${
-                scanType === 'entry' ? 'bg-white shadow-sm text-green-700' : 'text-slate-500 hover:text-slate-700'
+              className={`flex-1 py-2 font-bold text-sm rounded-lg transition-all ${
+                scanType === 'entry' ? 'bg-card shadow-sm text-green-600' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               Enter Campus

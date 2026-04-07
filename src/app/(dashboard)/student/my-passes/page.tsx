@@ -19,25 +19,25 @@ export default async function MyPassesPage() {
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-8">
       <div className="flex items-center gap-4 mb-4">
-        <Link href="/student" className="p-2 bg-white rounded-full border shadow-sm hover:bg-slate-50 transition-colors">
-          <ArrowLeft className="w-5 h-5 text-slate-600" />
+        <Link href="/student" className="p-2 bg-card rounded-full border border-border shadow-sm hover:bg-muted transition-colors">
+          <ArrowLeft className="w-5 h-5 text-foreground/80" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">My Passes</h1>
-          <p className="text-slate-500">Your active digital gate passes</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">My Passes</h1>
+          <p className="text-muted-foreground">Your active digital gate passes</p>
         </div>
       </div>
 
       {!passes || passes.length === 0 ? (
-        <div className="text-center py-24 bg-white border rounded-2xl shadow-sm">
-          <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-slate-400 text-2xl">🎟️</span>
+        <div className="text-center py-24 bg-card border border-border rounded-2xl shadow-sm">
+          <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-muted-foreground text-2xl">🎟️</span>
           </div>
-          <h2 className="text-lg font-bold text-slate-900">No active passes</h2>
-          <p className="text-slate-500 mt-1 max-w-sm mx-auto">You don't have any active passes right now. Request a new pass to leave the campus.</p>
+          <h2 className="text-lg font-bold text-foreground">No active passes</h2>
+          <p className="text-muted-foreground mt-1 max-w-sm mx-auto">You don't have any active passes right now. Request a new pass to leave the campus.</p>
           <Link 
             href="/student/new-request" 
-            className="inline-block mt-6 px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            className="inline-block mt-6 px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/20"
           >
             Request a Pass
           </Link>
@@ -49,10 +49,10 @@ export default async function MyPassesPage() {
               <QRDisplay pass={pass} />
               
               {/* Context card showing where they are going */}
-              <div className="mt-6 bg-white border rounded-2xl p-5 shadow-sm max-w-sm mx-auto">
-                <h3 className="font-semibold text-slate-900 mb-2 border-b pb-2">Destined For</h3>
-                <p className="text-slate-700">{pass.request?.destination}</p>
-                <p className="text-sm text-slate-500 italic mt-1">"{pass.request?.reason}"</p>
+              <div className="mt-6 bg-card border border-border rounded-2xl p-5 shadow-sm max-w-sm mx-auto">
+                <h3 className="font-semibold text-foreground mb-2 border-b border-border pb-2">Destined For</h3>
+                <p className="text-foreground/80">{pass.request?.destination}</p>
+                <p className="text-sm text-muted-foreground italic mt-1">"{pass.request?.reason}"</p>
               </div>
             </div>
           ))}

@@ -106,14 +106,14 @@ export default function ParentPortal() {
   if (error) {
     return (
       <div className="p-6 max-w-3xl mx-auto">
-        <div className="bg-red-50 border border-red-200 rounded-2xl p-8 flex items-start gap-4 text-red-700 shadow-sm">
+        <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-8 flex items-start gap-4 text-red-500 shadow-sm">
           <AlertTriangle className="shrink-0 mt-0.5 w-6 h-6" />
           <div>
-            <p className="font-bold text-lg">Unable to load portal</p>
-            <p className="text-sm mt-1 opacity-90">{error}</p>
+            <p className="font-bold text-lg text-foreground">Unable to load portal</p>
+            <p className="text-sm mt-1 text-muted-foreground">{error}</p>
             <button 
               onClick={() => window.location.reload()}
-              className="mt-4 px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-bold shadow-sm"
+              className="mt-4 px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-bold shadow-sm hover:bg-red-700 transition-colors"
             >
               Retry Connection
             </button>
@@ -128,22 +128,22 @@ export default function ParentPortal() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Parent Portal</h1>
-          <p className="text-slate-500 mt-1">Review and manage gate pass requests for your ward.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Parent Portal</h1>
+          <p className="text-muted-foreground mt-1 text-base">Review and manage gate pass requests for your ward.</p>
         </div>
       </div>
 
       {/* Student Profile / Linking Form */}
       {data?.student ? (
-        <div className="bg-white rounded-2xl border shadow-sm p-6 flex items-center justify-between group hover:border-blue-100 transition-colors">
+        <div className="bg-card rounded-2xl border border-border shadow-sm p-6 flex items-center justify-between group hover:border-blue-500/30 transition-colors">
           <div className="flex items-center gap-5 min-w-0">
-            <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+            <div className="w-14 h-14 rounded-2xl bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0">
               <GraduationCap className="w-7 h-7" />
             </div>
             <div className="min-w-0">
               <p className="text-xs font-bold text-blue-600 uppercase tracking-widest mb-0.5">Linked Ward</p>
-              <h2 className="font-bold text-slate-900 text-xl truncate">{data.student.full_name}</h2>
-              <p className="text-slate-400 text-sm truncate flex items-center gap-2 mt-0.5">
+              <h2 className="font-bold text-foreground text-xl truncate">{data.student.full_name}</h2>
+              <p className="text-muted-foreground text-sm truncate flex items-center gap-2 mt-0.5">
                 {data.student.email}
                 {(data.student.hostel || data.student.room_number) && (
                   <>
@@ -154,24 +154,24 @@ export default function ParentPortal() {
               </p>
             </div>
           </div>
-          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-50 text-green-700 text-[10px] font-bold uppercase tracking-wider">
+          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/10 text-green-500 text-[10px] font-black uppercase tracking-wider border border-green-500/20">
             <CheckCircle className="w-3 h-3" /> Linked
           </div>
         </div>
       ) : (
-        <div className="bg-white rounded-3xl border-2 border-dashed border-slate-200 p-8 sm:p-12 text-center max-w-2xl mx-auto">
-          <div className="w-20 h-20 rounded-3xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto mb-6">
+        <div className="bg-card rounded-3xl border-2 border-dashed border-border p-8 sm:p-12 text-center max-w-2xl mx-auto shadow-sm">
+          <div className="w-20 h-20 rounded-3xl bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto mb-6">
             <Link2 className="w-10 h-10" />
           </div>
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">Connect with your student</h2>
-          <p className="text-slate-500 mb-8 max-w-md mx-auto leading-relaxed">
+          <h2 className="text-2xl font-bold text-foreground mb-2">Connect with your student</h2>
+          <p className="text-muted-foreground mb-8 max-w-md mx-auto leading-relaxed">
             Please enter your ward's unique Student ID to link your accounts and begin receiving gate pass requests. 
             <span className="block mt-2 font-medium">Your child can find this ID on their dashboard.</span>
           </p>
-
+ 
           <form onSubmit={handleLinkStudent} className="max-w-md mx-auto space-y-4">
             {linkError && (
-              <div className="p-3 rounded-xl bg-red-50 text-red-600 text-sm font-medium flex items-center gap-2 text-left mb-4">
+              <div className="p-3 rounded-xl bg-red-500/10 text-red-500 text-sm font-medium flex items-center gap-2 text-left mb-4 border border-red-500/20">
                 <ShieldAlert className="w-4 h-4 shrink-0" /> {linkError}
               </div>
             )}
@@ -182,13 +182,13 @@ export default function ParentPortal() {
                 value={studentIdInput}
                 onChange={(e) => setStudentIdInput(e.target.value)}
                 placeholder="Paste Student ID here..."
-                className="w-full h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 text-center font-mono text-sm focus:bg-white focus:border-blue-500 outline-none transition-all"
+                className="w-full h-14 bg-background border-2 border-border rounded-2xl px-5 text-center font-mono text-sm focus:bg-card focus:border-blue-500 outline-none transition-all text-foreground"
               />
             </div>
             <button
               type="submit"
               disabled={isLinking || !studentIdInput.trim()}
-              className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-all shadow-xl shadow-blue-100 flex items-center justify-center gap-3 disabled:opacity-50 active:scale-[0.98]"
+              className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-all shadow-xl shadow-blue-500/20 flex items-center justify-center gap-3 disabled:opacity-50 active:scale-[0.98]"
             >
               {isLinking ? <Loader2 className="w-6 h-6 animate-spin" /> : <Link2 className="w-6 h-6" />}
               Link Student Account
@@ -203,24 +203,24 @@ export default function ParentPortal() {
           {/* Pending Requests */}
           <div>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
                 <Clock className="w-5 h-5 text-amber-500" />
                 Awaiting Approval
               </h2>
               {pendingRequests.length > 0 && (
-                <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-bold ring-4 ring-amber-50">
+                <span className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-500 text-[10px] font-black uppercase tracking-widest border border-amber-500/20">
                   {pendingRequests.length} pending
                 </span>
               )}
             </div>
 
             {pendingRequests.length === 0 ? (
-              <div className="bg-slate-50 rounded-3xl border-2 border-dashed p-12 text-center group">
-                <div className="w-16 h-16 rounded-2xl bg-white text-slate-300 flex items-center justify-center mx-auto mb-4 border shadow-sm group-hover:text-green-500 transition-colors">
+              <div className="bg-card rounded-3xl border border-border border-dashed p-12 text-center group shadow-sm transition-all hover:bg-muted/30">
+                <div className="w-16 h-16 rounded-2xl bg-muted text-muted-foreground/30 flex items-center justify-center mx-auto mb-4 border border-border shadow-sm group-hover:text-green-500 group-hover:bg-card transition-all">
                   <CheckCircle className="w-8 h-8" />
                 </div>
-                <p className="font-bold text-slate-900 text-lg">All requests reviewed</p>
-                <p className="text-slate-500 text-sm mt-1">You've successfully addressed all pending items.</p>
+                <p className="font-bold text-foreground text-lg">All requests reviewed</p>
+                <p className="text-muted-foreground text-sm mt-1">You've successfully addressed all pending items.</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -235,8 +235,8 @@ export default function ParentPortal() {
 
                   return (
                     <div key={req.id} className={clsx(
-                      "bg-white rounded-2xl border shadow-sm transition-all overflow-hidden",
-                      isExpanded ? "ring-2 ring-blue-500 border-transparent shadow-lg" : "hover:border-blue-100"
+                      "bg-card rounded-2xl border border-border shadow-sm transition-all overflow-hidden",
+                      isExpanded ? "ring-2 ring-blue-500 border-transparent shadow-lg" : "hover:border-blue-500/30"
                     )}>
                       <button
                         className="w-full p-6 flex items-center gap-5 text-left transition-colors"
@@ -244,53 +244,53 @@ export default function ParentPortal() {
                       >
                         <div className={clsx(
                           "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0",
-                          typeConfig?.color === 'blue' ? 'bg-blue-50 text-blue-600' :
-                          typeConfig?.color === 'purple' ? 'bg-purple-50 text-purple-600' :
-                          'bg-slate-100 text-slate-500'
+                          typeConfig?.color === 'blue' ? 'bg-blue-500/10 text-blue-600' :
+                          typeConfig?.color === 'purple' ? 'bg-purple-500/10 text-purple-600' :
+                          'bg-muted text-muted-foreground'
                         )}>
                           <RequestIcon iconName={typeConfig?.icon || 'AlertTriangle'} className="w-6 h-6" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-bold text-slate-900 text-lg leading-tight">{typeConfig.label}</h3>
-                          <p className="text-sm text-slate-500 mt-1 truncate font-medium">{req.reason}</p>
-                          <div className="flex items-center gap-4 mt-3 text-xs text-slate-400 font-bold uppercase tracking-wider">
+                          <h3 className="font-bold text-foreground text-lg leading-tight">{typeConfig.label}</h3>
+                          <p className="text-sm text-muted-foreground mt-1 truncate font-medium">{req.reason}</p>
+                          <div className="flex items-center gap-4 mt-3 text-[10px] text-muted-foreground/60 font-black uppercase tracking-widest">
                             <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> {format(new Date(req.departure_at), 'HH:mm • MMM d')}</span>
                             <span className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> {req.destination}</span>
                           </div>
                         </div>
-                        <div className="shrink-0 text-slate-300">
+                        <div className="shrink-0 text-muted-foreground/30">
                           {isExpanded ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
                         </div>
                       </button>
 
                       {isExpanded && (
-                        <div className="border-t px-6 pt-6 pb-6 space-y-6 bg-slate-50/50 animate-in slide-in-from-top-2 duration-300">
+                        <div className="border-t border-border px-6 pt-6 pb-6 space-y-6 bg-muted/20 animate-in slide-in-from-top-2 duration-300">
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="bg-white rounded-xl p-4 border shadow-sm">
-                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Departure</p>
-                              <p className="font-bold text-slate-900">{format(new Date(req.departure_at), 'PPPp')}</p>
+                            <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
+                              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5">Departure</p>
+                              <p className="font-bold text-foreground">{format(new Date(req.departure_at), 'PPPp')}</p>
                             </div>
-                            <div className="bg-white rounded-xl p-4 border shadow-sm">
-                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Return Expectation</p>
-                              <p className="font-bold text-slate-900">{format(new Date(req.return_by), 'PPPp')}</p>
+                            <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
+                              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5">Return Expectation</p>
+                              <p className="font-bold text-foreground">{format(new Date(req.return_by), 'PPPp')}</p>
                             </div>
                           </div>
-
-                          <div className="bg-white rounded-xl p-4 border shadow-sm">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Detailed Reason</p>
-                            <p className="text-slate-700 italic leading-relaxed font-medium">"{req.reason}"</p>
+ 
+                          <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5">Detailed Reason</p>
+                            <p className="text-foreground/80 italic leading-relaxed font-medium">"{req.reason}"</p>
                           </div>
 
                           <div>
-                            <label className="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-2 px-1">
-                              Guardian Message <span className="text-slate-400 font-normal">(Optional)</span>
+                            <label className="block text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2 px-1">
+                              Guardian Message <span className="text-muted-foreground/40 font-normal">(Optional)</span>
                             </label>
                             <textarea
                               rows={3}
                               value={reasons[req.id] || ''}
                               onChange={(e) => setReasons(prev => ({ ...prev, [req.id]: e.target.value }))}
                               placeholder="E.g. Call us when you reach. Be safe!"
-                              className="w-full border-2 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 border-slate-100 outline-none resize-none bg-white font-medium"
+                              className="w-full border-2 border-border rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none bg-background font-medium text-foreground transition-all"
                             />
                           </div>
 
@@ -298,14 +298,14 @@ export default function ParentPortal() {
                             <button
                               onClick={() => handleDecide(req.id, 'rejected')}
                               disabled={isDeciding}
-                              className="flex-1 h-14 rounded-2xl font-bold border-2 border-red-100 text-red-600 hover:bg-red-50 hover:border-red-200 transition-all disabled:opacity-50 text-sm active:scale-[0.98]"
+                              className="flex-1 h-14 rounded-2xl font-bold border-2 border-red-500/20 text-red-500 hover:bg-red-500/10 hover:border-red-500/40 transition-all disabled:opacity-50 text-sm active:scale-[0.98]"
                             >
                               Reject Request
                             </button>
                             <button
                               onClick={() => handleDecide(req.id, 'approved')}
                               disabled={isDeciding}
-                              className="flex-1 h-14 rounded-2xl font-bold bg-green-600 text-white hover:bg-green-700 transition-all shadow-lg shadow-green-100 disabled:opacity-50 flex items-center justify-center gap-3 text-sm active:scale-[0.98]"
+                              className="flex-1 h-14 rounded-2xl font-bold bg-green-600 text-white hover:bg-green-700 transition-all shadow-xl shadow-green-500/10 disabled:opacity-50 flex items-center justify-center gap-3 text-sm active:scale-[0.98]"
                             >
                               {isDeciding ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle className="w-5 h-5" />}
                               Approve Release
@@ -323,12 +323,12 @@ export default function ParentPortal() {
           {/* History */}
           {historyRequests.length > 0 && (
             <div className="pt-4">
-              <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+              <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
                 Recent Decisions
-                <span className="w-1.5 h-1.5 rounded-full bg-slate-300 mx-2" />
-                <span className="text-sm font-normal text-slate-400">Past {historyRequests.length} events</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 mx-2" />
+                <span className="text-sm font-normal text-muted-foreground">Past {historyRequests.length} events</span>
               </h2>
-              <div className="bg-white rounded-3xl border shadow-sm overflow-hidden divide-y divide-slate-100">
+              <div className="bg-card rounded-3xl border border-border shadow-sm overflow-hidden divide-y divide-border">
                 {historyRequests.map((req) => {
                   const typeConfig = (REQUEST_TYPES as any)[req.request_type] || {
                     label: req.request_type.replace('_', ' '),
@@ -337,28 +337,28 @@ export default function ParentPortal() {
                   };
                   const statusConfig = STATUS_CONFIG[req.status as keyof typeof STATUS_CONFIG];
                   return (
-                    <div key={req.id} className="p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 hover:bg-slate-50/50 transition-colors group">
+                    <div key={req.id} className="p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 hover:bg-muted/30 transition-colors group">
                       <div className={clsx(
                         "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
-                        typeConfig?.color === 'blue' ? 'bg-blue-50 text-blue-600' :
-                        typeConfig?.color === 'purple' ? 'bg-purple-50 text-purple-600' :
-                        'bg-slate-100 text-slate-500'
+                        typeConfig?.color === 'blue' ? 'bg-blue-500/10 text-blue-600' :
+                        typeConfig?.color === 'purple' ? 'bg-purple-500/10 text-purple-600' :
+                        'bg-muted text-muted-foreground'
                       )}>
                         <RequestIcon iconName={typeConfig?.icon || 'AlertTriangle'} className="w-5 h-5" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-bold text-slate-900">{typeConfig.label}</p>
-                        <p className="text-xs text-slate-400 mt-1 uppercase tracking-widest font-bold">
+                        <p className="font-bold text-foreground">{typeConfig.label}</p>
+                        <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-widest font-black">
                           {format(new Date(req.departure_at), 'MMMM do')} • {req.destination}
                         </p>
                       </div>
-                      <div className="flex items-center gap-3 w-full sm:w-auto mt-4 sm:mt-0 pt-4 sm:pt-0 border-t sm:border-0 border-slate-100">
-                        <span className={clsx('px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 shrink-0 shadow-sm', statusConfig.color)}>
+                      <div className="flex items-center gap-3 w-full sm:w-auto mt-4 sm:mt-0 pt-4 sm:pt-0 border-t sm:border-0 border-border">
+                        <span className={clsx('px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shrink-0 shadow-sm border', statusConfig.color)}>
                           <span className={clsx('w-1.5 h-1.5 rounded-full', statusConfig.dot)} />
                           {statusConfig.label}
                         </span>
                         <div className="hidden group-hover:block transition-all">
-                          <ArrowRight className="w-4 h-4 text-slate-300" />
+                          <ArrowRight className="w-4 h-4 text-muted-foreground/30" />
                         </div>
                       </div>
                     </div>

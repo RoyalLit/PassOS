@@ -33,20 +33,20 @@ export default async function GuardDashboardPage() {
 
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-6 pt-12 md:pt-20">
-      <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+      <div className="flex justify-between items-center bg-card p-6 rounded-2xl shadow-sm border border-border">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Recent Scans</h1>
-          <p className="text-slate-500 text-sm">Review the most recent activity at your gate station.</p>
+          <h1 className="text-2xl font-bold text-foreground">Recent Scans</h1>
+          <p className="text-muted-foreground text-sm">Review the most recent activity at your gate station.</p>
         </div>
         <div className="hidden sm:block">
-          <Badge variant="outline" className="px-3 py-1">Guard: {profile.full_name}</Badge>
+          <Badge variant="outline" className="px-3 py-1 border-border text-foreground/70">Guard: {profile.full_name}</Badge>
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
-            <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b">
+            <thead className="text-xs text-muted-foreground uppercase bg-muted/30 border-b border-border">
               <tr>
                 <th className="px-6 py-4 font-medium">Student</th>
                 <th className="px-6 py-4 font-medium">Type</th>
@@ -54,7 +54,7 @@ export default async function GuardDashboardPage() {
                 <th className="px-6 py-4 font-medium">Result</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-border">
               {scans?.length === 0 && (
                 <tr>
                   <td colSpan={4} className="px-6 py-12 text-center text-slate-400 italic">
@@ -65,15 +65,15 @@ export default async function GuardDashboardPage() {
               {scans?.map((scan: any) => {
                 const student = scan.passes?.profiles;
                 return (
-                  <tr key={scan.id} className="hover:bg-slate-50/50 transition-colors">
+                  <tr key={scan.id} className="hover:bg-muted/50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
-                        <span className="font-semibold text-slate-900">{student?.full_name || 'Unknown Student'}</span>
-                        <span className="text-xs text-slate-500">{student?.hostel} - Room {student?.room_number}</span>
+                        <span className="font-semibold text-foreground">{student?.full_name || 'Unknown Student'}</span>
+                        <span className="text-xs text-muted-foreground">{student?.hostel} - Room {student?.room_number}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2 capitalize font-medium text-slate-700">
+                      <div className="flex items-center gap-2 capitalize font-medium text-foreground/80">
                         {scan.scan_type === 'exit' ? (
                           <ShieldAlert className="w-4 h-4 text-orange-500" />
                         ) : (
@@ -82,7 +82,7 @@ export default async function GuardDashboardPage() {
                         {scan.scan_type}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-slate-600">
+                    <td className="px-6 py-4 text-muted-foreground font-medium">
                       {format(new Date(scan.created_at), 'MMM d, h:mm a')}
                     </td>
                     <td className="px-6 py-4">

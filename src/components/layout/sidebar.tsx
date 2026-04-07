@@ -67,7 +67,7 @@ export function Sidebar({ role, userName }: SidebarProps) {
   return (
     <>
       <button 
-        className="md:hidden fixed top-4 right-4 z-50 p-2 bg-white rounded-md shadow-sm border"
+        className="md:hidden fixed top-4 right-4 z-50 p-2 bg-card rounded-md shadow-sm border border-border text-foreground"
         onClick={() => setIsOpen(!isOpen)}
       >
         {isOpen ? <X size={20} /> : <Menu size={20} />}

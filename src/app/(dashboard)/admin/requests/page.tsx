@@ -36,8 +36,8 @@ export default async function AdminRequestsPage() {
             />
           ))
         ) : (
-          <div className="text-center py-10 bg-white rounded-lg border shadow-sm">
-            <p className="text-slate-500">No requests found in the system.</p>
+          <div className="text-center py-20 bg-card rounded-2xl border border-border shadow-sm">
+            <p className="text-muted-foreground">No requests found in the system.</p>
           </div>
         )}
       </div>

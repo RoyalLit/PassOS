@@ -38,6 +38,9 @@ function NewRequestForm() {
 
   const requestType = watch('request_type');
   const selectedReason = watch('reason');
+  const outingDate = watch('outing_date');
+  const startDate = watch('start_date');
+  const endDate = watch('end_date');
 
   useEffect(() => {
     async function init() {
@@ -206,10 +209,14 @@ function NewRequestForm() {
             {requestType === 'day_outing' ? (
               <div className="grid gap-6">
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-foreground/80">Outing Date</label>
+                  <div className="flex justify-between items-center">
+                    <label className="text-sm font-bold text-foreground/80">Outing Date</label>
+                    <span className="text-[10px] font-black uppercase text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20">Same Day Return Only</span>
+                  </div>
                   <input 
                     type="date" 
-                    className="w-full rounded-xl border-border border px-4 py-3 bg-background focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium"
+                    disabled={!!extensionOf}
+                    className="w-full rounded-xl border-border border px-4 py-3 bg-background focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium disabled:opacity-50"
                     {...register('outing_date')}
                   />
                 </div>
@@ -218,7 +225,8 @@ function NewRequestForm() {
                     <label className="text-sm font-bold text-foreground/80">Time Out</label>
                     <input 
                       type="time" 
-                      className="w-full rounded-xl border-border border px-4 py-3 bg-background focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium"
+                      disabled={!!extensionOf}
+                      className="w-full rounded-xl border-border border px-4 py-3 bg-background focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium disabled:opacity-50"
                       {...register('time_out')}
                     />
                   </div>
@@ -235,21 +243,53 @@ function NewRequestForm() {
             ) : (
               <div className="grid gap-6">
                 <div className="grid sm:grid-cols-2 gap-6">
-                  <div className="space-y-4 p-4 rounded-2xl bg-card border border-border shadow-sm">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Departure</p>
+                  <div className={clsx(
+                    "space-y-4 p-4 rounded-2xl bg-card border border-border shadow-sm transition-opacity",
+                    extensionOf && "opacity-50"
+                  )}>
+                    <div className="flex justify-between items-center mb-1">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Departure</p>
+                      {extensionOf && <span className="text-[9px] font-black text-amber-500">LOCKED</span>}
+                    </div>
                     <div className="space-y-2">
-                      <input type="date" className="w-full border-none p-0 focus:ring-0 font-bold text-lg bg-transparent" {...register('start_date')} />
-                      <input type="time" className="w-full border-none p-0 focus:ring-0 text-muted-foreground font-medium bg-transparent" {...register('time_out')} />
+                      <input 
+                        type="date" 
+                        disabled={!!extensionOf}
+                        className="w-full border-none p-0 focus:ring-0 font-bold text-lg bg-transparent disabled:cursor-not-allowed" 
+                        {...register('start_date')} 
+                      />
+                      <input 
+                        type="time" 
+                        disabled={!!extensionOf}
+                        className="w-full border-none p-0 focus:ring-0 text-muted-foreground font-medium bg-transparent disabled:cursor-not-allowed" 
+                        {...register('time_out')} 
+                      />
                     </div>
                   </div>
                   <div className="space-y-4 p-4 rounded-2xl bg-card border border-border shadow-sm">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Return By</p>
+                    <div className="flex justify-between items-center mb-1">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Return By</p>
+                      <span className="text-[9px] font-black text-blue-500">NEW DEADLINE</span>
+                    </div>
                     <div className="space-y-2">
-                      <input type="date" className="w-full border-none p-0 focus:ring-0 font-bold text-lg bg-transparent" {...register('end_date')} />
-                      <input type="time" className="w-full border-none p-0 focus:ring-0 text-muted-foreground font-medium bg-transparent" {...register('time_in')} />
+                      <input 
+                        type="date" 
+                        className="w-full border-none p-0 focus:ring-0 font-bold text-lg bg-transparent" 
+                        {...register('end_date')} 
+                      />
+                      <input 
+                        type="time" 
+                        className="w-full border-none p-0 focus:ring-0 text-muted-foreground font-medium bg-transparent" 
+                        {...register('time_in')} 
+                      />
                     </div>
                   </div>
                 </div>
+                {startDate === endDate && (
+                  <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-[10px] font-black text-amber-500 flex items-center justify-center gap-2 uppercase tracking-widest">
+                    <AlertCircle className="w-4 h-4" /> Night Pass requires at least one night stay
+                  </div>
+                )}
               </div>
             )}
           </div>

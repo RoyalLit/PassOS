@@ -38,33 +38,33 @@ export function RequestCard({ request, isAdminView = false }: { request: any, is
   };
 
   return (
-    <div className="bg-white border rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+    <div className="bg-card border border-border rounded-2xl p-6 shadow-sm hover:shadow-md transition-all hover:border-blue-500/30 group">
       <div className="flex justify-between items-start mb-4">
         <div>
           {isAdminView && request.student && (
-            <h3 className="font-semibold text-lg text-slate-900 mb-1">
+            <h3 className="font-bold text-lg text-foreground mb-1 group-hover:text-blue-600 transition-colors">
               {request.student.full_name} 
-              <span className="text-sm font-normal text-slate-500 ml-2">
-                ({request.student.hostel} - {request.student.room_number})
+              <span className="text-[10px] font-black text-muted-foreground ml-2 uppercase tracking-widest bg-muted px-2 py-0.5 rounded">
+                {request.student.hostel} • {request.student.room_number}
               </span>
             </h3>
           )}
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-medium rounded-full capitalize">
+            <span className="px-2.5 py-1 bg-muted text-foreground/70 text-[10px] font-black rounded-full uppercase tracking-tighter border border-border">
               {request.request_type.replace('_', ' ')}
             </span>
-            <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${
-              request.status === 'approved' ? 'bg-green-100 text-green-700' :
-              request.status === 'rejected' ? 'bg-red-100 text-red-700' :
-              'bg-blue-100 text-blue-700'
+            <span className={`px-2.5 py-1 text-[10px] font-black rounded-full uppercase tracking-tighter border ${
+              request.status === 'approved' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
+              request.status === 'rejected' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
+              'bg-blue-500/10 text-blue-500 border-blue-500/20'
             }`}>
               {request.status.replace('_', ' ')}
             </span>
             {isAdminView && request.ai_analysis?.[0] && (
-              <span className={`flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full ${
-                request.ai_analysis[0].risk_level === 'low' ? 'bg-green-50 text-green-700 border border-green-200' :
-                request.ai_analysis[0].risk_level === 'medium' ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' :
-                'bg-red-50 text-red-700 border border-red-200'
+              <span className={`flex items-center gap-1 px-2.5 py-1 text-[10px] font-black rounded-full uppercase tracking-tighter border ${
+                request.ai_analysis[0].risk_level === 'low' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
+                request.ai_analysis[0].risk_level === 'medium' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
+                'bg-red-500/10 text-red-500 border-red-500/20'
               }`}>
                 <ShieldAlert className="w-3 h-3" />
                 {request.ai_analysis[0].risk_level} risk
@@ -74,30 +74,30 @@ export function RequestCard({ request, isAdminView = false }: { request: any, is
         </div>
       </div>
 
-      <p className="text-slate-700 mb-4">{request.reason}</p>
+      <p className="text-foreground/80 mb-6 font-medium leading-relaxed italic border-l-4 border-blue-500/30 pl-4 py-1 bg-muted/20 rounded-r-xl">"{request.reason}"</p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-slate-600 mb-5 pb-5 border-b">
-        <div className="flex items-center gap-2">
-          <MapPin className="w-4 h-4" />
-          <span>{request.destination}</span>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-bold text-muted-foreground mb-6 pb-6 border-b border-border">
+        <div className="flex items-center gap-2.5">
+          <MapPin className="w-4 h-4 text-blue-500" />
+          <span className="tracking-tight">{request.destination}</span>
         </div>
-        <div className="flex items-center gap-2">
-          <Calendar className="w-4 h-4" />
-          <span>{format(new Date(request.departure_at), 'MMM d, h:mm a')}</span>
+        <div className="flex items-center gap-2.5">
+          <Calendar className="w-4 h-4 text-blue-500" />
+          <span className="tracking-tight">{format(new Date(request.departure_at), 'MMM d, h:mm a')}</span>
         </div>
-        <div className="flex items-center gap-2">
-          <Clock className="w-4 h-4" />
-          <span>Return by: {format(new Date(request.return_by), 'MMM d, h:mm a')}</span>
+        <div className="flex items-center gap-2.5">
+          <Clock className="w-4 h-4 text-blue-500" />
+          <span className="tracking-tight">Return by: {format(new Date(request.return_by), 'MMM d, h:mm a')}</span>
         </div>
       </div>
 
       <div className="flex justify-end gap-3">
         {isAdminView && isPending ? (
-          <div className="flex gap-2">
+          <div className="flex gap-3 w-full sm:w-auto">
             <button 
               onClick={() => handleApproval('rejected')}
               disabled={loading !== null}
-              className="flex items-center gap-2 px-4 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 text-sm font-medium transition-colors disabled:opacity-50"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 border-2 border-red-500/20 text-red-500 rounded-xl hover:bg-red-500/10 text-sm font-bold transition-all disabled:opacity-50 active:scale-95"
             >
               {loading === 'rejected' && <Loader2 className="w-4 h-4 animate-spin" />}
               Reject
@@ -105,14 +105,14 @@ export function RequestCard({ request, isAdminView = false }: { request: any, is
             <button 
               onClick={() => handleApproval('approved')}
               disabled={loading !== null}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium transition-colors disabled:opacity-50"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 text-sm font-bold transition-all shadow-xl shadow-blue-500/20 disabled:opacity-50 active:scale-95"
             >
               {loading === 'approved' && <Loader2 className="w-4 h-4 animate-spin" />}
               Approve Request
             </button>
           </div>
         ) : !isAdminView && request.status === 'approved' ? (
-          <Link href={`/student/pass/${request.id}`} className="px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 text-sm font-medium transition-colors">
+          <Link href={`/student/pass/${request.id}`} className="w-full sm:w-auto text-center px-6 py-2.5 bg-foreground text-background rounded-xl hover:opacity-90 text-sm font-bold transition-all shadow-xl shadow-foreground/10 active:scale-95">
             View Live Pass
           </Link>
         ) : null}

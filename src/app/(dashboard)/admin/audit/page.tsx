@@ -23,14 +23,14 @@ export default async function AdminAuditPage() {
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Audit Logs</h1>
-        <p className="text-slate-500">Immutable record of all administrative actions and system events.</p>
+        <h1 className="text-2xl font-bold text-foreground font-black">Audit Logs</h1>
+        <p className="text-muted-foreground text-sm font-medium">Immutable record of all administrative actions and system events.</p>
       </div>
-
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+ 
+      <div className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
-            <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b">
+            <thead className="text-[10px] text-muted-foreground uppercase bg-muted/30 border-b border-border font-black tracking-widest">
               <tr>
                 <th className="px-6 py-4 font-medium">Timestamp</th>
                 <th className="px-6 py-4 font-medium">Actor</th>
@@ -39,7 +39,7 @@ export default async function AdminAuditPage() {
                 <th className="px-6 py-4 font-medium">IP Address</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-border">
               {logs?.length === 0 && (
                 <tr>
                   <td colSpan={5} className="px-6 py-12 text-center text-slate-400 italic">
@@ -48,28 +48,28 @@ export default async function AdminAuditPage() {
                 </tr>
               )}
               {logs?.map((log: any) => (
-                <tr key={log.id} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="px-6 py-4 text-slate-600 font-mono text-xs">
+                <tr key={log.id} className="hover:bg-muted/50 transition-colors">
+                  <td className="px-6 py-4 text-muted-foreground font-mono text-xs">
                     {format(new Date(log.created_at), 'yyyy-MM-dd HH:mm:ss')}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-col">
-                      <span className="font-semibold text-slate-900">{log.actor?.full_name || 'System'}</span>
-                      <span className="text-xs text-slate-400 capitalize">{log.actor?.role || 'Service'}</span>
+                      <span className="font-bold text-foreground">{log.actor?.full_name || 'System'}</span>
+                      <span className="text-[10px] text-muted-foreground/60 uppercase font-black tracking-wider leading-none mt-0.5">{log.actor?.role || 'Service'}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="px-2 py-1 bg-slate-100 text-slate-700 rounded text-xs font-mono uppercase tracking-tighter">
+                    <span className="px-2 py-1 bg-muted text-foreground/80 rounded border border-border text-[10px] font-mono uppercase tracking-tighter shadow-sm">
                       {log.action}
                     </span>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-col">
-                      <span className="text-slate-700 capitalize">{log.entity_type}</span>
-                      <span className="text-[10px] text-slate-400 font-mono">{log.entity_id}</span>
+                      <span className="text-foreground/80 font-medium capitalize">{log.entity_type}</span>
+                      <span className="text-[10px] text-muted-foreground/50 font-mono">{log.entity_id}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-slate-500 text-xs font-mono">
+                  <td className="px-6 py-4 text-muted-foreground/60 text-xs font-mono">
                     {log.ip_address || '—'}
                   </td>
                 </tr>

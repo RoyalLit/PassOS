@@ -28,7 +28,15 @@ export default async function StudentDashboard() {
     .order('created_at', { ascending: false })
     .limit(5);
 
-  // Get parent info if linked
+  // Check for any PENDING or ACTIVE request specifically for the "One Pass" rule
+  const { data: pendingRequests } = await supabase
+    .from('pass_requests')
+    .select('id')
+    .eq('student_id', profile.id)
+    .in('status', ['pending', 'ai_review', 'parent_pending', 'admin_pending', 'approved'])
+    .limit(1);
+
+  // Parent Info
   let parentInfo = null;
   if (profile.parent_id) {
     const { data: parent } = await supabase
@@ -40,6 +48,8 @@ export default async function StudentDashboard() {
   }
 
   const hasActivePass = activePasses && activePasses.length > 0;
+  const hasPendingRequest = pendingRequests && pendingRequests.length > 0;
+  const canRequestNew = !hasActivePass && !hasPendingRequest;
   const typedRequests = (recentRequests || []) as PassRequest[];
   
   return (
@@ -49,13 +59,23 @@ export default async function StudentDashboard() {
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Welcome, {profile.full_name.split(' ')[0]}</h1>
           <p className="text-muted-foreground">Manage your passes and requests</p>
         </div>
-        <Link
-          href="/student/new-request"
-          className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-all active:scale-95"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Request Pass
-        </Link>
+        {canRequestNew ? (
+          <Link
+            href="/student/new-request"
+            className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-all active:scale-95"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Request Pass
+          </Link>
+        ) : (
+          <button
+            disabled
+            className="inline-flex items-center justify-center rounded-xl bg-muted px-5 py-2.5 text-sm font-bold text-muted-foreground border border-border cursor-not-allowed opacity-75"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            {hasPendingRequest ? 'Request Pending' : 'Pass Active'}
+          </button>
+        )}
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
@@ -80,7 +100,7 @@ export default async function StudentDashboard() {
                   </Link>
                   <Link 
                     href="/student/my-passes"
-                    className="bg-white text-blue-700 hover:bg-blue-50 px-5 py-2.5 rounded-xl font-bold transition-all text-sm shadow-sm active:scale-95 whitespace-nowrap"
+                    className="bg-card text-blue-600 hover:bg-muted px-5 py-2.5 rounded-xl font-bold transition-all text-sm shadow-sm active:scale-95 whitespace-nowrap border border-border"
                   >
                     Show QR
                   </Link>
@@ -204,9 +224,9 @@ export default async function StudentDashboard() {
             )}
           </div>
 
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-white shadow-xl shadow-black/20">
-            <h3 className="font-bold mb-2 text-lg">Need Assistance?</h3>
-            <p className="text-slate-400 text-sm leading-relaxed">
+          <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
+            <h3 className="font-bold mb-2 text-lg text-foreground">Need Assistance?</h3>
+            <p className="text-muted-foreground text-sm leading-relaxed">
               If you're having trouble with your parent connection or pass validation, please visit the warden's office for support.
             </p>
           </div>
