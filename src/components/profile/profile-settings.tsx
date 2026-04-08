@@ -6,6 +6,7 @@ import type { Profile } from '@/types';
 import { User, Lock, Bell, AlertCircle, Loader2, Check, Camera } from 'lucide-react';
 import Image from 'next/image';
 import { clsx } from 'clsx';
+import { toast } from 'sonner';
 
 interface ProfileMetadata {
   emergency_contact_name?: string;
@@ -76,10 +77,12 @@ export function ProfileSettings() {
 
       if (error) throw error;
       
+      toast.success('Profile updated successfully');
       setMessage({ type: 'success', text: 'Profile updated successfully' });
       fetchProfile();
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to update profile';
+      toast.error(errorMessage);
       setMessage({ type: 'error', text: errorMessage });
     } finally {
       setSaving(false);
@@ -108,6 +111,11 @@ export function ProfileSettings() {
   }
 
   async function uploadAvatar(file: File) {
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage({ type: 'error', text: 'File size must be less than 5MB' });
+      return;
+    }
+
     setSaving(true);
     setMessage(null);
     try {
@@ -125,7 +133,7 @@ export function ProfileSettings() {
         reader.readAsDataURL(file);
       });
 
-      const result = await fetch('/api/profile/avatar', {
+      const response = await fetch('/api/profile/avatar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -134,16 +142,24 @@ export function ProfileSettings() {
           file_size: file.size,
           file_data: base64,
         }),
-      }).then(res => res.json());
+      });
 
-      if (result.error) throw new Error(result.error);
-      if (!result.success) throw new Error('Failed to upload avatar');
+      const result = await response.json();
+
+      if (!response.ok || result.error) {
+        throw new Error(result.error || `Upload failed with status ${response.status}`);
+      }
 
       setMessage({ type: 'success', text: 'Avatar updated successfully' });
-      fetchProfile();
+      toast.success('Profile photo updated');
+      await fetchProfile();
     } catch (error: unknown) {
+      console.error('Upload avatar error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to upload avatar';
+      toast.error(errorMessage);
       setMessage({ type: 'error', text: errorMessage });
+      // Reset file input on error
+      if (fileInputRef.current) fileInputRef.current.value = '';
     } finally {
       setSaving(false);
     }
@@ -357,6 +373,11 @@ function AvatarForm({ profile, onUpload, saving, fileInputRef }: {
   const [preview, setPreview] = useState<string | null>(null);
 
   const avatarUrl = profile?.avatar_url || null;
+
+  // Clear preview when profile updates (successful upload)
+  useEffect(() => {
+    setPreview(null);
+  }, [avatarUrl]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

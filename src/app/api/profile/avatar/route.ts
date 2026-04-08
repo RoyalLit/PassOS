@@ -39,18 +39,16 @@ export async function POST(request: Request) {
     const ext = file_name.split('.').pop() || 'jpg';
     const file_path = `${user.id}/${Date.now()}.${ext}`;
 
-    // Convert base64 to blob
-    const base64Data = file_data.replace(/^data:image\/\w+;base64,/, '');
-    const binaryString = atob(base64Data);
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    const blob = new Blob([bytes], { type: file_type });
+    // Convert base64 to buffer (more reliable in Node.js)
+    const base64Data = file_data.includes('base64,') 
+      ? file_data.split('base64,')[1] 
+      : file_data;
+    
+    const buffer = Buffer.from(base64Data, 'base64');
 
     const { error: uploadError } = await supabase.storage
       .from('avatars')
-      .upload(file_path, blob, {
+      .upload(file_path, buffer, {
         contentType: file_type,
         upsert: true,
       });
@@ -58,7 +56,7 @@ export async function POST(request: Request) {
     if (uploadError) {
       console.error('Upload error:', uploadError);
       return NextResponse.json(
-        { error: uploadError.message },
+        { error: `Upload failed: ${uploadError.message}` },
         { status: 500 }
       );
     }
@@ -78,6 +76,10 @@ export async function POST(request: Request) {
 
     if (profileError) {
       console.error('Profile update error:', profileError);
+      return NextResponse.json(
+        { error: `Profile update failed: ${profileError.message}` },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({

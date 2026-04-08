@@ -16,9 +16,10 @@ import { ThemeToggle } from './theme-toggle';
 interface SidebarProps {
   role: UserRole;
   userName: string;
+  avatarUrl?: string | null;
 }
 
-export function Sidebar({ role, userName }: SidebarProps) {
+export function Sidebar({ role, userName, avatarUrl }: SidebarProps) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -150,8 +151,12 @@ export function Sidebar({ role, userName }: SidebarProps) {
 
         <div className="mt-auto p-4 border-t border-border">
           <div className="flex items-center gap-3 mb-4 px-2">
-            <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-sm font-medium text-foreground border border-border shadow-sm">
-              {userName.charAt(0).toUpperCase()}
+            <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-sm font-medium text-foreground border border-border shadow-sm overflow-hidden">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                userName.charAt(0).toUpperCase()
+              )}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground truncate">{userName}</p>
