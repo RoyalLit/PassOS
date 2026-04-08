@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { createAdminClient } from '@/lib/supabase/admin';
 
 export async function POST(request: Request) {
   try {
@@ -12,11 +11,11 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { file_name, file_type, file_size } = body;
+    const { file_name, file_type, file_size, file_data } = body;
 
-    if (!file_name || !file_type || !file_size) {
+    if (!file_name || !file_type || !file_size || !file_data) {
       return NextResponse.json(
-        { error: 'file_name, file_type, and file_size are required' },
+        { error: 'file_name, file_type, file_size, and file_data are required' },
         { status: 400 }
       );
     }
@@ -38,27 +37,52 @@ export async function POST(request: Request) {
     }
 
     const ext = file_name.split('.').pop() || 'jpg';
-    const file_path = `avatars/${user.id}/${Date.now()}.${ext}`;
+    const file_path = `${user.id}/${Date.now()}.${ext}`;
 
-    const supabaseAdmin = createAdminClient();
+    // Convert base64 to blob
+    const base64Data = file_data.replace(/^data:image\/\w+;base64,/, '');
+    const binaryString = atob(base64Data);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    const blob = new Blob([bytes], { type: file_type });
 
-    const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
+    const { error: uploadError } = await supabase.storage
       .from('avatars')
-      .createSignedUploadUrl(file_path);
+      .upload(file_path, blob, {
+        contentType: file_type,
+        upsert: true,
+      });
 
     if (uploadError) {
+      console.error('Upload error:', uploadError);
       return NextResponse.json(
         { error: uploadError.message },
         { status: 500 }
       );
     }
 
+    // Get public URL and save to profile
+    const { data: publicUrl } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(file_path);
+
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({
+        avatar_url: publicUrl.publicUrl,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', user.id);
+
+    if (profileError) {
+      console.error('Profile update error:', profileError);
+    }
+
     return NextResponse.json({
-      upload_url: uploadData.signedUrl,
-      file_path,
-      fields: {
-        'Content-Type': file_type,
-      },
+      success: true,
+      avatar_url: publicUrl.publicUrl,
     });
   } catch (error: unknown) {
     console.error('Avatar upload error:', error);

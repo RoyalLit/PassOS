@@ -111,38 +111,33 @@ export function ProfileSettings() {
     setSaving(true);
     setMessage(null);
     try {
-      const { upload_url, file_path, fields } = await fetch('/api/profile/avatar', {
+      // Convert file to base64
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (typeof reader.result === 'string') {
+            resolve(reader.result);
+          } else {
+            reject(new Error('Failed to read file'));
+          }
+        };
+        reader.onerror = () => reject(new Error('Failed to read file'));
+        reader.readAsDataURL(file);
+      });
+
+      const result = await fetch('/api/profile/avatar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           file_name: file.name,
           file_type: file.type,
           file_size: file.size,
+          file_data: base64,
         }),
       }).then(res => res.json());
 
-      if (!upload_url) throw new Error('Failed to get upload URL');
-
-      const formData = new FormData();
-      Object.entries(fields).forEach(([key, value]) => {
-        formData.append(key, value as string);
-      });
-      formData.append('file', file);
-
-      const uploadRes = await fetch(upload_url, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!uploadRes.ok) throw new Error('Failed to upload file');
-
-      const confirmRes = await fetch('/api/profile/avatar/confirm', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ avatar_url: file_path }),
-      }).then(res => res.json());
-
-      if (!confirmRes.success) throw new Error('Failed to save avatar');
+      if (result.error) throw new Error(result.error);
+      if (!result.success) throw new Error('Failed to upload avatar');
 
       setMessage({ type: 'success', text: 'Avatar updated successfully' });
       fetchProfile();
