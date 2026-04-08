@@ -112,7 +112,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                   className="w-full h-12 flex justify-center items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-blue-500/20 active:scale-[0.98] disabled:opacity-50"
                 >
                   {loading && <Loader2 className="w-5 h-5 animate-spin" />}
-                  Confirm Access
+                  Sign In
                 </button>
               </div>
             </form>
