@@ -3,7 +3,7 @@ import { getCurrentUser } from '@/lib/auth/rbac';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { redirect } from 'next/navigation';
-import { ShieldCheck, ShieldAlert } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, User } from 'lucide-react';
 
 export default async function GuardDashboardPage() {
   const profile = await getCurrentUser();
@@ -23,7 +23,8 @@ export default async function GuardDashboardPage() {
         profiles!passes_student_id_fkey (
           full_name,
           hostel,
-          room_number
+          room_number,
+          avatar_url
         )
       )
     `)
@@ -67,9 +68,18 @@ export default async function GuardDashboardPage() {
                 return (
                   <tr key={scan.id} className="hover:bg-muted/50 transition-colors">
                     <td className="px-6 py-4">
-                      <div className="flex flex-col">
-                        <span className="font-semibold text-foreground">{student?.full_name || 'Unknown Student'}</span>
-                        <span className="text-xs text-muted-foreground">{student?.hostel} - Room {student?.room_number}</span>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center overflow-hidden border border-border">
+                          {student?.avatar_url ? (
+                            <img src={student.avatar_url} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <User className="w-4 h-4 text-muted-foreground/30" />
+                          )}
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-foreground">{student?.full_name || 'Unknown Student'}</span>
+                          <span className="text-xs text-muted-foreground">{student?.hostel} - Room {student?.room_number}</span>
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">

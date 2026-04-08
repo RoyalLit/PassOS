@@ -17,6 +17,7 @@ interface Profile {
   phone?: string;
   hostel?: string;
   room_number?: string;
+  avatar_url?: string;
   role: UserRole;
   parent_id?: string;
   created_at: string;
@@ -262,8 +263,12 @@ export default function UsersPage() {
                     <tr key={user.id} className="hover:bg-muted/5 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold border border-blue-500/20">
-                            {user.full_name.charAt(0).toUpperCase()}
+                          <div className="w-10 h-10 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold border border-blue-500/20 overflow-hidden">
+                            {user.avatar_url ? (
+                              <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              user.full_name.charAt(0).toUpperCase()
+                            )}
                           </div>
                           <div>
                             <p className="font-medium text-foreground">{user.full_name}</p>

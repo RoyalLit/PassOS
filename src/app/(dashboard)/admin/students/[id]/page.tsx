@@ -108,8 +108,12 @@ export default async function StudentDetailPage({
           <GraduationCap className="w-48 h-48" />
         </div>
         
-        <div className="w-32 h-32 rounded-3xl bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0 border-4 border-card shadow-xl">
-          <span className="text-4xl font-black">{student.full_name?.charAt(0) || '?'}</span>
+        <div className="w-32 h-32 rounded-3xl bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0 border-4 border-card shadow-xl overflow-hidden">
+          {student.avatar_url ? (
+            <img src={student.avatar_url} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-4xl font-black">{student.full_name?.charAt(0) || '?'}</span>
+          )}
         </div>
         
         <div className="flex-1 text-center md:text-left space-y-4">

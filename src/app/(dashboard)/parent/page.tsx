@@ -14,7 +14,7 @@ import { RequestIcon } from '@/components/requests/request-icon';
 import { SkeletonParentPortal } from '@/components/ui/skeleton';
 
 interface ParentData {
-  student: Pick<Profile, 'id' | 'full_name' | 'email' | 'hostel' | 'room_number'> | null;
+  student: Pick<Profile, 'id' | 'full_name' | 'email' | 'hostel' | 'room_number' | 'avatar_url'> | null;
   requests: PassRequest[];
 }
 
@@ -141,8 +141,12 @@ export default function ParentPortal() {
       {data?.student ? (
         <div className="bg-card rounded-2xl border border-border shadow-sm p-6 flex items-center justify-between group hover:border-blue-500/30 transition-colors">
           <div className="flex items-center gap-5 min-w-0">
-            <div className="w-14 h-14 rounded-2xl bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0">
-              <GraduationCap className="w-7 h-7" />
+            <div className="w-14 h-14 rounded-2xl bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0 overflow-hidden border border-blue-500/20 shadow-sm">
+              {data.student.avatar_url ? (
+                <img src={data.student.avatar_url} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <GraduationCap className="w-7 h-7" />
+              )}
             </div>
             <div className="min-w-0">
               <p className="text-xs font-bold text-blue-600 uppercase tracking-widest mb-0.5">Linked Ward</p>

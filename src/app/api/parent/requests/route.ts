@@ -24,7 +24,7 @@ export async function GET() {
     // Find the student whose parent_id points to this parent
     const { data: student } = await admin
       .from('profiles')
-      .select('id, full_name, email, hostel, room_number')
+      .select('id, full_name, email, hostel, room_number, avatar_url')
       .eq('parent_id', user.id)
       .single();
 

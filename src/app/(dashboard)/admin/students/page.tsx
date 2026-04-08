@@ -59,8 +59,12 @@ export default async function StudentsDirectory() {
                   <tr key={student.id} className="hover:bg-muted/50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold border border-blue-500/20">
-                          {student.full_name.charAt(0)}
+                        <div className="w-10 h-10 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold border border-blue-500/20 overflow-hidden">
+                          {student.avatar_url ? (
+                            <img src={student.avatar_url} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            student.full_name.charAt(0)
+                          )}
                         </div>
                         <div>
                           <p className="text-sm font-bold text-foreground">{student.full_name}</p>

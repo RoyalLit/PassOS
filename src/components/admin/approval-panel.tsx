@@ -57,12 +57,16 @@ export function ApprovalPanel({ request }: { request: ExtendedRequest }) {
       <div className="p-5 border-b border-border bg-muted/20 flex justify-between items-start">
         <div className="flex items-center gap-3">
           <div className={clsx(
-            "w-10 h-10 rounded-full flex items-center justify-center shrink-0 border shadow-sm",
+            "w-10 h-10 rounded-full flex items-center justify-center shrink-0 border shadow-sm overflow-hidden",
             typeConfig?.color === 'blue' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
             typeConfig?.color === 'purple' ? 'bg-purple-500/10 text-purple-500 border-purple-500/20' :
             'bg-muted text-muted-foreground'
           )}>
-            <RequestIcon iconName={typeConfig?.icon || 'AlertCircle'} className="w-5 h-5" />
+            {request.student?.avatar_url ? (
+              <img src={request.student.avatar_url} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <RequestIcon iconName={typeConfig?.icon || 'AlertCircle'} className="w-5 h-5" />
+            )}
           </div>
           <div>
             <h3 className="font-bold text-foreground leading-tight tracking-tight">{request.student?.full_name}</h3>

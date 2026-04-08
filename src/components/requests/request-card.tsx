@@ -48,12 +48,23 @@ export function RequestCard({ request, isAdminView = false }: RequestCardProps) 
       <div className="flex justify-between items-start mb-4">
         <div>
           {isAdminView && request.student && (
-            <h3 className="font-bold text-lg text-foreground mb-1 group-hover:text-blue-600 transition-colors">
-              {request.student.full_name} 
-              <span className="text-[10px] font-black text-muted-foreground ml-2 uppercase tracking-widest bg-muted px-2 py-0.5 rounded">
-                {request.student.hostel} • {request.student.room_number}
-              </span>
-            </h3>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center overflow-hidden border border-border">
+                {request.student.avatar_url ? (
+                  <img src={request.student.avatar_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-xs font-bold text-blue-600">{request.student.full_name.charAt(0).toUpperCase()}</span>
+                )}
+              </div>
+              <div>
+                <h3 className="font-bold text-foreground group-hover:text-blue-600 transition-colors">
+                  {request.student.full_name} 
+                </h3>
+                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest bg-muted px-2 py-0.5 rounded">
+                  {request.student.hostel} • {request.student.room_number}
+                </span>
+              </div>
+            </div>
           )}
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-1 bg-muted text-foreground/70 text-[10px] font-black rounded-full uppercase tracking-tighter border border-border">
