@@ -1,10 +1,15 @@
 import { requireRole } from '@/lib/auth/rbac';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { ApprovalPanel } from '@/components/admin/approval-panel';
-import { Filter, Search } from 'lucide-react';
+import { Filter } from 'lucide-react';
+import { SearchInput } from '@/components/ui/search-input';
 
-export default async function AdminDashboard() {
+export default async function AdminDashboard(props: { searchParams: Promise<{ q?: string }> }) {
+  const searchParams = await props.searchParams;
+  const q = searchParams?.q?.toLowerCase() || '';
+  
   await requireRole('admin');
+
   const supabase = await createServerSupabaseClient();
 
   // Fetch requests that require admin attention (parent pending or admin pending)
@@ -20,7 +25,14 @@ export default async function AdminDashboard() {
     .select('*', { count: 'exact', head: true })
     .in('status', ['active', 'used_exit']);
 
-  const pendingRequests = requests || [];
+  const pendingRequests = (requests || []).filter(req => {
+    if (!q) return true;
+    return (
+      req.student?.full_name?.toLowerCase().includes(q) ||
+      req.request_type?.toLowerCase().includes(q) ||
+      req.destination?.toLowerCase().includes(q)
+    );
+  });
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
@@ -55,12 +67,10 @@ export default async function AdminDashboard() {
           <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
             Action Center <span className="px-2 py-0.5 bg-blue-500/10 text-blue-500 rounded-full text-xs">{pendingRequests.length}</span>
           </h2>
-          <div className="flex gap-2">
-            <button className="p-2 border border-border rounded-lg bg-card/60 backdrop-blur-md text-muted-foreground hover:bg-muted">
+          <div className="flex gap-2 items-center">
+            <SearchInput placeholder="Search requests..." />
+            <button className="p-2 border border-border rounded-lg bg-card/60 backdrop-blur-md text-muted-foreground hover:bg-muted shrink-0">
               <Filter className="w-4 h-4" />
-            </button>
-            <button className="p-2 border border-border rounded-lg bg-card/60 backdrop-blur-md text-muted-foreground hover:bg-muted">
-              <Search className="w-4 h-4" />
             </button>
           </div>
         </div>

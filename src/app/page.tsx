@@ -1,7 +1,21 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { ArrowRight, ShieldCheck, Zap, Server } from 'lucide-react';
+import { LoginModal } from '@/components/auth/login-modal';
 
 export default function LandingPage() {
+  const searchParams = useSearchParams();
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get('login') === 'true') {
+      setIsLoginOpen(true);
+    }
+  }, [searchParams]);
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <header className="px-4 lg:px-6 h-16 flex items-center border-b border-border bg-background/80 backdrop-blur-md sticky top-0 z-50">
@@ -9,13 +23,16 @@ export default function LandingPage() {
           <ShieldCheck className="h-6 w-6 text-blue-600" />
           <span className="font-bold text-xl tracking-tight text-foreground">PassOS</span>
         </Link>
-        <nav className="ml-auto flex gap-4 sm:gap-6">
-          <Link className="text-sm font-bold text-foreground/70 hover:text-blue-600 transition-colors" href="/login">
+        <nav className="ml-auto flex gap-4 sm:gap-6 items-center">
+          <button 
+            onClick={() => setIsLoginOpen(true)}
+            className="text-sm font-bold text-foreground/70 hover:text-blue-600 transition-colors"
+          >
             Login
-          </Link>
-          <Link className="text-sm font-bold text-foreground/70 hover:text-blue-600 transition-colors" href="/signup">
+          </button>
+          <button onClick={() => setIsLoginOpen(true)} className="text-sm font-bold text-foreground/70 hover:text-blue-600 transition-colors">
             Sign Up
-          </Link>
+          </button>
         </nav>
       </header>
       
@@ -35,12 +52,12 @@ export default function LandingPage() {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 mb-20">
-          <Link
-            href="/login"
+          <button
+            onClick={() => setIsLoginOpen(true)}
             className="inline-flex h-12 items-center justify-center rounded-xl bg-blue-600 px-8 text-sm font-bold text-white shadow-xl shadow-blue-500/25 hover:bg-blue-700 transition-all hover:scale-105 active:scale-95 shrink-0"
           >
             Go to Dashboard <ArrowRight className="ml-2 h-4 w-4" />
-          </Link>
+          </button>
         </div>
 
         <div className="grid sm:grid-cols-3 gap-8 max-w-5xl w-full text-left">
@@ -61,6 +78,8 @@ export default function LandingPage() {
           </div>
         </div>
       </main>
+
+      <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
     </div>
   );
 }

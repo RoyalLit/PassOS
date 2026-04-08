@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
 import { 
   Home, FileText, QrCode, ClipboardList, ShieldAlert,
   Users, Activity, Menu, X, LogOut, FileClock, Heart,
@@ -21,6 +22,31 @@ export function Sidebar({ role, userName }: SidebarProps) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [counts, setCounts] = useState<{ [key: string]: number }>({});
+
+  const supabase = createClient();
+
+  useEffect(() => {
+    async function fetchCounts() {
+      if (role === 'admin') {
+        const [reqs, flags] = await Promise.all([
+          supabase.from('pass_requests').select('id', { count: 'exact', head: true }).in('status', ['pending', 'admin_pending', 'parent_pending', 'parent_approved']),
+          supabase.from('fraud_flags').select('id', { count: 'exact', head: true }).eq('resolved', false)
+        ]);
+        setCounts({
+          '/admin/requests': reqs.count || 0,
+          '/admin/fraud': flags.count || 0
+        });
+      } else if (role === 'parent') {
+        const { count } = await supabase.from('pass_requests').select('id', { count: 'exact', head: true }).eq('status', 'parent_pending');
+        setCounts({ '/parent': count || 0 });
+      }
+    }
+
+    fetchCounts();
+    const interval = setInterval(fetchCounts, 60000); // Refresh every minute
+    return () => clearInterval(interval);
+  }, [role]);
 
   const handleLogout = async () => {
     setLoggingOut(true);
@@ -99,14 +125,19 @@ export function Sidebar({ role, userName }: SidebarProps) {
                   href={link.href}
                   onClick={() => setIsOpen(false)}
                   className={clsx(
-                    "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                    "flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all group/link relative",
                     isActive 
-                      ? "bg-blue-500/10 text-blue-600 dark:text-blue-400" 
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 shadow-sm shadow-blue-500/5" 
+                      : "text-muted-foreground hover:bg-muted/50 hover:text-foreground hover:translate-x-1"
                   )}
                 >
-                  <Icon size={18} className={isActive ? "text-blue-600 dark:text-blue-400" : "text-muted-foreground"} />
-                  {link.label}
+                  <Icon size={18} className={clsx("transition-transform group-hover/link:scale-110", isActive ? "text-blue-600 dark:text-blue-400" : "text-muted-foreground")} />
+                  <span className="flex-1">{link.label}</span>
+                  {counts[link.href] > 0 && (
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-black text-white shadow-lg shadow-blue-500/20 animate-in zoom-in duration-300">
+                      {counts[link.href]}
+                    </span>
+                  )}
                 </Link>
               );
             })}

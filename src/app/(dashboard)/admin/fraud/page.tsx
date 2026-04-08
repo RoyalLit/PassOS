@@ -1,9 +1,14 @@
 import { requireRole } from '@/lib/auth/rbac';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { ShieldAlert, User, Search, Filter } from 'lucide-react';
+import { ShieldAlert, Filter } from 'lucide-react';
 import { format } from 'date-fns';
+import { SearchInput } from '@/components/ui/search-input';
+import { FraudTable } from '@/components/admin/fraud-table';
 
-export default async function FraudDashboard() {
+export default async function FraudDashboard(props: { searchParams: Promise<{ q?: string }> }) {
+  const searchParams = await props.searchParams;
+  const q = searchParams?.q?.toLowerCase() || '';
+
   await requireRole('admin');
   const supabase = await createServerSupabaseClient();
 
@@ -13,6 +18,14 @@ export default async function FraudDashboard() {
     .order('created_at', { ascending: false });
 
   const typedFlags = flags || [];
+  
+  const filteredFlags = typedFlags.filter((flag) => {
+    if (!q) return true;
+    const nameMatch = flag.student?.full_name?.toLowerCase().includes(q);
+    const typeMatch = flag.flag_type.toLowerCase().includes(q);
+    return nameMatch || typeMatch;
+  });
+
   const activeCount = typedFlags.filter(f => !f.resolved).length;
 
   return (
@@ -49,88 +62,14 @@ export default async function FraudDashboard() {
       </div>
 
       <div className="bg-card/60 backdrop-blur-md border border-border rounded-2xl shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-border bg-muted/20 flex justify-between items-center">
-          <div className="relative max-w-xs w-full">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50" />
-            <input 
-              type="text" 
-              placeholder="Search students..." 
-              className="w-full bg-background border border-border rounded-lg pl-9 pr-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-            />
-          </div>
-            <button className="p-2 border border-border rounded-lg bg-card/60 backdrop-blur-md text-muted-foreground hover:bg-muted transition-colors">
-              <Filter className="w-4 h-4" />
-            </button>
+        <div className="p-4 border-b border-border bg-muted/20 flex justify-between items-center gap-4">
+          <SearchInput placeholder="Search students or alert types..." />
+          <button className="p-2 border border-border rounded-lg bg-card/60 backdrop-blur-md text-muted-foreground hover:bg-muted transition-colors shrink-0">
+            <Filter className="w-4 h-4" />
+          </button>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-muted/10 border-b border-border text-sm text-muted-foreground">
-                <th className="px-6 py-4 font-medium">Student</th>
-                <th className="px-6 py-4 font-medium">Flag Type</th>
-                <th className="px-6 py-4 font-medium">Severity</th>
-                <th className="px-6 py-4 font-medium">Details</th>
-                <th className="px-6 py-4 font-medium">Date</th>
-                <th className="px-6 py-4 font-medium text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {typedFlags.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
-                    No fraud flags detected.
-                  </td>
-                </tr>
-              ) : (
-                typedFlags.map((flag) => (
-                  <tr key={flag.id} className={flag.resolved ? 'opacity-60 bg-muted/5' : 'hover:bg-muted/30 transition-colors'}>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
-                          <User className="w-4 h-4 text-muted-foreground" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-foreground">{flag.student?.full_name}</p>
-                          <p className="text-xs text-muted-foreground">{flag.student?.hostel || 'No Hostel Data'}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-muted text-foreground/70 capitalize">
-                        {flag.flag_type.replace('_', ' ')}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold border ${
-                        flag.severity === 'critical' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
-                        flag.severity === 'high' ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' :
-                        'bg-amber-500/10 text-amber-500 border-amber-500/20'
-                      }`}>
-                        {flag.severity}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-muted-foreground max-w-xs truncate">
-                      {JSON.stringify(flag.details).replace(/["{}]/g, '')}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-muted-foreground">
-                      {format(new Date(flag.created_at), 'MMM d, HH:mm')}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      {!flag.resolved ? (
-                        <button className="px-3 py-1.5 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 rounded-lg text-xs font-medium transition-colors border border-blue-500/20">
-                          Resolve
-                        </button>
-                      ) : (
-                        <span className="text-xs text-muted-foreground font-medium">Resolved</span>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        <FraudTable flags={filteredFlags} />
       </div>
     </div>
   );
