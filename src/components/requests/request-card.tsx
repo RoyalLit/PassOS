@@ -5,8 +5,14 @@ import { format } from 'date-fns';
 import { Calendar, MapPin, Clock, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import type { PassRequest, Profile } from '@/types';
 
-export function RequestCard({ request, isAdminView = false }: { request: any, isAdminView?: boolean }) {
+interface RequestCardProps {
+  request: PassRequest & { student?: Profile };
+  isAdminView?: boolean;
+}
+
+export function RequestCard({ request, isAdminView = false }: RequestCardProps) {
   const router = useRouter();
   const [loading, setLoading] = useState<'approved' | 'rejected' | null>(null);
   
@@ -30,8 +36,8 @@ export function RequestCard({ request, isAdminView = false }: { request: any, is
       }
       
       router.refresh();
-    } catch (error: any) {
-      alert(error.message);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'An error occurred');
     } finally {
       setLoading(null);
     }
@@ -64,7 +70,7 @@ export function RequestCard({ request, isAdminView = false }: { request: any, is
         </div>
       </div>
 
-      <p className="text-foreground/80 mb-6 font-medium leading-relaxed italic border-l-4 border-blue-500/30 pl-4 py-1 bg-muted/20 rounded-r-xl">"{request.reason}"</p>
+      <p className="text-foreground/80 mb-6 font-medium leading-relaxed italic border-l-4 border-blue-500/30 pl-4 py-1 bg-muted/20 rounded-r-xl">&ldquo;{String(request.reason)}&rdquo;</p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-bold text-muted-foreground mb-6 pb-6 border-b border-border">
         <div className="flex items-center gap-2.5">

@@ -83,7 +83,7 @@ export default async function FraudDashboard() {
                   </td>
                 </tr>
               ) : (
-                typedFlags.map((flag: any) => (
+                typedFlags.map((flag) => (
                   <tr key={flag.id} className={flag.resolved ? 'opacity-60 bg-muted/10' : 'bg-card hover:bg-muted/50 transition-colors'}>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">

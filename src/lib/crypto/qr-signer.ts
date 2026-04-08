@@ -63,8 +63,8 @@ export async function verifyQRPayload(token: string): Promise<QRVerifyResult> {
         iat: payload.iat as number,
       }
     };
-  } catch (err: any) {
-    // If expired, we still want to decode it to show the student's name/ID for better UX
+    } catch (err) {
+      // If expired, we still want to decode it to show the student's name/ID for better UX
     if (err instanceof JWTExpired) {
       try {
         const decoded = jose.decodeJwt(token);

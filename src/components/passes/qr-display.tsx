@@ -40,6 +40,7 @@ export function QRDisplay({ pass }: { pass: Pass }) {
       <div className="p-8 pb-10 flex flex-col items-center">
         <div className="bg-white p-3 rounded-2xl shadow-2xl border-4 border-card">
           {qrSrc ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img src={qrSrc} alt="Pass QR Code" className="w-[220px] h-[220px]" />
           ) : (
             <div className="w-[220px] h-[220px] bg-muted animate-pulse rounded-xl flex items-center justify-center">

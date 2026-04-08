@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import type { UserRole } from '@/types';
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -31,49 +32,45 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  // Public routes that don't need auth
   const publicRoutes = ['/login', '/signup', '/approve'];
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
 
   if (!user && !isPublicRoute && pathname !== '/') {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
-    // Create a new redirect response but include any rotated cookies from Supabase
     const response = NextResponse.redirect(url);
     supabaseResponse.cookies.getAll().forEach(cookie => {
       const { name, value, ...options } = cookie;
-      response.cookies.set(name, value, options as any);
+      response.cookies.set(name, value, options);
     });
     return response;
   }
 
-  // If on login/signup and already has a user, redirect to dashboard
   if (user && isPublicRoute && (pathname === '/login' || pathname === '/signup')) {
-    const userRole = user.user_metadata?.role || 'student';
+    const userRole = (user.user_metadata?.role as UserRole) || 'student';
     const { getRoleDashboardPath } = await import('@/lib/auth/routes');
     const url = request.nextUrl.clone();
-    url.pathname = getRoleDashboardPath(userRole as any);
+    url.pathname = getRoleDashboardPath(userRole);
     const response = NextResponse.redirect(url);
     supabaseResponse.cookies.getAll().forEach(cookie => {
       const { name, value, ...options } = cookie;
-      response.cookies.set(name, value, options as any);
+      response.cookies.set(name, value, options);
     });
     return response;
   }
 
-  // Also handle unauthorized access to specific role areas
   if (user) {
-    const userRole = user.user_metadata?.role || 'student';
+    const userRole = (user.user_metadata?.role as UserRole) || 'student';
     const { canAccessRoute } = await import('@/lib/auth/routes');
     
-    if (!canAccessRoute(userRole as any, pathname)) {
+    if (!canAccessRoute(userRole, pathname)) {
       const url = request.nextUrl.clone();
       const { getRoleDashboardPath } = await import('@/lib/auth/routes');
-      url.pathname = getRoleDashboardPath(userRole as any);
+      url.pathname = getRoleDashboardPath(userRole);
       const response = NextResponse.redirect(url);
       supabaseResponse.cookies.getAll().forEach(cookie => {
         const { name, value, ...options } = cookie;
-        response.cookies.set(name, value, options as any);
+        response.cookies.set(name, value, options);
       });
       return response;
     }

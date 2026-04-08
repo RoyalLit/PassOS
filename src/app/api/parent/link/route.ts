@@ -47,7 +47,7 @@ export async function POST(request: Request) {
       message: `Successfully linked with ${student.full_name}` 
     });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Linking error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

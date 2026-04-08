@@ -1,6 +1,6 @@
 import { clsx } from 'clsx';
 import { format } from 'date-fns';
-import { CheckCircle, XCircle, User, Activity, LogIn, LogOut } from 'lucide-react';
+import { CheckCircle, XCircle, User, Activity, LogOut } from 'lucide-react';
 import type { ScanVerifyResult } from '@/types';
 
 interface ScanResultViewProps {
@@ -27,6 +27,7 @@ export function ScanResultView({ result, onClose }: ScanResultViewProps) {
       <div className="p-6 relative">
         <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-24 h-24 bg-card rounded-full border-4 border-card shadow-2xl flex items-center justify-center overflow-hidden">
           {student?.avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img src={student.avatar_url} alt="Student" className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full bg-muted flex items-center justify-center">

@@ -3,6 +3,17 @@ import { requireRole } from '@/lib/auth/rbac';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { createRequestSchema } from '@/lib/validators/request-schema';
 import { MAX_REQUESTS_PER_DAY } from '@/lib/constants';
+import { isWithinCampus } from '@/lib/geo/campus-boundary';
+
+function sanitizeError(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  if (typeof error === 'string') {
+    return error;
+  }
+  return 'Internal server error';
+}
 
 export async function POST(request: Request) {
   try {
@@ -76,7 +87,12 @@ export async function POST(request: Request) {
       }, { status: 429 });
     }
 
-    let initialStatus = 'pending';
+    // Calculate geo_valid server-side to prevent client spoofing
+    const geo_valid = data.geo_lat !== undefined && data.geo_lng !== undefined 
+      ? isWithinCampus(data.geo_lat, data.geo_lng)
+      : false;
+    
+    const initialStatus = 'pending';
 
     const { data: insertedRequest, error: insertError } = await supabase
       .from('pass_requests')
@@ -90,7 +106,7 @@ export async function POST(request: Request) {
         proof_urls: data.proof_urls,
         geo_lat: data.geo_lat,
         geo_lng: data.geo_lng,
-        geo_valid: body.geo_valid,
+        geo_valid, // Use server-side calculated value
         status: initialStatus,
       })
       .select()
@@ -100,14 +116,15 @@ export async function POST(request: Request) {
 
 
     return NextResponse.json({ data: insertedRequest }, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Request creation error:', error);
+    const status = error instanceof Error && 
+      (error.message.includes('Unauthorized') || error.message.includes('Forbidden')) 
+      ? 403 
+      : 500;
     return NextResponse.json(
-      { 
-        error: error?.message || (typeof error === 'object' ? JSON.stringify(error) : String(error)) || 'Internal server error',
-        details: error 
-      },
-      { status: error?.message?.includes('Unauthorized') || error?.message?.includes('Forbidden') ? 403 : 500 }
+      { error: sanitizeError(error) },
+      { status }
     );
   }
 }

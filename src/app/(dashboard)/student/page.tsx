@@ -1,10 +1,10 @@
 import { requireRole } from '@/lib/auth/rbac';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import Link from 'next/link';
-import { Plus, Clock, Users, Copy, CheckCircle2 } from 'lucide-react';
+import { Plus, Clock, Users, CheckCircle2 } from 'lucide-react';
 import { STATUS_CONFIG, REQUEST_TYPES } from '@/lib/constants';
 import { clsx } from 'clsx';
-import type { PassRequest, Profile } from '@/types';
+import type { PassRequest } from '@/types';
 import { RequestIcon } from '@/components/requests/request-icon';
 import { CopyButton } from '@/components/ui/copy-button';
 
@@ -136,7 +136,7 @@ export default async function StudentDashboard() {
               <div className="divide-y divide-border">
                 {typedRequests.map((request) => {
                   const statusConfig = STATUS_CONFIG[request.status as keyof typeof STATUS_CONFIG];
-                  const typeConfig = (REQUEST_TYPES as any)[request.request_type] || {
+                  const typeConfig = REQUEST_TYPES[request.request_type as keyof typeof REQUEST_TYPES] || {
                     label: request.request_type.replace('_', ' '),
                     icon: 'AlertCircle',
                     color: 'slate'
@@ -227,7 +227,7 @@ export default async function StudentDashboard() {
           <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
             <h3 className="font-bold mb-2 text-lg text-foreground">Need Assistance?</h3>
             <p className="text-muted-foreground text-sm leading-relaxed">
-              If you're having trouble with your parent connection or pass validation, please visit the warden's office for support.
+              If you&apos;re having trouble with your parent connection or pass validation, please visit the warden&apos;s office for support.
             </p>
           </div>
         </div>

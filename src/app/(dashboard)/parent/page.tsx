@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { 
-  CheckCircle, XCircle, Clock, User, 
+  CheckCircle, Clock, 
   GraduationCap, Loader2, AlertTriangle, MapPin, ChevronDown, ChevronUp,
   Link2, ShieldAlert, ArrowRight
 } from 'lucide-react';
@@ -11,6 +11,7 @@ import { clsx } from 'clsx';
 import { REQUEST_TYPES, STATUS_CONFIG } from '@/lib/constants';
 import type { PassRequest, Profile } from '@/types';
 import { RequestIcon } from '@/components/requests/request-icon';
+import { SkeletonParentPortal } from '@/components/ui/skeleton';
 
 interface ParentData {
   student: Pick<Profile, 'id' | 'full_name' | 'email' | 'hostel' | 'room_number'> | null;
@@ -36,8 +37,9 @@ export default function ParentPortal() {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error);
       setData(json);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load data');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to load data';
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -61,8 +63,9 @@ export default function ParentPortal() {
       
       // Success! Refresh data
       await fetchData();
-    } catch (err: any) {
-      setLinkError(err.message || 'Failed to link with student');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to link with student';
+      setLinkError(message);
     } finally {
       setIsLinking(false);
     }
@@ -81,8 +84,9 @@ export default function ParentPortal() {
       // Refresh data
       await fetchData();
       setExpandedId(null);
-    } catch (err: any) {
-      alert(err.message || 'Failed to submit decision');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to submit decision';
+      alert(message);
     } finally {
       setDeciding(null);
     }
@@ -97,8 +101,8 @@ export default function ParentPortal() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      <div className="p-6 max-w-4xl mx-auto">
+        <SkeletonParentPortal />
       </div>
     );
   }
@@ -165,7 +169,7 @@ export default function ParentPortal() {
           </div>
           <h2 className="text-2xl font-bold text-foreground mb-2">Connect with your student</h2>
           <p className="text-muted-foreground mb-8 max-w-md mx-auto leading-relaxed">
-            Please enter your ward's unique Student ID to link your accounts and begin receiving gate pass requests. 
+            Please enter your ward&apos;s unique Student ID to link your accounts and begin receiving gate pass requests. 
             <span className="block mt-2 font-medium">Your child can find this ID on their dashboard.</span>
           </p>
  
@@ -220,12 +224,12 @@ export default function ParentPortal() {
                   <CheckCircle className="w-8 h-8" />
                 </div>
                 <p className="font-bold text-foreground text-lg">All requests reviewed</p>
-                <p className="text-muted-foreground text-sm mt-1">You've successfully addressed all pending items.</p>
+                <p className="text-muted-foreground text-sm mt-1">You&apos;ve successfully addressed all pending items.</p>
               </div>
             ) : (
               <div className="space-y-4">
                 {pendingRequests.map((req) => {
-                  const typeConfig = (REQUEST_TYPES as any)[req.request_type] || { 
+                  const typeConfig = REQUEST_TYPES[req.request_type as keyof typeof REQUEST_TYPES] || { 
                     label: req.request_type.replace('_', ' '),
                     icon: 'AlertTriangle',
                     color: 'slate'
@@ -278,7 +282,7 @@ export default function ParentPortal() {
  
                           <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
                             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5">Detailed Reason</p>
-                            <p className="text-foreground/80 italic leading-relaxed font-medium">"{req.reason}"</p>
+                            <p className="text-foreground/80 italic leading-relaxed font-medium">&ldquo;{req.reason}&rdquo;</p>
                           </div>
 
                           <div>
@@ -330,7 +334,7 @@ export default function ParentPortal() {
               </h2>
               <div className="bg-card rounded-3xl border border-border shadow-sm overflow-hidden divide-y divide-border">
                 {historyRequests.map((req) => {
-                  const typeConfig = (REQUEST_TYPES as any)[req.request_type] || {
+                  const typeConfig = REQUEST_TYPES[req.request_type as keyof typeof REQUEST_TYPES] || {
                     label: req.request_type.replace('_', ' '),
                     icon: 'AlertTriangle',
                     color: 'slate'

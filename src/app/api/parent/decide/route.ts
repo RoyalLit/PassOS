@@ -1,9 +1,28 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { checkRateLimit, getRateLimitHeaders } from '@/lib/rate-limit';
+
+function getClientIp(headers: Headers): string | null {
+  const forwarded = headers.get('x-forwarded-for');
+  if (forwarded) {
+    return forwarded.split(',')[0].trim();
+  }
+  return headers.get('x-real-ip');
+}
 
 export async function POST(request: Request) {
   try {
+    // Apply rate limiting
+    const clientIp = getClientIp(request.headers) || 'unknown';
+    const rateLimit = checkRateLimit(`parent-decide:${clientIp}`);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429, headers: getRateLimitHeaders(rateLimit) }
+      );
+    }
+
     const supabase = await createServerSupabaseClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -60,7 +79,7 @@ export async function POST(request: Request) {
       approver_type: 'parent',
       decision,
       reason: reason || null,
-      ip_address: request.headers.get('x-forwarded-for'),
+      ip_address: getClientIp(request.headers),
     });
 
     // Advance the request status
@@ -71,8 +90,9 @@ export async function POST(request: Request) {
       .eq('id', request_id);
 
     return NextResponse.json({ success: true, next_status: nextStatus });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Parent decide error:', error);
-    return NextResponse.json({ error: error.message || 'Internal error' }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'Internal error';
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

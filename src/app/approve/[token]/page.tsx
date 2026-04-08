@@ -1,21 +1,27 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { Loader2, CheckCircle, XCircle, Clock, MapPin, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 
 export default function ParentApprovalPage() {
   const params = useParams();
   const token = params.token as string;
-  const router = useRouter();
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState<'approved' | 'rejected' | null>(null);
   
-  const [requestDetails, setRequestDetails] = useState<any>(null);
+  const [requestDetails, setRequestDetails] = useState<{
+    student_name: string;
+    request_type: string;
+    destination: string;
+    reason: string;
+    departure_at: string;
+    return_by: string;
+  } | null>(null);
   const [reason, setReason] = useState('');
 
   // We actually need a way to fetch request details without auth using just the token.
@@ -59,8 +65,8 @@ export default function ParentApprovalPage() {
       if (!res.ok) throw new Error(data.error);
 
       setSuccess(decision);
-    } catch (err: any) {
-      setError(err.message || 'An error occurred');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setSubmitting(false);
     }
@@ -142,7 +148,7 @@ export default function ParentApprovalPage() {
               <div>
                 <p className="text-xs font-medium text-slate-500 uppercase mb-1">Reason provided</p>
                 <p className="text-sm text-slate-700 bg-white p-3 rounded-lg border border-slate-200 italic">
-                  "{requestDetails?.reason}"
+                  &ldquo;{requestDetails?.reason}&rdquo;
                 </p>
               </div>
             </div>

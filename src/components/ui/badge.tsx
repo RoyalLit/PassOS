@@ -1,5 +1,5 @@
 import * as React from "react"
-import { clsx, type ClassValue } from "clsx"
+import { clsx } from "clsx"
 
 export interface BadgeProps
   extends React.HTMLAttributes<HTMLDivElement> {

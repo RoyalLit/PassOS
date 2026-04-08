@@ -4,9 +4,28 @@ import { verifyApprovalToken } from '@/lib/crypto/approval-tokens';
 import { requireRole } from '@/lib/auth/rbac';
 import { approvalSchema } from '@/lib/validators/request-schema';
 import { generatePass } from '@/app/api/passes/route';
+import { checkRateLimit, getRateLimitHeaders } from '@/lib/rate-limit';
+
+function getClientIp(headers: Headers): string | null {
+  const forwarded = headers.get('x-forwarded-for');
+  if (forwarded) {
+    return forwarded.split(',')[0].trim();
+  }
+  return headers.get('x-real-ip');
+}
 
 export async function POST(request: Request) {
   try {
+    // Apply rate limiting
+    const clientIp = getClientIp(request.headers) || 'unknown';
+    const rateLimit = checkRateLimit(`approval:${clientIp}`);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429, headers: getRateLimitHeaders(rateLimit) }
+      );
+    }
+
     const body = await request.json();
     const result = approvalSchema.safeParse(body);
     
@@ -52,11 +71,24 @@ export async function POST(request: Request) {
       approver_id = payload.parent_id;
       approver_type = 'parent';
       
-      // Update the parent's approval record
-      await supabase
+      // Use atomic UPDATE with row count check to prevent race conditions
+      const { data: updateResult, error: updateError } = await supabase
         .from('approvals')
-        .update({ decision, reason, ip_address: request.headers.get('x-forwarded-for') })
-        .eq('token', token);
+        .update({ 
+          decision, 
+          reason, 
+          ip_address: getClientIp(request.headers) 
+        })
+        .eq('token', token)
+        .eq('decision', 'escalated') // Only update if still in escalated state
+        .select('id'); // Return the updated row
+      
+      if (updateError) throw updateError;
+      
+      // Check if the update actually affected a row
+      if (!updateResult || updateResult.length === 0) {
+        return NextResponse.json({ error: 'Link already used' }, { status: 400 });
+      }
         
       // Advance the core request
       const nextStatus = decision === 'approved' ? 'admin_pending' : 'parent_rejected';
@@ -85,7 +117,7 @@ export async function POST(request: Request) {
       approver_type,
       decision,
       reason,
-      ip_address: request.headers.get('x-forwarded-for'),
+      ip_address: getClientIp(request.headers),
     });
 
     const finalStatus = decision === 'approved' ? 'approved' : 'rejected';
@@ -96,19 +128,21 @@ export async function POST(request: Request) {
       console.log('Spawning pass internally for request:', request_id);
       try {
         await generatePass(request_id);
-      } catch (e: any) {
+      } catch (e: unknown) {
+        const errorMessage = e instanceof Error ? e.message : 'Unknown error';
         console.error('Pass Generation crashed:', e);
-        return NextResponse.json({ error: `Pass Generation crashed: ${e.message}` }, { status: 500 });
+        return NextResponse.json({ error: `Pass Generation crashed: ${errorMessage}` }, { status: 500 });
       }
     }
 
     return NextResponse.json({ success: true, final_status: finalStatus });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Approval handler error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Internal error';
     return NextResponse.json(
-      { error: error.message || 'Internal error' },
-      { status: error.message?.includes('Unauthorized') ? 403 : 500 }
+      { error: errorMessage },
+      { status: errorMessage.includes('Unauthorized') ? 403 : 500 }
     );
   }
 }

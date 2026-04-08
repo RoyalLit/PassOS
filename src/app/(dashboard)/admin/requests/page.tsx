@@ -27,7 +27,7 @@ export default async function AdminRequestsPage() {
       
       <div className="grid gap-6">
         {requests?.length ? (
-          requests.map((request: any) => (
+          requests.map((request) => (
             <RequestCard 
               key={request.id} 
               request={request}

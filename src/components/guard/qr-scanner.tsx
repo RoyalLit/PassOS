@@ -62,7 +62,7 @@ export function QRScanner({ onScan, isProcessing }: QRScannerProps) {
         setTimeout(() => {
           try {
             scannerRef.current?.stop().catch(() => {});
-          } catch(e) {}
+          } catch { /* ignore cleanup errors */ }
         }, 100);
       }
     };

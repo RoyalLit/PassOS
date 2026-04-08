@@ -53,7 +53,7 @@ export default async function StudentHistoryPage() {
                   </td>
                 </tr>
               )}
-              {requests?.map((req: any) => {
+              {requests?.map((req) => {
                 const pass = req.passes && req.passes.length > 0 ? req.passes[0] : null;
                 const typeConfig = REQUEST_TYPES[req.request_type as keyof typeof REQUEST_TYPES];
                 

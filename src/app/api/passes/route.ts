@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { signQRPayload, generateNonce } from '@/lib/crypto/qr-signer';
+import { requireRole } from '@/lib/auth/rbac';
 
 // Internal Pass Generator logic that avoids loopback fetches
 export async function generatePass(request_id: string) {
@@ -74,7 +75,7 @@ export async function generatePass(request_id: string) {
       .eq('student_id', passReq.student_id);
 
     return newPass;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Pass generation error:', error);
     throw error;
   }
@@ -82,14 +83,18 @@ export async function generatePass(request_id: string) {
 
 export async function POST(request: Request) {
   try {
+    // Require admin role for direct pass generation API calls
+    await requireRole('admin');
+    
     const { request_id } = await request.json();
+    if (!request_id) {
+      return NextResponse.json({ error: 'request_id is required' }, { status: 400 });
+    }
     const pass = await generatePass(request_id);
     return NextResponse.json({ success: true, pass });
-  } catch (error: any) {
-    return NextResponse.json({ 
-      error: 'Pass Error', 
-      details: error?.message || String(error),
-      code: error?.code || 'UNKNOWN'
-    }, { status: 500 });
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+    const status = errorMessage.includes('Unauthorized') || errorMessage.includes('Forbidden') ? 403 : 500;
+    return NextResponse.json({ error: errorMessage }, { status });
   }
 }

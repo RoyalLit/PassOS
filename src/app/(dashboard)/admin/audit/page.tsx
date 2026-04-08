@@ -1,11 +1,22 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { requireRole } from '@/lib/auth/rbac';
-import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
-import { redirect } from 'next/navigation';
+
+interface AuditLog {
+  id: string;
+  created_at: string;
+  action: string;
+  entity_type: string;
+  entity_id: string;
+  ip_address: string | null;
+  actor?: {
+    full_name: string | null;
+    role: string | null;
+  };
+}
 
 export default async function AdminAuditPage() {
-  const profile = await requireRole('admin');
+  await requireRole('admin');
   const supabase = await createServerSupabaseClient();
 
   const { data: logs } = await supabase
@@ -47,7 +58,7 @@ export default async function AdminAuditPage() {
                   </td>
                 </tr>
               )}
-              {logs?.map((log: any) => (
+              {logs?.map((log: AuditLog) => (
                 <tr key={log.id} className="hover:bg-muted/50 transition-colors">
                   <td className="px-6 py-4 text-muted-foreground font-mono text-xs">
                     {format(new Date(log.created_at), 'yyyy-MM-dd HH:mm:ss')}

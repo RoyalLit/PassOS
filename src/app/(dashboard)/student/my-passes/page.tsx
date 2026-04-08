@@ -34,7 +34,7 @@ export default async function MyPassesPage() {
             <span className="text-muted-foreground text-2xl">🎟️</span>
           </div>
           <h2 className="text-lg font-bold text-foreground">No active passes</h2>
-          <p className="text-muted-foreground mt-1 max-w-sm mx-auto">You don't have any active passes right now. Request a new pass to leave the campus.</p>
+          <p className="text-muted-foreground mt-1 max-w-sm mx-auto">You don&apos;t have any active passes right now. Request a new pass to leave the campus.</p>
           <Link 
             href="/student/new-request" 
             className="inline-block mt-6 px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/20"
@@ -52,7 +52,7 @@ export default async function MyPassesPage() {
               <div className="mt-6 bg-card border border-border rounded-2xl p-5 shadow-sm max-w-sm mx-auto">
                 <h3 className="font-semibold text-foreground mb-2 border-b border-border pb-2">Destined For</h3>
                 <p className="text-foreground/80">{pass.request?.destination}</p>
-                <p className="text-sm text-muted-foreground italic mt-1">"{pass.request?.reason}"</p>
+                <p className="text-sm text-muted-foreground italic mt-1">&ldquo;{pass.request?.reason}&rdquo;</p>
               </div>
             </div>
           ))}

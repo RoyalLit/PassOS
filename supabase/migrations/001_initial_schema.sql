@@ -116,6 +116,7 @@ CREATE INDEX idx_passes_student ON public.passes(student_id);
 CREATE INDEX idx_passes_status ON public.passes(status);
 CREATE INDEX idx_passes_qr ON public.passes(qr_nonce);
 CREATE INDEX idx_passes_valid ON public.passes(valid_until) WHERE status = 'active';
+CREATE INDEX idx_passes_overdue ON public.passes(status, valid_until) WHERE status = 'used_exit';
 
 -- ============================================================
 -- 6. GATE SCAN EVENTS
@@ -136,6 +137,7 @@ CREATE TABLE public.pass_scans (
 CREATE INDEX idx_scans_pass ON public.pass_scans(pass_id);
 CREATE INDEX idx_scans_guard ON public.pass_scans(guard_id);
 CREATE INDEX idx_scans_created ON public.pass_scans(created_at DESC);
+CREATE INDEX idx_scans_pass_time ON public.pass_scans(pass_id, created_at DESC);
 
 -- ============================================================
 -- 7. STUDENT LOCATION STATE
@@ -406,10 +408,13 @@ CREATE TRIGGER audit_pass_scans
   FOR EACH ROW EXECUTE FUNCTION public.audit_log_trigger();
 
 -- Fraud detection: rapid requests
+-- NOTE: The threshold of 3 should match MAX_REQUESTS_PER_DAY in constants.ts
+-- Keep these in sync to maintain consistent rate limiting behavior
 CREATE OR REPLACE FUNCTION public.check_rapid_requests()
 RETURNS TRIGGER AS $$
 DECLARE
   request_count INTEGER;
+  rapid_request_threshold INTEGER := 3; -- Must match MAX_REQUESTS_PER_DAY in constants.ts
 BEGIN
   SELECT COUNT(*) INTO request_count
   FROM public.pass_requests
@@ -417,7 +422,7 @@ BEGIN
     AND created_at > NOW() - INTERVAL '24 hours'
     AND id != NEW.id;
 
-  IF request_count >= 3 THEN
+  IF request_count >= rapid_request_threshold THEN
     INSERT INTO public.fraud_flags (student_id, flag_type, severity, details)
     VALUES (
       NEW.student_id,

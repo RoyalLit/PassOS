@@ -4,8 +4,6 @@ import { Loader2, MapPin, AlertCircle, Clock, Calendar, ArrowLeft } from 'lucide
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { createRequestSchema, type CreateRequestInput } from '@/lib/validators/request-schema';
 import { REQUEST_TYPES, PREDEFINED_REASONS } from '@/lib/constants';
 import { getSettings, AppSettings } from '@/lib/actions/settings';
 import { isWithinCampus } from '@/lib/geo/campus-boundary';
@@ -22,7 +20,7 @@ function NewRequestForm() {
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [geoStatus, setGeoStatus] = useState<'checking' | 'valid' | 'invalid' | 'disabled'>('checking');
 
-  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<any>({
+  const { register, handleSubmit, watch } = useForm({
     defaultValues: {
       request_type: 'day_outing',
       outing_date: new Date().toISOString().split('T')[0],
@@ -38,7 +36,6 @@ function NewRequestForm() {
 
   const requestType = watch('request_type');
   const selectedReason = watch('reason');
-  const outingDate = watch('outing_date');
   const startDate = watch('start_date');
   const endDate = watch('end_date');
 
@@ -83,7 +80,7 @@ function NewRequestForm() {
     init();
   }, []);
 
-  const onSubmit = async (formData: any) => {
+  const onSubmit = async (formData: Record<string, string>) => {
     setIsSubmitting(true);
     
     let departure_at: string;
@@ -101,7 +98,7 @@ function NewRequestForm() {
       ? `Other: ${formData.manual_reason}` 
       : formData.reason;
 
-    const payload: CreateRequestInput = {
+    const payload = {
       request_type: formData.request_type,
       reason: extensionOf ? `EXTENSION of ${extensionOf}: ${finalReason}` : finalReason,
       destination: formData.destination,
@@ -125,8 +122,8 @@ function NewRequestForm() {
 
       router.push('/student');
       router.refresh();
-    } catch (error: any) {
-      alert(error.message);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'An error occurred');
     } finally {
       setIsSubmitting(false);
     }

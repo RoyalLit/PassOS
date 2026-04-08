@@ -41,8 +41,9 @@ export async function GET() {
       .limit(20);
 
     return NextResponse.json({ student, requests: requests || [] });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Parent requests error:', error);
-    return NextResponse.json({ error: error.message || 'Internal error' }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Internal error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

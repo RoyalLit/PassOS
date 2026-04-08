@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
-import { Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { Loader2, XCircle } from 'lucide-react';
 
 export default function Login() {
   const router = useRouter();
@@ -92,7 +92,7 @@ export default function Login() {
               onClick={() => router.push('/signup')}
               className="w-full text-sm text-muted-foreground hover:text-blue-500 transition-colors"
             >
-              Don't have an account? Sign up
+              Don&apos;t have an account? Sign up
             </button>
           </div>
         </form>

@@ -1,12 +1,17 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 
-// Protect this route by requiring a cron secret
-const CRON_SECRET = process.env.CRON_SECRET || 'dev-secret';
-
 // GET /api/alerts
 // Triggered by n8n cron every 15 mins to check for overdue students and update state
 export async function GET(request: Request) {
+  const CRON_SECRET = process.env.CRON_SECRET;
+  
+  if (!CRON_SECRET) {
+    if (process.env.NODE_ENV === 'production') {
+      return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 500 });
+    }
+  }
+
   try {
     const authHeader = request.headers.get('authorization');
     if (authHeader !== `Bearer ${CRON_SECRET}` && process.env.NODE_ENV === 'production') {
@@ -73,7 +78,7 @@ export async function GET(request: Request) {
       message: `Marked ${overduePasses.length} students as overdue.`
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Alert processing error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

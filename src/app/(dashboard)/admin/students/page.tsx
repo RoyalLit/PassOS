@@ -53,7 +53,7 @@ export default async function StudentsDirectory() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {typedStudents.map((student: any) => {
+              {typedStudents.map((student) => {
                 const state = student.state?.[0]?.current_state || 'inside';
                 return (
                   <tr key={student.id} className="hover:bg-muted/50 transition-colors">

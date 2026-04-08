@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { requireRole } from '@/lib/auth/rbac';
 import { verifyQRPayload } from '@/lib/crypto/qr-signer';
 import { scanSchema } from '@/lib/validators/request-schema';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 export async function POST(request: Request) {
   try {
@@ -141,15 +142,13 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ error: 'Unknown scan type' }, { status: 400 });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Scan error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
-// logScan helper kept for error/rejection paths where we still do a direct insert
-// (the happy-path is now handled by the process_scan RPC in the success branches above)
-async function logScan(supabase: any, passId: string | null, guardId: string, scanType: string, result: string, geo?: {lat?: number, lng?: number}) {
+async function logScan(supabase: SupabaseClient, passId: string | null, guardId: string, scanType: string, result: string, geo?: {lat?: number, lng?: number}) {
   if (!passId) return; // pass_scans.pass_id is NOT NULL — skip logging when no pass exists
   await supabase.from('pass_scans').insert({
     pass_id: passId,

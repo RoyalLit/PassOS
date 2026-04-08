@@ -31,8 +31,8 @@ export function SettingsForm({ initialSettings }: { initialSettings: AppSettings
       await updateSettings(settings);
       router.refresh();
       alert('Settings updated successfully!');
-    } catch (error: any) {
-      alert(error.message);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'An error occurred');
     } finally {
       setIsSaving(false);
     }
@@ -227,7 +227,7 @@ export function SettingsForm({ initialSettings }: { initialSettings: AppSettings
               ))}
             </div>
           </div>
-          <p className="text-[10px] text-muted-foreground/60 italic">"Other" is automatically appended to the end of both lists and provides a text field for students.</p>
+          <p className="text-[10px] text-muted-foreground/60 italic">&ldquo;Other&rdquo; is automatically appended to the end of both lists and provides a text field for students.</p>
         </div>
       </div>
 

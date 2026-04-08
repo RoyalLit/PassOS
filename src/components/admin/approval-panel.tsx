@@ -97,9 +97,9 @@ export function ApprovalPanel({ request }: { request: ExtendedRequest }) {
         <div>
           <p className="text-[9px] font-black text-muted-foreground/40 uppercase tracking-widest mb-1.5">Reason</p>
           <div className="text-foreground/90 bg-muted/20 border border-border p-4 rounded-xl flex items-start gap-3 relative shadow-sm">
-            <span className="text-muted-foreground/20 text-4xl leading-none absolute -top-1 left-1 pointer-events-none">"</span>
+            <span className="text-muted-foreground/20 text-4xl leading-none absolute -top-1 left-1 pointer-events-none">&ldquo;</span>
             <p className="italic text-sm leading-relaxed font-medium relative z-10 pl-2 pr-2">{request.reason}</p>
-            <span className="text-muted-foreground/20 text-4xl leading-none absolute -bottom-3 right-1 pointer-events-none">"</span>
+            <span className="text-muted-foreground/20 text-4xl leading-none absolute -bottom-3 right-1 pointer-events-none">&rdquo;</span>
           </div>
         </div>
 
@@ -125,7 +125,7 @@ export function ApprovalPanel({ request }: { request: ExtendedRequest }) {
                    <span className="text-amber-500">Awaiting Response</span>}
                 </p>
                 {parentApproval.reason && (
-                  <p className="text-xs text-muted-foreground mt-2 italic leading-relaxed border-l-2 border-current/10 pl-2">"{parentApproval.reason}"</p>
+                  <p className="text-xs text-muted-foreground mt-2 italic leading-relaxed border-l-2 border-current/10 pl-2">&ldquo;{parentApproval.reason}&rdquo;</p>
                 )}
               </div>
             </div>

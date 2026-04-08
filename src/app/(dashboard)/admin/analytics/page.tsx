@@ -104,8 +104,15 @@ export default function AnalyticsDashboard() {
   );
 }
 
-function StatCard({ title, value, icon: Icon, color }: any) {
-  const colorMap: Record<string, string> = {
+interface StatCardProps {
+  title: string;
+  value: number;
+  icon: React.ComponentType<{ className?: string }>;
+  color: 'blue' | 'green' | 'red' | 'orange';
+}
+
+function StatCard({ title, value, icon: Icon, color }: StatCardProps) {
+  const colorMap: Record<StatCardProps['color'], string> = {
     blue: "bg-blue-500/10 text-blue-500 border-blue-500/20",
     green: "bg-green-500/10 text-green-500 border-green-500/20",
     red: "bg-red-500/10 text-red-500 border-red-500/20",

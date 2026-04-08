@@ -75,7 +75,7 @@ export default async function AdminDashboard() {
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
-            {pendingRequests.map((req: any) => (
+            {pendingRequests.map((req) => (
               <ApprovalPanel key={req.id} request={req} />
             ))}
           </div>

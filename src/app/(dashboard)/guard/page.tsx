@@ -62,7 +62,7 @@ export default async function GuardDashboardPage() {
                   </td>
                 </tr>
               )}
-              {scans?.map((scan: any) => {
+              {scans?.map((scan) => {
                 const student = scan.passes?.profiles;
                 return (
                   <tr key={scan.id} className="hover:bg-muted/50 transition-colors">

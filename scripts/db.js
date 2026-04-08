@@ -1,16 +1,15 @@
-const { createClient } = require('@supabase/supabase-js');
+import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
-  NEXT_PUBLIC_SUPABASE_URL,
-  SUPABASE_SERVICE_ROLE_KEY
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
 async function check() {
   const { data: reqs } = await supabase.from('pass_requests').select('id, status, reason').order('created_at', { ascending: false }).limit(3);
-  const { data: passes } = await supabase.from('passes').select('id, request_id, status').order('created_at', { ascending: false }).limit(3);
   
   console.log('--- TRIGGERING PASS CREATION ---');
-  if (reqs.length > 0) {
+  if (reqs && reqs.length > 0) {
     try {
       const res = await fetch('http://localhost:3000/api/passes', {
         method: 'POST',

@@ -26,7 +26,7 @@ export function Sidebar({ role, userName }: SidebarProps) {
     setLoggingOut(true);
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
-    } catch (_) {}
+    } catch { /* ignore logout errors */ }
     window.location.href = '/login';
   };
 

@@ -2,16 +2,15 @@
 
 import { useTheme } from 'next-themes';
 import { Sun, Moon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-  // Avoid hydration mismatch
-  useEffect(() => {
+  if (typeof window !== 'undefined' && !mounted) {
     setMounted(true);
-  }, []);
+  }
 
   if (!mounted) return <div className="p-2 w-9 h-9" />;
 

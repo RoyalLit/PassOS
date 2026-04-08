@@ -42,7 +42,7 @@ export default function GuardScanPage() {
 
       const data = await res.json();
       setResult(data);
-    } catch (err: any) {
+    } catch {
       setResult({
         valid: false,
         result: 'error',
