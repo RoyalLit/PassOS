@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { Check, X, Loader2, User, Clock } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 import type { PassRequest, Profile, Approval } from '@/types';
 import { REQUEST_TYPES } from '@/lib/constants';
 import { RequestIcon } from '@/components/requests/request-icon';
@@ -35,17 +37,23 @@ export function ApprovalPanel({ request }: { request: ExtendedRequest }) {
         }),
       });
       if (!res.ok) throw new Error('Failed to submit approval');
+      toast.success(decision === 'approved' ? 'Request approved successfully!' : 'Request rejected.');
       router.refresh();
-    } catch (error) {
-      alert(error);
+    } catch (error: any) {
+      toast.error(error.message || 'An error occurred processing the approval');
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden flex flex-col h-full">
-      <div className="p-5 border-b border-border bg-muted/30 flex justify-between items-start">
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="bg-card/60 backdrop-blur-md rounded-2xl border border-border shadow-sm overflow-hidden flex flex-col h-full hover:shadow-md transition-shadow"
+    >
+      <div className="p-5 border-b border-border bg-muted/20 flex justify-between items-start">
         <div className="flex items-center gap-3">
           <div className={clsx(
             "w-10 h-10 rounded-full flex items-center justify-center shrink-0 border shadow-sm",
@@ -161,6 +169,6 @@ export function ApprovalPanel({ request }: { request: ExtendedRequest }) {
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

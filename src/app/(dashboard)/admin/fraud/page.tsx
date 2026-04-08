@@ -27,7 +27,7 @@ export default async function FraudDashboard() {
       </div>
 
       <div className="grid md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-6 flex items-start gap-4">
+        <div className="bg-red-500/10 backdrop-blur-md border border-red-500/20 rounded-2xl p-6 flex items-start gap-4 hover:shadow-md transition-shadow">
           <div className="w-12 h-12 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center shrink-0">
             <ShieldAlert className="w-6 h-6" />
           </div>
@@ -36,7 +36,7 @@ export default async function FraudDashboard() {
             <p className="text-3xl font-bold text-red-500 mt-1">{activeCount}</p>
           </div>
         </div>
-        <div className="bg-card border border-border rounded-2xl p-6 flex items-start gap-4 shadow-sm md:col-span-2">
+        <div className="bg-card/60 backdrop-blur-md border border-border rounded-2xl p-6 flex items-start gap-4 shadow-sm md:col-span-2 hover:shadow-md transition-shadow">
           <div className="flex-1">
              <h3 className="font-bold text-foreground">Detection Rules</h3>
              <ul className="mt-2 text-sm text-muted-foreground space-y-1 list-disc list-inside">
@@ -48,8 +48,8 @@ export default async function FraudDashboard() {
         </div>
       </div>
 
-      <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-border bg-muted/30 flex justify-between items-center">
+      <div className="bg-card/60 backdrop-blur-md border border-border rounded-2xl shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-border bg-muted/20 flex justify-between items-center">
           <div className="relative max-w-xs w-full">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50" />
             <input 
@@ -58,9 +58,9 @@ export default async function FraudDashboard() {
               className="w-full bg-background border border-border rounded-lg pl-9 pr-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
             />
           </div>
-          <button className="p-2 border border-border rounded-lg bg-card text-muted-foreground hover:bg-muted transition-colors">
-            <Filter className="w-4 h-4" />
-          </button>
+            <button className="p-2 border border-border rounded-lg bg-card/60 backdrop-blur-md text-muted-foreground hover:bg-muted transition-colors">
+              <Filter className="w-4 h-4" />
+            </button>
         </div>
 
         <div className="overflow-x-auto">
@@ -84,7 +84,7 @@ export default async function FraudDashboard() {
                 </tr>
               ) : (
                 typedFlags.map((flag) => (
-                  <tr key={flag.id} className={flag.resolved ? 'opacity-60 bg-muted/10' : 'bg-card hover:bg-muted/50 transition-colors'}>
+                  <tr key={flag.id} className={flag.resolved ? 'opacity-60 bg-muted/5' : 'hover:bg-muted/30 transition-colors'}>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
