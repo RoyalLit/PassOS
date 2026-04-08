@@ -1,7 +1,6 @@
 import { requireRole } from '@/lib/auth/rbac';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { ShieldAlert, Filter } from 'lucide-react';
-import { format } from 'date-fns';
 import { SearchInput } from '@/components/ui/search-input';
 import { FraudTable } from '@/components/admin/fraud-table';
 

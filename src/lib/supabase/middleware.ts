@@ -32,7 +32,7 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  const publicRoutes = ['/login', '/signup', '/approve'];
+  const publicRoutes = ['/login', '/approve'];
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
 
   if (!user && !isPublicRoute && pathname !== '/') {
@@ -46,7 +46,7 @@ export async function updateSession(request: NextRequest) {
     return response;
   }
 
-  if (user && isPublicRoute && (pathname === '/login' || pathname === '/signup')) {
+  if (user && isPublicRoute && pathname === '/login') {
     const userRole = (user.user_metadata?.role as UserRole) || 'student';
     const { getRoleDashboardPath } = await import('@/lib/auth/routes');
     const url = request.nextUrl.clone();

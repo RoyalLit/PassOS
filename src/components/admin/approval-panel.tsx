@@ -39,8 +39,9 @@ export function ApprovalPanel({ request }: { request: ExtendedRequest }) {
       if (!res.ok) throw new Error('Failed to submit approval');
       toast.success(decision === 'approved' ? 'Request approved successfully!' : 'Request rejected.');
       router.refresh();
-    } catch (error: any) {
-      toast.error(error.message || 'An error occurred processing the approval');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'An error occurred processing the approval';
+      toast.error(message);
     } finally {
       setSubmitting(false);
     }

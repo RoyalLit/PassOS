@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { 
   Home, FileText, QrCode, ClipboardList, ShieldAlert,
   Users, Activity, Menu, X, LogOut, FileClock, Heart,
-  Settings
+  Settings, GraduationCap
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import type { UserRole } from '@/types';
@@ -46,7 +46,7 @@ export function Sidebar({ role, userName }: SidebarProps) {
     fetchCounts();
     const interval = setInterval(fetchCounts, 60000); // Refresh every minute
     return () => clearInterval(interval);
-  }, [role]);
+  }, [role, supabase]);
 
   const handleLogout = async () => {
     setLoggingOut(true);
@@ -64,12 +64,14 @@ export function Sidebar({ role, userName }: SidebarProps) {
           { href: '/student/new-request', label: 'New Request', icon: FileText },
           { href: '/student/my-passes', label: 'My Passes', icon: QrCode },
           { href: '/student/history', label: 'History', icon: FileClock },
+          { href: '/settings', label: 'Settings', icon: Settings },
         ];
       case 'admin':
         return [
           { href: '/admin', label: 'Dashboard', icon: Activity },
           { href: '/admin/requests', label: 'Approvals', icon: ClipboardList },
-          { href: '/admin/students', label: 'Students', icon: Users },
+          { href: '/admin/users', label: 'Users', icon: Users },
+          { href: '/admin/students', label: 'Students', icon: GraduationCap },
           { href: '/admin/fraud', label: 'Fraud Alerts', icon: ShieldAlert },
           { href: '/admin/audit', label: 'Audit Log', icon: FileClock },
           { href: '/admin/settings', label: 'Control Center', icon: Settings },
@@ -78,10 +80,12 @@ export function Sidebar({ role, userName }: SidebarProps) {
         return [
           { href: '/guard/scan', label: 'Scanner', icon: QrCode },
           { href: '/guard', label: 'Recent Scans', icon: ClipboardList },
+          { href: '/settings', label: 'Settings', icon: Settings },
         ];
       case 'parent':
         return [
           { href: '/parent', label: 'Student Requests', icon: Heart },
+          { href: '/settings', label: 'Settings', icon: Settings },
         ];
       default:
         return [];

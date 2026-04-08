@@ -30,7 +30,7 @@ export function FraudTable({ flags }: FraudTableProps) {
       // In a real app, we'd router.refresh() or update state
       // For now we'll just simulate it or wait for refresh
       window.location.reload(); 
-    } catch (err) {
+    } catch {
       toast.error('Failed to resolve');
     } finally {
       setResolvingIds(prev => {
@@ -53,7 +53,7 @@ export function FraudTable({ flags }: FraudTableProps) {
       if (!res.ok) throw new Error('Failed to resolve flags');
       toast.success(`${selectedIds.size} flags resolved`);
       window.location.reload();
-    } catch (err) {
+    } catch {
       toast.error('Bulk resolve failed');
     }
   };
