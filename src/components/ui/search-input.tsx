@@ -2,9 +2,9 @@
 
 import { Search } from 'lucide-react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { useTransition, useState, useEffect } from 'react';
+import { useTransition, useState, useEffect, Suspense } from 'react';
 
-export function SearchInput({ placeholder = "Search..." }: { placeholder?: string }) {
+function SearchInputContent({ placeholder }: { placeholder?: string }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -38,5 +38,17 @@ export function SearchInput({ placeholder = "Search..." }: { placeholder?: strin
         className="w-full bg-background border border-border rounded-lg pl-9 pr-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-shadow"
       />
     </div>
+  );
+}
+
+export function SearchInput(props: { placeholder?: string }) {
+  return (
+    <Suspense fallback={
+      <div className="relative max-w-xs w-full flex-1">
+        <div className="w-full bg-background border border-border rounded-lg pl-9 pr-4 py-2 h-9" />
+      </div>
+    }>
+      <SearchInputContent {...props} />
+    </Suspense>
   );
 }
