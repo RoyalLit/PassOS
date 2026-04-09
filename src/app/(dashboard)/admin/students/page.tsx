@@ -54,7 +54,7 @@ export default async function StudentsDirectory() {
             </thead>
             <tbody className="divide-y divide-border">
               {typedStudents.map((student) => {
-                const state = student.state?.[0]?.current_state || 'inside';
+                const state = student.state?.[0]?.current_state || null;
                 return (
                   <tr key={student.id} className="hover:bg-muted/50 transition-colors">
                     <td className="px-6 py-4">
@@ -102,14 +102,16 @@ export default async function StudentsDirectory() {
                       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${
                         state === 'inside' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
                         state === 'outside' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
-                        'bg-red-500/10 text-red-500 border-red-500/20'
+                        state === 'overdue' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
+                        'bg-muted text-muted-foreground border-border'
                       }`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${
                           state === 'inside' ? 'bg-green-500' :
                           state === 'outside' ? 'bg-blue-500' :
-                          'bg-red-500'
+                          state === 'overdue' ? 'bg-red-500' :
+                          'bg-muted-foreground/30'
                         }`}></span>
-                        <span>{state}</span>
+                        <span>{state ?? 'unknown'}</span>
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">

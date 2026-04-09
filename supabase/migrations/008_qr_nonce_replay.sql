@@ -69,14 +69,21 @@ BEGIN
            exit_at = NOW()
      WHERE id = p_pass_id;
 
-    INSERT INTO public.student_states
-      (student_id, current_state, last_exit, updated_at)
-    VALUES
-      (v_student_id, 'outside', NOW(), NOW())
-    ON CONFLICT (student_id) DO UPDATE
-      SET current_state = 'outside',
-          last_exit     = NOW(),
-          updated_at    = NOW();
+    -- Upsert student_states. Use explicit INSERT then UPDATE (not INSERT...ON CONFLICT
+    -- DO UPDATE) because ON CONFLICT can silently no-op if the row doesn't exist AND
+    -- there is no unique index on student_id (it IS the PK, so it should work — but
+    -- explicit approach is more robust for edge cases like partially-applied migrations).
+    -- Check if row exists first, then insert or update accordingly.
+    IF NOT EXISTS (SELECT 1 FROM public.student_states WHERE student_id = v_student_id) THEN
+      INSERT INTO public.student_states (student_id, current_state, last_exit, updated_at)
+      VALUES (v_student_id, 'outside', NOW(), NOW());
+    ELSE
+      UPDATE public.student_states
+         SET current_state = 'outside',
+             last_exit     = NOW(),
+             updated_at    = NOW()
+       WHERE student_id = v_student_id;
+    END IF;
 
   -- 1b. ENTRY: mark pass as used_entry, clear active_pass_id
   ELSIF p_scan_type = 'entry' THEN
@@ -85,15 +92,17 @@ BEGIN
            entry_at = NOW()
      WHERE id = p_pass_id;
 
-    INSERT INTO public.student_states
-      (student_id, current_state, active_pass_id, last_entry, updated_at)
-    VALUES
-      (v_student_id, 'inside', NULL, NOW(), NOW())
-    ON CONFLICT (student_id) DO UPDATE
-      SET current_state  = 'inside',
-          active_pass_id = NULL,
-          last_entry     = NOW(),
-          updated_at     = NOW();
+    IF NOT EXISTS (SELECT 1 FROM public.student_states WHERE student_id = v_student_id) THEN
+      INSERT INTO public.student_states (student_id, current_state, active_pass_id, last_entry, updated_at)
+      VALUES (v_student_id, 'inside', NULL, NOW(), NOW());
+    ELSE
+      UPDATE public.student_states
+         SET current_state  = 'inside',
+             active_pass_id = NULL,
+             last_entry     = NOW(),
+             updated_at     = NOW()
+       WHERE student_id = v_student_id;
+    END IF;
   ELSE
     RAISE EXCEPTION 'Invalid scan_type: %', p_scan_type;
   END IF;

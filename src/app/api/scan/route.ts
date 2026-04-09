@@ -111,6 +111,25 @@ export async function POST(request: Request) {
       });
       if (exitRpcError) throw exitRpcError;
 
+      // Defensive: verify student_states was updated. If not (edge case where
+      // student_states row didn't exist and the RPC upsert silently failed),
+      // update it directly. This is belt-and-suspenders on top of the fixed RPC.
+      const { data: currentState } = await supabase
+        .from('student_states')
+        .select('current_state')
+        .eq('student_id', pass.student_id)
+        .single();
+      if (currentState?.current_state !== 'outside') {
+        await supabase
+          .from('student_states')
+          .upsert({
+            student_id:    pass.student_id,
+            current_state: 'outside',
+            last_exit:     new Date().toISOString(),
+            updated_at:    new Date().toISOString(),
+          }, { onConflict: 'student_id' });
+      }
+
       return NextResponse.json({ valid: true, result: 'valid', pass, student, message: 'Exit granted' });
     }
 
@@ -142,6 +161,23 @@ export async function POST(request: Request) {
         p_geo_lng:     geo_lng ?? null,
       });
       if (entryRpcError) throw entryRpcError;
+
+      // Defensive: verify student_states was updated to 'inside'.
+      const { data: currentState } = await supabase
+        .from('student_states')
+        .select('current_state')
+        .eq('student_id', pass.student_id)
+        .single();
+      if (currentState?.current_state !== 'inside') {
+        await supabase
+          .from('student_states')
+          .upsert({
+            student_id:    pass.student_id,
+            current_state: 'inside',
+            last_entry:    new Date().toISOString(),
+            updated_at:   new Date().toISOString(),
+          }, { onConflict: 'student_id' });
+      }
 
       return NextResponse.json({ 
         valid: true, 
