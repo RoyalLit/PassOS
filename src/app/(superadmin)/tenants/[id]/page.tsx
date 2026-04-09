@@ -203,6 +203,8 @@ function EditTenantModal({
   const [domains, setDomains] = useState(tenant.domains.join(', '));
   const [plan, setPlan] = useState<TenantPlan>(tenant.plan);
   const [status, setStatus] = useState<TenantStatus>(tenant.status);
+  const [brandPrimary, setBrandPrimary] = useState(tenant.brand_primary || '#2563eb');
+  const [brandSecondary, setBrandSecondary] = useState(tenant.brand_secondary || '#3b82f6');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -214,7 +216,14 @@ function EditTenantModal({
     const res = await fetch(`/api/tenants/${tenant.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, domains: domains.split(',').map(d => d.trim().toLowerCase()).filter(Boolean), plan, status }),
+      body: JSON.stringify({ 
+        name, 
+        domains: domains.split(',').map(d => d.trim().toLowerCase()).filter(Boolean), 
+        plan, 
+        status,
+        brand_primary: brandPrimary,
+        brand_secondary: brandSecondary,
+      }),
     });
 
     const data = await res.json();
@@ -261,6 +270,22 @@ function EditTenantModal({
               <select value={status} onChange={e => setStatus(e.target.value as TenantStatus)} className="w-full px-3 py-2.5 bg-muted/30 border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500/50">
                 {['active', 'trial', 'suspended', 'inactive'].map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
               </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">Primary Color</label>
+              <div className="flex gap-2">
+                <input type="color" value={brandPrimary} onChange={e => setBrandPrimary(e.target.value)} className="w-10 h-10 border-0 bg-transparent cursor-pointer" />
+                <input value={brandPrimary} onChange={e => setBrandPrimary(e.target.value)} className="flex-1 px-3 py-1.5 bg-muted/30 border border-border rounded-lg text-xs font-mono" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">Secondary Color</label>
+              <div className="flex gap-2">
+                <input type="color" value={brandSecondary} onChange={e => setBrandSecondary(e.target.value)} className="w-10 h-10 border-0 bg-transparent cursor-pointer" />
+                <input value={brandSecondary} onChange={e => setBrandSecondary(e.target.value)} className="flex-1 px-3 py-1.5 bg-muted/30 border border-border rounded-lg text-xs font-mono" />
+              </div>
             </div>
           </div>
           <div className="flex gap-3 pt-2">

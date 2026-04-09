@@ -41,7 +41,7 @@ export async function PATCH(
     const admin = createAdminClient();
     const body = await request.json();
 
-    const allowedFields = ['name', 'slug', 'domains', 'logo_url', 'status', 'plan', 'settings'];
+    const allowedFields = ['name', 'slug', 'domains', 'logo_url', 'brand_primary', 'brand_secondary', 'status', 'plan', 'settings'];
     const updateData: Record<string, unknown> = {};
     for (const field of allowedFields) {
       if (body[field] !== undefined) {

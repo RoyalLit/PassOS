@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { Loader2, XCircle, X } from 'lucide-react';
@@ -116,7 +117,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                 />
               </div>
 
-              <div className="pt-4 flex flex-col gap-3">
+              <div className="pt-4 flex flex-col gap-4">
                 <button
                   type="submit"
                   disabled={loading}
@@ -125,6 +126,13 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                   {loading && <Loader2 className="w-5 h-5 animate-spin" />}
                   Sign In
                 </button>
+                <Link
+                  href="/signup"
+                  onClick={onClose}
+                  className="w-full text-center text-sm font-medium text-muted-foreground hover:text-blue-600 transition-colors"
+                >
+                  Don't have an account? Sign up
+                </Link>
               </div>
             </form>
           </motion.div>

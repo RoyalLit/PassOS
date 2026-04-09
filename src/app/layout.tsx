@@ -11,12 +11,16 @@ export const metadata: Metadata = {
 
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from 'sonner';
+import { getCurrentUser } from '@/lib/auth/rbac';
+import { BrandingProvider } from '@/components/layout/branding-provider';
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const user = await getCurrentUser();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} min-h-screen bg-background text-foreground flex flex-col transition-colors duration-300`}>
@@ -26,17 +30,19 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <main className="flex-1">
-            {children}
-          </main>
-          <footer className="py-6 border-t border-border bg-card/50 backdrop-blur-sm">
-            <div className="max-w-7xl mx-auto px-4 text-center">
-              <p className="text-xs font-medium text-muted-foreground tracking-widest uppercase">
-                built with purpose by pahul
-              </p>
-            </div>
-          </footer>
-          <Toaster position="top-center" richColors expand={true} />
+          <BrandingProvider tenant={user?.tenant}>
+            <main className="flex-1">
+              {children}
+            </main>
+            <footer className="py-6 border-t border-border bg-card/50 backdrop-blur-sm">
+              <div className="max-w-7xl mx-auto px-4 text-center">
+                <p className="text-xs font-medium text-muted-foreground tracking-widest uppercase">
+                  built with purpose by pahul
+                </p>
+              </div>
+            </footer>
+            <Toaster position="top-center" richColors expand={true} />
+          </BrandingProvider>
         </ThemeProvider>
       </body>
     </html>

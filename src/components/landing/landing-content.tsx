@@ -33,6 +33,12 @@ export function LandingContent() {
             >
               Login
             </button>
+            <Link
+              href="/signup"
+              className="text-sm font-bold bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all shadow-sm shadow-blue-500/10"
+            >
+              Sign Up
+            </Link>
           </nav>
         </header>
         

@@ -55,6 +55,7 @@ export interface Profile {
   tenant_id: string;
   created_at: string;
   updated_at: string;
+  tenant?: Tenant;
 }
 
 export interface PassRequest {
@@ -199,6 +200,8 @@ export interface Tenant {
   slug: string;
   domains: string[];
   logo_url: string | null;
+  brand_primary: string | null;
+  brand_secondary: string | null;
   status: TenantStatus;
   plan: TenantPlan;
   settings: TenantSettings;
