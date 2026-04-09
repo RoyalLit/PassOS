@@ -47,11 +47,43 @@ export async function updateSession(request: NextRequest) {
     return response;
   }
 
-  // Priority: 1. DB Profile, 2. Auth Metadata, 3. Default 'student'
+  if (user && isPublicRoute) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    const userRole: UserRole = (profile?.role as UserRole) ||
+      (user.user_metadata?.role as UserRole) || 'student';
+
+    if (pathname === '/admin-login') {
+      if (userRole !== 'superadmin') {
+        const url = request.nextUrl.clone();
+        url.pathname = '/';
+        const response = NextResponse.redirect(url);
+        supabaseResponse.cookies.getAll().forEach(cookie => {
+          const { name, value, ...options } = cookie;
+          response.cookies.set(name, value, options);
+        });
+        return response;
+      }
+    } else {
+      const url = request.nextUrl.clone();
+      url.pathname = getRoleDashboardPath(userRole);
+      const response = NextResponse.redirect(url);
+      supabaseResponse.cookies.getAll().forEach(cookie => {
+        const { name, value, ...options } = cookie;
+        response.cookies.set(name, value, options);
+      });
+      return response;
+    }
+  }
+
   let userRole: UserRole = (user?.user_metadata?.role as UserRole) || 'student';
 
   if (user) {
-    const { data: profile, error } = await supabase
+    const { data: profile } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
@@ -59,20 +91,7 @@ export async function updateSession(request: NextRequest) {
 
     if (profile?.role) {
       userRole = profile.role as UserRole;
-    } else if (error) {
-      console.error('Middleware: Profile fetch failed:', error.message);
     }
-  }
-
-  if (user && isPublicRoute && pathname === '/login') {
-    const url = request.nextUrl.clone();
-    url.pathname = getRoleDashboardPath(userRole);
-    const response = NextResponse.redirect(url);
-    supabaseResponse.cookies.getAll().forEach(cookie => {
-      const { name, value, ...options } = cookie;
-      response.cookies.set(name, value, options);
-    });
-    return response;
   }
 
   if (user) {

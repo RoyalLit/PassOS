@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Loader2, XCircle } from 'lucide-react';
 
@@ -11,6 +11,24 @@ export default function AdminLoginPage() {
   const [error, setError] = useState('');
 
   const supabase = createClient();
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+        const role = profile?.role || session.user.user_metadata?.role;
+        if (role === 'superadmin') {
+          window.location.replace('/superadmin');
+        }
+      }
+    };
+    checkSession();
+  }, []);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
