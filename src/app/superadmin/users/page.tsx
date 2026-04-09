@@ -5,8 +5,8 @@ import { createClient } from '@/lib/supabase/client';
 import { Search, Users, ShieldCheck } from 'lucide-react';
 import type { Profile, Tenant } from '@/types';
 
-interface ProfileWithTenant extends Profile {
-  tenant: Pick<Tenant, 'id' | 'name' | 'slug'> | null;
+interface ProfileWithTenant extends Omit<Profile, 'tenant'> {
+  tenant: Pick<Tenant, 'id' | 'name' | 'slug'> | undefined;
 }
 
 export default function SuperadminUsersPage() {
