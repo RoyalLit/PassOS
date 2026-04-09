@@ -47,14 +47,11 @@ export async function updateSession(request: NextRequest) {
     return response;
   }
 
-  // Always read role from DB profile for authorization decisions.
-  // This ensures admin role changes take effect immediately (no re-login required).
-  // Falls back to user_metadata.role only for the initial login redirect,
-  // which is a cosmetic check — the server-side requireRole() always uses DB.
+  // Priority: 1. DB Profile, 2. Auth Metadata, 3. Default 'student'
   let userRole: UserRole = (user?.user_metadata?.role as UserRole) || 'student';
 
   if (user) {
-    const { data: profile } = await supabase
+    const { data: profile, error } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
@@ -62,7 +59,12 @@ export async function updateSession(request: NextRequest) {
 
     if (profile?.role) {
       userRole = profile.role as UserRole;
+    } else if (error) {
+      console.error('Middleware: Profile fetch failed:', error.message);
     }
+    
+    // Debug log for the developer to see in terminal
+    console.log(`Middleware Auth: [${user?.email}] metadata_role=${user?.user_metadata?.role} db_role=${profile?.role} -> resolved_role=${userRole}`);
   }
 
   if (user && isPublicRoute && pathname === '/login') {
