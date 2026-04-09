@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { Loader2, XCircle } from 'lucide-react';
@@ -12,6 +12,27 @@ export default function LoginPage() {
   const [error, setError] = useState('');
 
   const supabase = createClient();
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+        const role = profile?.role || session.user.user_metadata?.role || 'student';
+        const targetPath =
+          role === 'superadmin' ? '/superadmin' :
+          role === 'admin' ? '/admin' :
+          role === 'guard' ? '/guard/scan' :
+          role === 'parent' ? '/parent' : '/student';
+        window.location.replace(targetPath);
+      }
+    };
+    checkSession();
+  }, []);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
