@@ -44,18 +44,6 @@ export default function SignUp() {
       return;
     }
 
-    // 2. Insert into profiles (bypassing RLS with trigger in production)
-    const { error: profileError } = await supabase.from('profiles').insert({
-      id: data.user.id,
-      role: formData.role,
-      full_name: formData.full_name,
-      email: formData.email,
-    });
-
-    if (profileError) {
-      console.warn('Profile creation might be blocked by RLS. Please ensure DB triggers are set up.');
-    }
-
     setSuccess(true);
     setLoading(false);
     
