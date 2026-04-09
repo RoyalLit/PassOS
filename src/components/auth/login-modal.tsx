@@ -13,7 +13,7 @@ interface LoginModalProps {
 }
 
 export function LoginModal({ isOpen, onClose }: LoginModalProps) {
-  useRouter(); // Keep for potential future use
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -37,9 +37,6 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
       return;
     }
 
-    // Fetch the authoritative role from the DB profile to avoid stale user_metadata.
-    // The server is always the source of truth; user_metadata.role is only
-    // set on initial user creation and may lag behind admin role changes.
     const { data: profileData } = await supabase
       .from('profiles')
       .select('role')
@@ -52,7 +49,10 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
       role === 'admin' ? '/admin' :
       role === 'guard' ? '/guard/scan' :
       role === 'parent' ? '/parent' : '/student';
-    window.location.href = targetPath;
+
+    const url = new URL(window.location.href);
+    url.searchParams.delete('login');
+    router.push(targetPath);
   };
 
   return (
@@ -72,8 +72,13 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             className="relative w-full max-w-md bg-card/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-border p-8 overflow-hidden"
           >
-            <button 
-              onClick={onClose}
+            <button
+              onClick={() => {
+                onClose();
+                const url = new URL(window.location.href);
+                url.searchParams.delete('login');
+                router.replace(url.toString(), { scroll: false });
+              }}
               className="absolute top-4 right-4 p-2 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
             >
               <X className="w-5 h-5" />
@@ -129,7 +134,12 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                 </button>
                 <Link
                   href="/signup"
-                  onClick={onClose}
+                  onClick={() => {
+                    onClose();
+                    const url = new URL(window.location.href);
+                    url.searchParams.delete('login');
+                    router.replace(url.toString(), { scroll: false });
+                  }}
                   className="w-full text-center text-sm font-medium text-muted-foreground hover:text-blue-600 transition-colors"
                 >
                   Don't have an account? Sign up
