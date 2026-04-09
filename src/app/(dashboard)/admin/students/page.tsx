@@ -54,7 +54,9 @@ export default async function StudentsDirectory() {
             </thead>
             <tbody className="divide-y divide-border">
               {typedStudents.map((student) => {
-                const state = student.state?.[0]?.current_state || null;
+                // Handle student.state being either an array or an object (Supabase/PostgREST behavior varies)
+                const stateData = Array.isArray(student.state) ? student.state[0] : student.state;
+                const state = stateData?.current_state || 'inside';
                 return (
                   <tr key={student.id} className="hover:bg-muted/50 transition-colors">
                     <td className="px-6 py-4">
@@ -111,7 +113,7 @@ export default async function StudentsDirectory() {
                           state === 'overdue' ? 'bg-red-500' :
                           'bg-muted-foreground/30'
                         }`}></span>
-                        <span>{state ?? 'unknown'}</span>
+                        <span>{state}</span>
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
