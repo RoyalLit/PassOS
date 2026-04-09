@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
-import { Loader2, CheckCircle, XCircle, User, ShieldCheck, Users, GraduationCap } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, Users, GraduationCap } from 'lucide-react';
 import Link from 'next/link';
 import { clsx } from 'clsx';
 
@@ -136,8 +136,6 @@ export default function SignUp() {
               {[
                 { id: 'student', label: 'Student', icon: GraduationCap },
                 { id: 'parent', label: 'Parent', icon: Users },
-                { id: 'guard', label: 'Security', icon: ShieldCheck },
-                { id: 'admin', label: 'Admin', icon: User },
               ].map((role) => (
                 <button
                   key={role.id}

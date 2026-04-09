@@ -85,7 +85,10 @@ export function LandingContent() {
           </div>
         </main>
 
-        <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
+        <LoginModal isOpen={isLoginOpen} onClose={() => {
+        setIsLoginOpen(false);
+        window.history.replaceState({}, '', window.location.pathname);
+      }} />
       </div>
     </Suspense>
   );
