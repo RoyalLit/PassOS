@@ -1,11 +1,16 @@
 import type { UserRole } from '@/types';
 
 export function canAccessRoute(role: UserRole, path: string): boolean {
+  // Superadmin has unrestricted access to all routes
+  if (role === 'superadmin') return true;
+
+  // Tenant-scoped routes
   const routeRoles: Record<string, UserRole[]> = {
     '/student': ['student'],
     '/admin': ['admin'],
     '/guard': ['guard'],
     '/parent': ['parent'],
+    '/superadmin': ['superadmin'], // explicit block for non-superadmins
   };
 
   for (const [route, allowedRoles] of Object.entries(routeRoles)) {
@@ -13,15 +18,22 @@ export function canAccessRoute(role: UserRole, path: string): boolean {
       return allowedRoles.includes(role);
     }
   }
+
+  // Unlisted routes are accessible to all authenticated users
   return true;
 }
 
 export function getRoleDashboardPath(role: UserRole): string {
   switch (role) {
-    case 'student': return '/student';
+    case 'superadmin': return '/superadmin';
     case 'admin': return '/admin';
+    case 'student': return '/student';
     case 'guard': return '/guard';
     case 'parent': return '/parent';
     default: return '/login';
   }
+}
+
+export function isSuperadmin(role: UserRole): boolean {
+  return role === 'superadmin';
 }

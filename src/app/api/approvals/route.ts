@@ -113,6 +113,7 @@ export async function POST(request: Request) {
     // Record admin approval
     await supabase.from('approvals').insert({
       request_id,
+      tenant_id: passReq.tenant_id,
       approver_id,
       approver_type,
       decision,

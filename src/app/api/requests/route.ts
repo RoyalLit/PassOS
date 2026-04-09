@@ -119,6 +119,7 @@ export async function POST(request: Request) {
       .from('pass_requests')
       .insert({
         student_id: profile.id,
+        tenant_id: profile.tenant_id,
         request_type: data.request_type,
         reason: data.reason,
         destination: data.destination,

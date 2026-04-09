@@ -3,6 +3,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { ApprovalPanel } from '@/components/admin/approval-panel';
 import { Filter } from 'lucide-react';
 import { SearchInput } from '@/components/ui/search-input';
+import { RealtimeRefresh } from '@/components/common/realtime-refresh';
 
 export default async function AdminDashboard(props: { searchParams: Promise<{ q?: string }> }) {
   const searchParams = await props.searchParams;
@@ -49,6 +50,7 @@ export default async function AdminDashboard(props: { searchParams: Promise<{ q?
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <RealtimeRefresh tables={['pass_requests', 'passes', 'pass_scans', 'student_states', 'fraud_flags']} />
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Admin Dashboard</h1>

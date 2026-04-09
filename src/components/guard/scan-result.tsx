@@ -14,14 +14,16 @@ export function ScanResultView({ result, onClose }: ScanResultViewProps) {
   return (
     <div className="bg-card rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-300 border border-border">
       <div className={clsx(
-        "p-8 h-40 flex flex-col items-center justify-center text-white text-center relative overflow-hidden",
+        "p-8 h-52 flex flex-col items-center justify-center text-white text-center relative overflow-hidden",
         valid ? "bg-green-600 shadow-[inset_0_0_80px_rgba(0,0,0,0.1)]" : "bg-red-600 shadow-[inset_0_0_80px_rgba(0,0,0,0.1)]"
       )}>
         <div className="absolute inset-0 opacity-10 pointer-events-none">
-          {valid ? <CheckCircle className="w-48 h-48 -rotate-12 translate-x-12" /> : <XCircle className="w-48 h-48 -rotate-12 translate-x-12" />}
+          {valid ? <CheckCircle className="w-56 h-56 -rotate-12 translate-x-12" /> : <XCircle className="w-56 h-56 -rotate-12 translate-x-12" />}
         </div>
-        {valid ? <CheckCircle className="w-14 h-14 mb-3 relative z-10" /> : <XCircle className="w-14 h-14 mb-3 relative z-10" />}
-        <h2 className="text-2xl font-black relative z-10 tracking-tight">{valid ? 'Access Granted' : 'Access Denied'}</h2>
+        <div className="relative z-10 flex flex-col items-center -translate-y-4">
+          {valid ? <CheckCircle className="w-16 h-16 mb-4" /> : <XCircle className="w-16 h-16 mb-4" />}
+          <h2 className="text-3xl font-black tracking-tight">{valid ? 'Access Granted' : 'Access Denied'}</h2>
+        </div>
       </div>
 
       <div className="p-6 relative">

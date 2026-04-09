@@ -49,6 +49,7 @@ const ROLE_CONFIG = {
   parent: { label: 'Parents', icon: User, color: 'purple' },
   guard: { label: 'Security', icon: ShieldCheck, color: 'emerald' },
   admin: { label: 'Admins', icon: Users, color: 'amber' },
+  superadmin: { label: 'Superadmins', icon: ShieldCheck, color: 'red' },
 } as const;
 
 export default function UsersPage() {
@@ -173,6 +174,7 @@ export default function UsersPage() {
     parent: users.filter(u => u.role === 'parent').length,
     guard: users.filter(u => u.role === 'guard').length,
     admin: users.filter(u => u.role === 'admin').length,
+    superadmin: users.filter(u => u.role === 'superadmin').length,
   };
 
   return (

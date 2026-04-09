@@ -66,4 +66,8 @@ export async function requireRole(...roles: UserRole[]): Promise<Profile> {
   return profile;
 }
 
+export async function requireSuperAdmin(): Promise<Profile> {
+  return requireRole('superadmin');
+}
+
 export { canAccessRoute, getRoleDashboardPath } from './routes';

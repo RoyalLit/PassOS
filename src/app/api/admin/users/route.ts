@@ -42,7 +42,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    await requireRole('admin');
+    const adminProfile = await requireRole('admin');
     const supabaseAdmin = createAdminClient();
     const body = await request.json();
 
@@ -110,6 +110,7 @@ export async function POST(request: Request) {
       room_number: room_number || null,
       role,
       parent_id: parentId,
+      tenant_id: adminProfile.tenant_id,
     });
 
     if (profileError) {
@@ -119,6 +120,7 @@ export async function POST(request: Request) {
     if (role === 'student') {
       await supabaseAdmin.from('student_states').insert({
         student_id: authUser.user.id,
+        tenant_id: adminProfile.tenant_id,
       });
     }
 

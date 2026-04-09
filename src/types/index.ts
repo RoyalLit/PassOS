@@ -2,7 +2,7 @@
 // PassOS — Type Definitions
 // ============================================================
 
-export type UserRole = 'student' | 'parent' | 'admin' | 'guard';
+export type UserRole = 'student' | 'parent' | 'admin' | 'guard' | 'superadmin';
 
 export type RequestType = 'day_outing' | 'overnight' | 'emergency' | 'medical' | 'academic';
 
@@ -52,6 +52,7 @@ export interface Profile {
   is_flagged: boolean;
   flag_reason: string | null;
   metadata: Record<string, unknown>;
+  tenant_id: string;
   created_at: string;
   updated_at: string;
 }
@@ -59,6 +60,7 @@ export interface Profile {
 export interface PassRequest {
   id: string;
   student_id: string;
+  tenant_id: string;
   request_type: RequestType;
   reason: string;
   destination: string;
@@ -71,7 +73,6 @@ export interface PassRequest {
   status: RequestStatus;
   created_at: string;
   updated_at: string;
-  // Joined fields
   student?: Profile;
   approvals?: Approval[];
 }
@@ -80,6 +81,7 @@ export interface PassRequest {
 export interface Approval {
   id: string;
   request_id: string;
+  tenant_id: string;
   approver_id: string | null;
   approver_type: ApproverType;
   decision: ApprovalDecision;
@@ -94,6 +96,7 @@ export interface Pass {
   id: string;
   request_id: string;
   student_id: string;
+  tenant_id: string;
   qr_payload: string;
   qr_nonce: string;
   valid_from: string;
@@ -102,7 +105,6 @@ export interface Pass {
   exit_at: string | null;
   entry_at: string | null;
   created_at: string;
-  // Joined fields
   student?: Profile;
   request?: PassRequest;
 }
@@ -110,6 +112,7 @@ export interface Pass {
 export interface PassScan {
   id: string;
   pass_id: string;
+  tenant_id: string;
   guard_id: string;
   scan_type: ScanType;
   geo_lat: number | null;
@@ -121,18 +124,19 @@ export interface PassScan {
 
 export interface StudentStateRow {
   student_id: string;
+  tenant_id: string;
   current_state: StudentState;
   active_pass_id: string | null;
   last_exit: string | null;
   last_entry: string | null;
   updated_at: string;
-  // Joined
   student?: Profile;
 }
 
 export interface FraudFlag {
   id: string;
   student_id: string;
+  tenant_id: string;
   flag_type: FraudFlagType;
   severity: Severity;
   details: Record<string, unknown>;
@@ -146,6 +150,7 @@ export interface FraudFlag {
 export interface AuditLog {
   id: string;
   actor_id: string | null;
+  tenant_id: string | null;
   action: string;
   entity_type: string;
   entity_id: string | null;
@@ -159,6 +164,7 @@ export interface AuditLog {
 export interface Notification {
   id: string;
   user_id: string;
+  tenant_id: string;
   channel: NotificationChannel;
   title: string;
   body: string;
@@ -166,6 +172,54 @@ export interface Notification {
   read: boolean;
   sent_at: string | null;
   created_at: string;
+}
+
+// ============================================================
+// Multi-Tenant Types
+// ============================================================
+
+export type TenantStatus = 'active' | 'inactive' | 'trial' | 'suspended';
+export type TenantPlan = 'free' | 'starter' | 'pro' | 'enterprise';
+
+export interface TenantSettings {
+  geofencing_enabled: boolean;
+  campus_lat: number;
+  campus_lng: number;
+  campus_radius_meters: number;
+  parent_approval_mode: 'none' | 'smart' | 'all';
+  gatepass_reasons?: {
+    day_outing: string[];
+    overnight: string[];
+  };
+}
+
+export interface Tenant {
+  id: string;
+  name: string;
+  slug: string;
+  domains: string[];
+  logo_url: string | null;
+  status: TenantStatus;
+  plan: TenantPlan;
+  settings: TenantSettings;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TenantStats {
+  tenant_id: string;
+  tenant_name: string;
+  tenant_slug: string;
+  status: TenantStatus;
+  plan: TenantPlan;
+  total_students: number;
+  total_users: number;
+  active_passes: number;
+  students_outside: number;
+  overdue_students: number;
+  pending_requests: number;
+  fraud_flags: number;
 }
 
 // ============================================================

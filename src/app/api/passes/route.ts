@@ -57,6 +57,7 @@ export async function generatePass(request_id: string) {
         id: generatedId,
         request_id: passReq.id,
         student_id: passReq.student_id,
+        tenant_id: passReq.tenant_id,
         qr_payload: signedPayload,
         qr_nonce: nonce,
         valid_from: passReq.departure_at,

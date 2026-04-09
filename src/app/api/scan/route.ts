@@ -62,7 +62,7 @@ export async function POST(request: Request) {
     // The DB-level ON DELETE CASCADE in migration 006 prevents future orphans,
     // but we handle the null-student case gracefully for any remaining legacy orphans.
     if (!student) {
-      await logScan(supabase, pass.id, profile.id, scan_type, 'error');
+      await logScan(supabase, pass.id, profile.id, scan_type, 'error', undefined, pass.tenant_id);
       return NextResponse.json({
         valid: false,
         result: 'error',
@@ -72,7 +72,7 @@ export async function POST(request: Request) {
 
     // 3. Database-level status check (High Priority)
     if (pass.status === 'revoked') {
-      await logScan(supabase, pass.id, profile.id, scan_type, 'revoked');
+      await logScan(supabase, pass.id, profile.id, scan_type, 'revoked', undefined, pass.tenant_id);
       return NextResponse.json({ 
         valid: false, result: 'revoked', message: 'Pass has been revoked', student 
       });
@@ -82,7 +82,7 @@ export async function POST(request: Request) {
     if (scan_type === 'exit') {
       // ⚠️ STRICT: No exit allowed if expired (either JWT or DB)
       if (isExpired || new Date() > new Date(pass.valid_until)) {
-        await logScan(supabase, pass.id, profile.id, scan_type, 'expired');
+        await logScan(supabase, pass.id, profile.id, scan_type, 'expired', undefined, pass.tenant_id);
         await supabase.from('passes').update({ status: 'expired' }).eq('id', pass.id);
         return NextResponse.json({ 
           valid: false, result: 'expired', message: 'Pass has expired. Exit denied.', student 
@@ -91,7 +91,7 @@ export async function POST(request: Request) {
 
       if (pass.status !== 'active') {
         const alreadyUsed = pass.status === 'used_exit' || pass.status === 'used_entry';
-        await logScan(supabase, pass.id, profile.id, scan_type, alreadyUsed ? 'already_used' : 'error');
+        await logScan(supabase, pass.id, profile.id, scan_type, alreadyUsed ? 'already_used' : 'error', undefined, pass.tenant_id);
         return NextResponse.json({ 
           valid: false, 
           result: alreadyUsed ? 'already_used' : 'error', 
@@ -124,6 +124,7 @@ export async function POST(request: Request) {
           .from('student_states')
           .upsert({
             student_id:    pass.student_id,
+            tenant_id:    pass.tenant_id,
             current_state: 'outside',
             last_exit:     new Date().toISOString(),
             updated_at:    new Date().toISOString(),
@@ -142,7 +143,7 @@ export async function POST(request: Request) {
         // Note: We allow entry from 'active' if they never scanned out but are coming back (failsafe)
         // or from 'used_exit' (normal) or 'expired' (since they are returning late)
         const alreadyUsed = pass.status === 'used_entry';
-        await logScan(supabase, pass.id, profile.id, scan_type, alreadyUsed ? 'already_used' : 'error');
+        await logScan(supabase, pass.id, profile.id, scan_type, alreadyUsed ? 'already_used' : 'error', undefined, pass.tenant_id);
         return NextResponse.json({ 
           valid: false, 
           result: alreadyUsed ? 'already_used' : 'error', 
@@ -173,6 +174,7 @@ export async function POST(request: Request) {
           .from('student_states')
           .upsert({
             student_id:    pass.student_id,
+            tenant_id:    pass.tenant_id,
             current_state: 'inside',
             last_entry:    new Date().toISOString(),
             updated_at:   new Date().toISOString(),
@@ -196,10 +198,11 @@ export async function POST(request: Request) {
   }
 }
 
-async function logScan(supabase: SupabaseClient, passId: string | null, guardId: string, scanType: string, result: string, geo?: {lat?: number, lng?: number}) {
+async function logScan(supabase: SupabaseClient, passId: string | null, guardId: string, scanType: string, result: string, geo?: {lat?: number, lng?: number}, tenantId?: string) {
   if (!passId) return; // pass_scans.pass_id is NOT NULL — skip logging when no pass exists
   await supabase.from('pass_scans').insert({
     pass_id: passId,
+    tenant_id: tenantId,
     guard_id: guardId,
     scan_type: scanType,
     scan_result: result,

@@ -60,7 +60,7 @@ export async function POST(request: Request) {
 
     const { data: passReq } = await admin
       .from('pass_requests')
-      .select('id, student_id, status')
+      .select('id, student_id, status, tenant_id')
       .eq('id', request_id)
       .single();
 
@@ -75,6 +75,7 @@ export async function POST(request: Request) {
     // Record the parent approval
     await admin.from('approvals').insert({
       request_id,
+      tenant_id: passReq.tenant_id,
       approver_id: user.id,
       approver_type: 'parent',
       decision,
