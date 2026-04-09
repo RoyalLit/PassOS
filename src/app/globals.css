@@ -19,10 +19,16 @@
     --card: #ffffff;
     --card-foreground: #0f172a;
     --border: #e2e8f0;
+    --muted: #f1f5f9;
     --muted-foreground: #64748b;
     --primary: #2563eb;
     --input: #ffffff;
     --ring: #3b82f6;
+    --chart-1: 217.2 91.2% 59.8%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
   }
 
   .dark {
@@ -31,10 +37,16 @@
     --card: #0f172a;
     --card-foreground: #f8fafc;
     --border: #1e293b;
+    --muted: #1e293b;
     --muted-foreground: #94a3b8;
     --primary: #3b82f6;
     --input: #0f172a;
     --ring: #1d4ed8;
+    --chart-1: 217.2 91.2% 59.8%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
   }
 }
 
