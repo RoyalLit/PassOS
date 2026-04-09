@@ -33,7 +33,7 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  const publicRoutes = ['/login', '/approve', '/signup'];
+  const publicRoutes = ['/login', '/approve', '/signup', '/admin-login'];
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
 
   if (!user && !isPublicRoute && pathname !== '/') {
@@ -62,9 +62,6 @@ export async function updateSession(request: NextRequest) {
     } else if (error) {
       console.error('Middleware: Profile fetch failed:', error.message);
     }
-    
-    // Debug log for the developer to see in terminal
-    console.log(`Middleware Auth: [${user?.email}] metadata_role=${user?.user_metadata?.role} db_role=${profile?.role} -> resolved_role=${userRole}`);
   }
 
   if (user && isPublicRoute && pathname === '/login') {

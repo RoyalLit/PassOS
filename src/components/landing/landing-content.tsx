@@ -2,7 +2,7 @@
 
 import { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowRight, ShieldCheck, Zap, Server } from 'lucide-react';
 import { LoginModal } from '@/components/auth/login-modal';
 
@@ -15,6 +15,7 @@ function LoginChecker({ onLoginOpen }: { onLoginOpen: () => void }) {
 }
 
 export function LandingContent() {
+  const router = useRouter();
   const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   return (
@@ -27,8 +28,8 @@ export function LandingContent() {
             <span className="font-bold text-xl tracking-tight text-foreground">PassOS</span>
           </Link>
           <nav className="ml-auto flex gap-4 sm:gap-6 items-center">
-            <button 
-              onClick={() => setIsLoginOpen(true)}
+            <button
+              onClick={() => router.push('/?login=true')}
               className="text-sm font-bold text-foreground/70 hover:text-blue-600 transition-colors"
             >
               Login
@@ -59,7 +60,7 @@ export function LandingContent() {
 
           <div className="flex flex-col sm:flex-row gap-4 mb-20">
             <button
-              onClick={() => setIsLoginOpen(true)}
+              onClick={() => router.push('/?login=true')}
               className="inline-flex h-12 items-center justify-center rounded-xl bg-blue-600 px-8 text-sm font-bold text-white shadow-xl shadow-blue-500/25 hover:bg-blue-700 transition-all hover:scale-105 active:scale-95 shrink-0"
             >
               Go to Dashboard <ArrowRight className="ml-2 h-4 w-4" />
