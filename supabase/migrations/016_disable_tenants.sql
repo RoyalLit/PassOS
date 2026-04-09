@@ -74,68 +74,91 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- ============================================================
 
 -- profiles
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "profiles_insert_own_tenant" ON public.profiles;
 DROP POLICY IF EXISTS "profiles_update_own_tenant" ON public.profiles;
 DROP POLICY IF EXISTS "profiles_select_own_tenant" ON public.profiles;
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "profiles_select_authenticated" ON public.profiles;
+DROP POLICY IF EXISTS "profiles_update_own" ON public.profiles;
+DROP POLICY IF EXISTS "profiles_insert_authenticated" ON public.profiles;
 CREATE POLICY "profiles_select_authenticated" ON public.profiles FOR SELECT USING (true);
 CREATE POLICY "profiles_update_own" ON public.profiles FOR UPDATE USING (auth.uid() = id);
 CREATE POLICY "profiles_insert_authenticated" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
 
 -- pass_requests
+ALTER TABLE public.pass_requests ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "pass_requests_insert_own_tenant" ON public.pass_requests;
 DROP POLICY IF EXISTS "pass_requests_select_own_tenant" ON public.pass_requests;
-ALTER TABLE public.pass_requests ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "pass_requests_update_own_tenant" ON public.pass_requests;
+DROP POLICY IF EXISTS "pass_requests_delete_own_tenant" ON public.pass_requests;
+DROP POLICY IF EXISTS "pass_requests_select_authenticated" ON public.pass_requests;
+DROP POLICY IF EXISTS "pass_requests_insert_authenticated" ON public.pass_requests;
+DROP POLICY IF EXISTS "pass_requests_update_authenticated" ON public.pass_requests;
 CREATE POLICY "pass_requests_select_authenticated" ON public.pass_requests FOR SELECT USING (true);
 CREATE POLICY "pass_requests_insert_authenticated" ON public.pass_requests FOR INSERT WITH CHECK (true);
-CREATE POLICY "pass_requests_update_own_tenant" ON public.pass_requests FOR UPDATE USING (true);
+CREATE POLICY "pass_requests_update_authenticated" ON public.pass_requests FOR UPDATE USING (true);
 
 -- passes
-DROP POLICY IF EXISTS "passes_select_own_tenant" ON public.passes;
 ALTER TABLE public.passes ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "passes_select_own_tenant" ON public.passes;
+DROP POLICY IF EXISTS "passes_insert_own_tenant" ON public.passes;
+DROP POLICY IF EXISTS "passes_select_authenticated" ON public.passes;
+DROP POLICY IF EXISTS "passes_insert_authenticated" ON public.passes;
 CREATE POLICY "passes_select_authenticated" ON public.passes FOR SELECT USING (true);
 CREATE POLICY "passes_insert_authenticated" ON public.passes FOR INSERT WITH CHECK (true);
 
 -- pass_scans
+ALTER TABLE public.pass_scans ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "pass_scans_select_own_tenant" ON public.pass_scans;
 DROP POLICY IF EXISTS "pass_scans_insert_own_tenant" ON public.pass_scans;
-ALTER TABLE public.pass_scans ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "pass_scans_select_authenticated" ON public.pass_scans;
+DROP POLICY IF EXISTS "pass_scans_insert_authenticated" ON public.pass_scans;
 CREATE POLICY "pass_scans_select_authenticated" ON public.pass_scans FOR SELECT USING (true);
 CREATE POLICY "pass_scans_insert_authenticated" ON public.pass_scans FOR INSERT WITH CHECK (true);
 
 -- approvals
+ALTER TABLE public.approvals ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "approvals_select_own_tenant" ON public.approvals;
 DROP POLICY IF EXISTS "approvals_insert_own_tenant" ON public.approvals;
-ALTER TABLE public.approvals ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "approvals_select_authenticated" ON public.approvals;
+DROP POLICY IF EXISTS "approvals_insert_authenticated" ON public.approvals;
 CREATE POLICY "approvals_select_authenticated" ON public.approvals FOR SELECT USING (true);
 CREATE POLICY "approvals_insert_authenticated" ON public.approvals FOR INSERT WITH CHECK (true);
 
 -- student_states
-DROP POLICY IF EXISTS "student_states_select_own_tenant" ON public.student_states;
 ALTER TABLE public.student_states ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "student_states_select_own_tenant" ON public.student_states;
+DROP POLICY IF EXISTS "student_states_select_authenticated" ON public.student_states;
+DROP POLICY IF EXISTS "student_states_update_authenticated" ON public.student_states;
 CREATE POLICY "student_states_select_authenticated" ON public.student_states FOR SELECT USING (true);
 CREATE POLICY "student_states_update_authenticated" ON public.student_states FOR UPDATE USING (true);
 
 -- fraud_flags
-DROP POLICY IF EXISTS "fraud_flags_select_own_tenant" ON public.fraud_flags;
 ALTER TABLE public.fraud_flags ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "fraud_flags_select_own_tenant" ON public.fraud_flags;
+DROP POLICY IF EXISTS "fraud_flags_select_authenticated" ON public.fraud_flags;
 CREATE POLICY "fraud_flags_select_authenticated" ON public.fraud_flags FOR SELECT USING (true);
 
 -- notifications
-DROP POLICY IF EXISTS "notifications_select_own_tenant" ON public.notifications;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "notifications_select_own_tenant" ON public.notifications;
+DROP POLICY IF EXISTS "notifications_select_own" ON public.notifications;
+DROP POLICY IF EXISTS "notifications_update_own" ON public.notifications;
 CREATE POLICY "notifications_select_own" ON public.notifications FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "notifications_update_own" ON public.notifications FOR UPDATE USING (auth.uid() = user_id);
 
 -- audit_logs
+ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "audit_logs_select_own_tenant" ON public.audit_logs;
 DROP POLICY IF EXISTS "audit_logs_insert_own_tenant" ON public.audit_logs;
-ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "audit_logs_select_authenticated" ON public.audit_logs;
 CREATE POLICY "audit_logs_select_authenticated" ON public.audit_logs FOR SELECT USING (true);
 
 -- ai_analysis
-DROP POLICY IF EXISTS "ai_analysis_select_own_tenant" ON public.ai_analysis;
 ALTER TABLE public.ai_analysis ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "ai_analysis_select_own_tenant" ON public.ai_analysis;
+DROP POLICY IF EXISTS "ai_analysis_select_authenticated" ON public.ai_analysis;
+DROP POLICY IF EXISTS "ai_analysis_insert_authenticated" ON public.ai_analysis;
 CREATE POLICY "ai_analysis_select_authenticated" ON public.ai_analysis FOR SELECT USING (true);
 CREATE POLICY "ai_analysis_insert_authenticated" ON public.ai_analysis FOR INSERT WITH CHECK (true);
 
