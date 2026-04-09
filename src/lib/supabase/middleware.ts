@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import type { UserRole } from '@/types';
+import { canAccessRoute, getRoleDashboardPath } from '@/lib/auth/routes';
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -46,9 +47,25 @@ export async function updateSession(request: NextRequest) {
     return response;
   }
 
+  // Always read role from DB profile for authorization decisions.
+  // This ensures admin role changes take effect immediately (no re-login required).
+  // Falls back to user_metadata.role only for the initial login redirect,
+  // which is a cosmetic check — the server-side requireRole() always uses DB.
+  let userRole: UserRole = (user?.user_metadata?.role as UserRole) || 'student';
+
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (profile?.role) {
+      userRole = profile.role as UserRole;
+    }
+  }
+
   if (user && isPublicRoute && pathname === '/login') {
-    const userRole = (user.user_metadata?.role as UserRole) || 'student';
-    const { getRoleDashboardPath } = await import('@/lib/auth/routes');
     const url = request.nextUrl.clone();
     url.pathname = getRoleDashboardPath(userRole);
     const response = NextResponse.redirect(url);
@@ -60,12 +77,8 @@ export async function updateSession(request: NextRequest) {
   }
 
   if (user) {
-    const userRole = (user.user_metadata?.role as UserRole) || 'student';
-    const { canAccessRoute } = await import('@/lib/auth/routes');
-    
     if (!canAccessRoute(userRole, pathname)) {
       const url = request.nextUrl.clone();
-      const { getRoleDashboardPath } = await import('@/lib/auth/routes');
       url.pathname = getRoleDashboardPath(userRole);
       const response = NextResponse.redirect(url);
       supabaseResponse.cookies.getAll().forEach(cookie => {

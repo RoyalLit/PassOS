@@ -15,6 +15,7 @@ export default function ParentApprovalPage() {
   const [success, setSuccess] = useState<'approved' | 'rejected' | null>(null);
   
   const [requestDetails, setRequestDetails] = useState<{
+    request_id?: string;
     student_name: string;
     request_type: string;
     destination: string;
@@ -24,25 +25,35 @@ export default function ParentApprovalPage() {
   } | null>(null);
   const [reason, setReason] = useState('');
 
-  // We actually need a way to fetch request details without auth using just the token.
-  // Next.js doesn't easily expose this in a client component securely without an API route.
-  // Since time is short, in a real app we'd have a `GET /api/approvals/[token]`
-  // Here we'll simulate fetching if we can't build the extra API route right now.
-  // For production: build `src/app/api/approvals/[token]/route.ts`
-
   useEffect(() => {
-    // In a real app we would fetch the request details using the token
-    // For now we'll just show the token validation UI
-    // Let's pretend we fetched the details:
-    setLoading(false);
-    setRequestDetails({
-      student_name: 'Student Name',
-      request_type: 'Day Outing',
-      destination: 'City Center',
-      reason: 'Shopping for supplies',
-      departure_at: new Date().toISOString(),
-      return_by: new Date(Date.now() + 4 * 3600 * 1000).toISOString(),
-    });
+    async function fetchDetails() {
+      try {
+        const res = await fetch(`/api/approvals/by-token?token=${encodeURIComponent(token)}`);
+        const json = await res.json();
+
+        if (!res.ok) {
+          setError(json.error || 'Failed to load request details');
+          setLoading(false);
+          return;
+        }
+
+        setRequestDetails({
+          request_id: json.request_id,
+          student_name: json.student_name || 'Unknown Student',
+          request_type: json.request_type || 'Unknown',
+          destination: json.destination || '',
+          reason: json.reason || '',
+          departure_at: json.departure_at || '',
+          return_by: json.return_by || '',
+        });
+      } catch {
+        setError('Network error — please try again');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchDetails();
   }, [token]);
 
   const handleDecision = async (decision: 'approved' | 'rejected') => {
@@ -54,7 +65,7 @@ export default function ParentApprovalPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          request_id: 'fake-id-to-satisfy-zod-for-now', // In real app, token payload contains this
+          request_id: requestDetails?.request_id,
           decision,
           token,
           reason

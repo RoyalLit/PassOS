@@ -66,10 +66,11 @@ export async function getSettings(): Promise<AppSettings> {
     };
   }
 
-  // Merging DB data with defaults to handle partial/old records
+  // Merging DB data with defaults to handle partial/old records.
+  // Use DB value for parent_approval_mode if present; only fall back to 'smart'.
   return {
-    parent_approval_mode: 'smart',
-    ...settings
+    parent_approval_mode: settings?.parent_approval_mode ?? 'smart',
+    ...settings,
   } as AppSettings;
 }
 

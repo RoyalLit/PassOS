@@ -36,9 +36,20 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
       return;
     }
 
-    // Role redirect logic
-    const role = data.user?.user_metadata?.role || 'student';
-    const targetPath = role === 'admin' ? '/admin' : role === 'guard' ? '/guard/scan' : role === 'parent' ? '/parent' : '/student';
+    // Fetch the authoritative role from the DB profile to avoid stale user_metadata.
+    // The server is always the source of truth; user_metadata.role is only
+    // set on initial user creation and may lag behind admin role changes.
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', data.user?.id)
+      .single();
+
+    const role = profileData?.role || data.user?.user_metadata?.role || 'student';
+    const targetPath =
+      role === 'admin' ? '/admin' :
+      role === 'guard' ? '/guard/scan' :
+      role === 'parent' ? '/parent' : '/student';
     window.location.href = targetPath;
   };
 

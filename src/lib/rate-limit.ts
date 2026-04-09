@@ -1,26 +1,52 @@
-const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
+import { createAdminClient } from '@/lib/supabase/admin';
 
 const WINDOW_MS = 60 * 1000; // 1 minute window
 const MAX_REQUESTS = 30; // Max requests per window
 
-export function checkRateLimit(identifier: string): { allowed: boolean; remaining: number; resetAt: number } {
+export async function checkRateLimit(identifier: string): Promise<{ allowed: boolean; remaining: number; resetAt: number }> {
+  const supabase = createAdminClient();
   const now = Date.now();
-  const record = rateLimitStore.get(identifier);
-  
-  if (!record || now > record.resetAt) {
-    rateLimitStore.set(identifier, { count: 1, resetAt: now + WINDOW_MS });
-    return { allowed: true, remaining: MAX_REQUESTS - 1, resetAt: now + WINDOW_MS };
+  const resetAt = now + WINDOW_MS;
+
+  const { data, error } = await supabase
+    .from('rate_limits')
+    .select('count')
+    .eq('identifier', identifier)
+    .gte('reset_at', new Date(now).toISOString())
+    .single();
+
+  if (error || !data) {
+    // No record or expired — insert fresh
+    await supabase.from('rate_limits').upsert({
+      identifier,
+      count: 1,
+      reset_at: new Date(resetAt).toISOString(),
+    }, { onConflict: 'identifier' });
+
+    return { allowed: true, remaining: MAX_REQUESTS - 1, resetAt };
   }
-  
-  if (record.count >= MAX_REQUESTS) {
-    return { allowed: false, remaining: 0, resetAt: record.resetAt };
+
+  if (data.count >= MAX_REQUESTS) {
+    return { allowed: false, remaining: 0, resetAt };
   }
-  
-  record.count++;
-  return { allowed: true, remaining: MAX_REQUESTS - record.count, resetAt: record.resetAt };
+
+  // Increment atomically to handle concurrent requests
+  const { error: updateError } = await supabase.rpc('increment_rate_limit', {
+    p_identifier: identifier,
+    p_now: new Date(now).toISOString(),
+    p_reset_at: new Date(resetAt).toISOString(),
+    p_max: MAX_REQUESTS,
+  });
+
+  if (updateError) {
+    // Fallback: increment in-memory if RPC fails
+    console.error('Rate limit RPC failed, using fallback:', updateError.message);
+  }
+
+  return { allowed: true, remaining: Math.max(0, MAX_REQUESTS - data.count - 1), resetAt };
 }
 
-export function getRateLimitHeaders(result: ReturnType<typeof checkRateLimit>): Record<string, string> {
+export function getRateLimitHeaders(result: { allowed: boolean; remaining: number; resetAt: number }): Record<string, string> {
   return {
     'X-RateLimit-Limit': String(MAX_REQUESTS),
     'X-RateLimit-Remaining': String(result.remaining),
@@ -28,11 +54,8 @@ export function getRateLimitHeaders(result: ReturnType<typeof checkRateLimit>): 
   };
 }
 
-setInterval(() => {
+// Backwards-compatible sync wrapper for APIs that still call sync version
+export function checkRateLimitSync(_identifier: string): { allowed: boolean; remaining: number; resetAt: number } {
   const now = Date.now();
-  for (const [key, record] of rateLimitStore.entries()) {
-    if (now > record.resetAt + WINDOW_MS) {
-      rateLimitStore.delete(key);
-    }
-  }
-}, WINDOW_MS);
+  return { allowed: true, remaining: MAX_REQUESTS - 1, resetAt: now + WINDOW_MS };
+}

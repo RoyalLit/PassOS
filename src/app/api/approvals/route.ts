@@ -18,7 +18,7 @@ export async function POST(request: Request) {
   try {
     // Apply rate limiting
     const clientIp = getClientIp(request.headers) || 'unknown';
-    const rateLimit = checkRateLimit(`approval:${clientIp}`);
+    const rateLimit = await checkRateLimit(`approval:${clientIp}`);
     if (!rateLimit.allowed) {
       return NextResponse.json(
         { error: 'Too many requests. Please try again later.' },

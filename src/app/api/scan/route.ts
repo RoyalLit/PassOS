@@ -58,6 +58,18 @@ export async function POST(request: Request) {
 
     const student = pass.student;
 
+    // Defensive: orphaned pass (profile deleted but pass remains) should not show as "Unknown User"
+    // The DB-level ON DELETE CASCADE in migration 006 prevents future orphans,
+    // but we handle the null-student case gracefully for any remaining legacy orphans.
+    if (!student) {
+      await logScan(supabase, pass.id, profile.id, scan_type, 'error');
+      return NextResponse.json({
+        valid: false,
+        result: 'error',
+        message: 'Student profile not found — pass may be orphaned. Please contact administration.',
+      });
+    }
+
     // 3. Database-level status check (High Priority)
     if (pass.status === 'revoked') {
       await logScan(supabase, pass.id, profile.id, scan_type, 'revoked');

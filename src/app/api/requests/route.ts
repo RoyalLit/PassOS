@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
 import { requireRole } from '@/lib/auth/rbac';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { createRequestSchema } from '@/lib/validators/request-schema';
 import { MAX_REQUESTS_PER_DAY } from '@/lib/constants';
 import { isWithinCampus } from '@/lib/geo/campus-boundary';
+import type { ParentApprovalMode } from '@/lib/actions/settings';
 
 function sanitizeError(error: unknown): string {
   if (error instanceof Error) {
@@ -88,11 +90,30 @@ export async function POST(request: Request) {
     }
 
     // Calculate geo_valid server-side to prevent client spoofing
-    const geo_valid = data.geo_lat !== undefined && data.geo_lng !== undefined 
+    const geo_valid = data.geo_lat !== undefined && data.geo_lng !== undefined
       ? isWithinCampus(data.geo_lat, data.geo_lng)
       : false;
-    
-    const initialStatus = 'pending';
+
+    // Fetch parent_approval_mode to determine initial routing
+    let initialStatus: string;
+    const adminClient = createAdminClient();
+    const { data: settings } = await adminClient
+      .from('app_settings')
+      .select('parent_approval_mode')
+      .single();
+    const mode: ParentApprovalMode = settings?.parent_approval_mode ?? 'smart';
+
+    if (mode === 'none') {
+      // Skip parent entirely — go directly to admin
+      initialStatus = 'admin_pending';
+    } else if (mode === 'all') {
+      // Every request needs parent first
+      initialStatus = 'parent_pending';
+    } else {
+      // Smart mode: parent only for overnight/emergency; day_outing goes direct to admin
+      const requiresParent = ['overnight', 'emergency', 'medical'].includes(data.request_type);
+      initialStatus = requiresParent ? 'parent_pending' : 'admin_pending';
+    }
 
     const { data: insertedRequest, error: insertError } = await supabase
       .from('pass_requests')

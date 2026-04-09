@@ -25,6 +25,19 @@ export default async function AdminDashboard(props: { searchParams: Promise<{ q?
     .select('*', { count: 'exact', head: true })
     .in('status', ['active', 'used_exit']);
 
+  // Get overdue students count (used_exit + past valid_until)
+  const { count: overdueCount } = await supabase
+    .from('passes')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'used_exit')
+    .lt('valid_until', new Date().toISOString());
+
+  // Get unresolved fraud flags count
+  const { count: fraudFlagsCount } = await supabase
+    .from('fraud_flags')
+    .select('*', { count: 'exact', head: true })
+    .eq('resolved', false);
+
   const pendingRequests = (requests || []).filter(req => {
     if (!q) return true;
     return (
@@ -52,13 +65,13 @@ export default async function AdminDashboard(props: { searchParams: Promise<{ q?
           <p className="text-xs font-black uppercase tracking-widest text-muted-foreground/60 mb-2">Active Passes</p>
           <p className="text-4xl font-black text-green-500 tracking-tighter">{activePasses || 0}</p>
         </div>
-        <div className="bg-card/60 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-border opacity-50">
-          <p className="text-xs font-black uppercase tracking-widest text-muted-foreground/40 mb-2">Overdue Inside</p>
-          <p className="text-4xl font-black text-foreground/20 tracking-tighter">0</p>
+        <div className="bg-card/60 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-border group hover:border-orange-500/30 hover:shadow-md transition-all">
+          <p className="text-xs font-black uppercase tracking-widest text-muted-foreground/60 mb-2">Overdue Inside</p>
+          <p className="text-4xl font-black text-orange-500 tracking-tighter">{overdueCount || 0}</p>
         </div>
-        <div className="bg-card/60 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-border opacity-50">
-          <p className="text-xs font-black uppercase tracking-widest text-muted-foreground/40 mb-2">Fraud Flags</p>
-          <p className="text-4xl font-black text-red-500/20 tracking-tighter">0</p>
+        <div className="bg-card/60 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-border group hover:border-red-500/30 hover:shadow-md transition-all">
+          <p className="text-xs font-black uppercase tracking-widest text-muted-foreground/60 mb-2">Fraud Flags</p>
+          <p className="text-4xl font-black text-red-500 tracking-tighter">{fraudFlagsCount || 0}</p>
         </div>
       </div>
 

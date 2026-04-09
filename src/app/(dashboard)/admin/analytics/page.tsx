@@ -68,7 +68,7 @@ export default function AnalyticsDashboard() {
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                 <XAxis dataKey="date" tickFormatter={(val) => val.split('-').slice(1).join('/')} stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} />
                 <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} />
-                <Tooltip cursor={{fill: 'hsl(var(--muted) / 0.1)'}} contentStyle={{backgroundColor: 'color-mix(in srgb, var(--card) 80%, transparent)', backdropFilter: 'blur(8px)', borderRadius: '12px', border: '1px solid hsl(var(--border))', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.15)'}} />
+                <Tooltip cursor={{fill: 'hsl(var(--muted) / 0.1)'}} contentStyle={{backgroundColor: 'hsl(var(--card))', backdropFilter: 'blur(8px)', borderRadius: '12px', border: '1px solid hsl(var(--border))', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.15)', color: 'hsl(var(--foreground))' }} />
                 <Bar dataKey="passes" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} maxBarSize={50} />
               </BarChart>
             </ResponsiveContainer>

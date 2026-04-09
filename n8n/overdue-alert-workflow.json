@@ -26,7 +26,7 @@
           "parameters": [
             {
               "name": "Authorization",
-              "value": "Bearer dev-secret"
+              "value": "Bearer f73b2082785cb29b07c2008f0b233cb5c535f1623d923f675eea42af0b2e6c27"
             }
           ]
         },
