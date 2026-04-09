@@ -1,26 +1,42 @@
-import { requireSuperAdmin } from '@/lib/auth/rbac';
-import { createAdminClient } from '@/lib/supabase/admin';
-import { Building2, Users, AlertTriangle, TrendingUp, Clock } from 'lucide-react';
+'use client';
 
-export default async function SuperadminDashboard() {
-  await requireSuperAdmin();
-  const admin = createAdminClient();
+import { useEffect, useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { Building2, Users, AlertTriangle, TrendingUp, Clock, Loader2 } from 'lucide-react';
 
-  const [{ data: tenants }, { data: profiles }, { data: recentTenants }] = await Promise.all([
-    admin.from('tenants').select('id, status, plan'),
-    admin.from('profiles').select('id, role, tenant_id'),
-    admin.from('tenants')
-      .select('id, name, slug, status, plan, created_at')
-      .order('created_at', { ascending: false })
-      .limit(5),
-  ]);
+export default function SuperadminDashboard() {
+  const [data, setData] = useState<{
+    tenants: any[]; profiles: any[]; recentTenants: any[];
+  } | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const totalTenants = tenants?.length || 0;
-  const activeTenants = tenants?.filter(t => t.status === 'active').length || 0;
-  const trialTenants = tenants?.filter(t => t.status === 'trial').length || 0;
-  const suspendedTenants = tenants?.filter(t => t.status === 'suspended').length || 0;
-  const totalUsers = profiles?.length || 0;
-  const totalAdmins = profiles?.filter(p => p.role === 'admin').length || 0;
+  useEffect(() => {
+    const supabase = createClient();
+    Promise.all([
+      supabase.from('tenants').select('id, status, plan'),
+      supabase.from('profiles').select('id, role, tenant_id'),
+      supabase.from('tenants').select('id, name, slug, status, plan, created_at').order('created_at', { ascending: false }).limit(5),
+    ]).then(([tenants, profiles, recentTenants]) => {
+      setData({ tenants: tenants.data || [], profiles: profiles.data || [], recentTenants: recentTenants.data || [] });
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+      </div>
+    );
+  }
+
+  const { tenants, profiles, recentTenants } = data!;
+  const totalTenants = tenants.length;
+  const activeTenants = tenants.filter(t => t.status === 'active').length;
+  const trialTenants = tenants.filter(t => t.status === 'trial').length;
+  const suspendedTenants = tenants.filter(t => t.status === 'suspended').length;
+  const totalUsers = profiles.length;
+  const totalAdmins = profiles.filter(p => p.role === 'admin').length;
 
   const statCards = [
     {

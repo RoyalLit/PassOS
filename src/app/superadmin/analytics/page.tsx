@@ -1,58 +1,77 @@
-import { requireSuperAdmin } from '@/lib/auth/rbac';
-import { createAdminClient } from '@/lib/supabase/admin';
-import { BarChart3, TrendingUp, Users, Building2 } from 'lucide-react';
+'use client';
 
-export default async function SuperadminAnalytics() {
-  await requireSuperAdmin();
-  const admin = createAdminClient();
+import { useEffect, useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { BarChart3, TrendingUp, Users, Building2, Loader2 } from 'lucide-react';
 
-  const [
-    { data: tenants },
-    { data: profiles },
-    { data: passes },
-    { data: requests },
-    { data: fraudFlags },
-  ] = await Promise.all([
-    admin.from('tenants').select('id, status, plan, created_at'),
-    admin.from('profiles').select('id, role, created_at'),
-    admin.from('passes').select('id, status, created_at'),
-    admin.from('pass_requests').select('id, status, created_at'),
-    admin.from('fraud_flags').select('id, created_at'),
-  ]);
+export default function SuperadminAnalytics() {
+  const [stats, setStats] = useState<{
+    tenants: any[]; profiles: any[]; passes: any[]; requests: any[]; fraudFlags: any[];
+  } | null>(null);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    const supabase = createClient();
+    Promise.all([
+      supabase.from('tenants').select('id, status, plan, created_at'),
+      supabase.from('profiles').select('id, role, created_at'),
+      supabase.from('passes').select('id, status, created_at'),
+      supabase.from('pass_requests').select('id, status, created_at'),
+      supabase.from('fraud_flags').select('id, created_at'),
+    ]).then(([tenants, profiles, passes, requests, fraudFlags]) => {
+      setStats({
+        tenants: tenants.data || [],
+        profiles: profiles.data || [],
+        passes: passes.data || [],
+        requests: requests.data || [],
+        fraudFlags: fraudFlags.data || [],
+      });
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading || !stats) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+      </div>
+    );
+  }
+
+  const { tenants, profiles, passes, requests, fraudFlags } = stats;
   const now = new Date();
-  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-  const recentPasses = passes?.filter(p => new Date(p.created_at) >= sevenDaysAgo) || [];
-  const recentRequests = requests?.filter(r => new Date(r.created_at) >= sevenDaysAgo) || [];
-  const recentSignups = profiles?.filter(p => new Date(p.created_at) >= thirtyDaysAgo) || [];
-  const activePasses = passes?.filter(p => p.status === 'active' || p.status === 'used_exit') || [];
+  const recentPasses = passes.filter(p => new Date(p.created_at) >= sevenDaysAgo);
+  const recentRequests = requests.filter(r => new Date(r.created_at) >= sevenDaysAgo);
+  const recentSignups = profiles.filter(p => new Date(p.created_at) >= thirtyDaysAgo);
+  const activePasses = passes.filter(p => p.status === 'active' || p.status === 'used_exit');
 
-  const planDistribution = (tenants || []).reduce((acc, t) => {
+  const planDistribution: Record<string, number> = tenants.reduce((acc, t) => {
     acc[t.plan] = (acc[t.plan] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
-  const roleDistribution = (profiles || []).reduce((acc, p) => {
+  const roleDistribution: Record<string, number> = profiles.reduce((acc, p) => {
     acc[p.role] = (acc[p.role] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
-  const requestStatusDistribution = (requests || []).reduce((acc, r) => {
+  const requestStatusDistribution: Record<string, number> = requests.reduce((acc, r) => {
     acc[r.status] = (acc[r.status] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
   const cards = [
-    { label: 'Total Universities', value: tenants?.length || 0, icon: Building2, color: 'text-blue-500', bg: 'hover:border-blue-500/30' },
-    { label: 'Total Users', value: profiles?.length || 0, icon: Users, color: 'text-green-500', bg: 'hover:border-green-500/30' },
+    { label: 'Total Universities', value: tenants.length, icon: Building2, color: 'text-blue-500', bg: 'hover:border-blue-500/30' },
+    { label: 'Total Users', value: profiles.length, icon: Users, color: 'text-green-500', bg: 'hover:border-green-500/30' },
     { label: 'Active Passes', value: activePasses.length, icon: TrendingUp, color: 'text-purple-500', bg: 'hover:border-purple-500/30' },
-    { label: 'Total Requests', value: requests?.length || 0, icon: BarChart3, color: 'text-orange-500', bg: 'hover:border-orange-500/30' },
+    { label: 'Total Requests', value: requests.length, icon: BarChart3, color: 'text-orange-500', bg: 'hover:border-orange-500/30' },
     { label: 'This Week (Passes)', value: recentPasses.length, icon: TrendingUp, color: 'text-cyan-500', bg: 'hover:border-cyan-500/30' },
     { label: 'This Week (Signups)', value: recentSignups.length, icon: Users, color: 'text-pink-500', bg: 'hover:border-pink-500/30' },
-    { label: 'Fraud Flags', value: fraudFlags?.length || 0, icon: BarChart3, color: 'text-red-500', bg: 'hover:border-red-500/30' },
-    { label: 'Approval Rate', value: requests?.length ? `${Math.round(((requestStatusDistribution['approved'] || 0) / requests.length) * 100)}%` : '0%', icon: TrendingUp, color: 'text-emerald-500', bg: 'hover:border-emerald-500/30' },
+    { label: 'Fraud Flags', value: fraudFlags.length, icon: BarChart3, color: 'text-red-500', bg: 'hover:border-red-500/30' },
+    { label: 'Approval Rate', value: requests.length ? `${Math.round(((requestStatusDistribution['approved'] || 0) / requests.length) * 100)}%` : '0%', icon: TrendingUp, color: 'text-emerald-500', bg: 'hover:border-emerald-500/30' },
   ];
 
   return (
@@ -88,8 +107,8 @@ export default async function SuperadminAnalytics() {
         <div className="bg-card/60 backdrop-blur-md p-6 rounded-2xl border border-border">
           <h3 className="font-bold text-foreground mb-4">Users by Role</h3>
           <div className="space-y-3">
-            {Object.entries(roleDistribution).map(([role, count]) => {
-              const pct = profiles?.length ? Math.round((count / profiles.length) * 100) : 0;
+            {(Object.entries(roleDistribution) as [string, number][]).map(([role, count]) => {
+              const pct = profiles.length ? Math.round((count / profiles.length) * 100) : 0;
               return (
                 <div key={role}>
                   <div className="flex justify-between text-sm mb-1">
@@ -108,8 +127,8 @@ export default async function SuperadminAnalytics() {
         <div className="bg-card/60 backdrop-blur-md p-6 rounded-2xl border border-border">
           <h3 className="font-bold text-foreground mb-4">Universities by Plan</h3>
           <div className="space-y-3">
-            {Object.entries(planDistribution).map(([plan, count]) => {
-              const pct = tenants?.length ? Math.round((count / tenants.length) * 100) : 0;
+            {(Object.entries(planDistribution) as [string, number][]).map(([plan, count]) => {
+              const pct = tenants.length ? Math.round((count / tenants.length) * 100) : 0;
               const colors: Record<string, string> = {
                 free: 'bg-gray-500', starter: 'bg-blue-500', pro: 'bg-purple-500', enterprise: 'bg-amber-500',
               };
@@ -131,10 +150,10 @@ export default async function SuperadminAnalytics() {
         <div className="bg-card/60 backdrop-blur-md p-6 rounded-2xl border border-border">
           <h3 className="font-bold text-foreground mb-4">Requests by Status</h3>
           <div className="space-y-3">
-            {Object.entries(requestStatusDistribution)
+            {(Object.entries(requestStatusDistribution) as [string, number][])
               .sort((a, b) => b[1] - a[1])
               .map(([status, count]) => {
-                const pct = requests?.length ? Math.round((count / requests.length) * 100) : 0;
+                const pct = requests.length ? Math.round((count / requests.length) * 100) : 0;
                 const colors: Record<string, string> = {
                   approved: 'bg-green-500', rejected: 'bg-red-500', pending: 'bg-yellow-500',
                   cancelled: 'bg-gray-500',
