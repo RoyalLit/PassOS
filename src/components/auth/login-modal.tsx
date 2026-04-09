@@ -48,6 +48,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
     const role = profileData?.role || data.user?.user_metadata?.role || 'student';
     const targetPath =
+      role === 'superadmin' ? '/superadmin' :
       role === 'admin' ? '/admin' :
       role === 'guard' ? '/guard/scan' :
       role === 'parent' ? '/parent' : '/student';
