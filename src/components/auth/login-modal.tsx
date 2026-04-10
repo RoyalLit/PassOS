@@ -50,7 +50,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
       role === 'guard' ? '/guard/scan' :
       role === 'parent' ? '/parent' : '/student';
 
-    window.location.replace(targetPath);
+    router.replace(targetPath);
   };
 
   return (

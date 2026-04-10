@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Loader2, XCircle } from 'lucide-react';
 
@@ -10,8 +11,9 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const router = useRouter();
 
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -28,11 +30,11 @@ export default function LoginPage() {
           role === 'admin' ? '/admin' :
           role === 'guard' ? '/guard/scan' :
           role === 'parent' ? '/parent' : '/student';
-        window.location.replace(targetPath);
+        router.replace(targetPath);
       }
     };
     checkSession();
-  }, []);
+  }, [router, supabase]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,7 +87,7 @@ export default function LoginPage() {
 
       console.log('Redirecting to:', targetPath);
       clearTimeout(timeoutId);
-      window.location.replace(targetPath);
+      router.replace(targetPath);
     } catch (err) {
       clearTimeout(timeoutId);
       console.error('Unexpected login success/error branch:', err);

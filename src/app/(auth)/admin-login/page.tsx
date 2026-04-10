@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Loader2, XCircle } from 'lucide-react';
 
@@ -9,8 +10,9 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const router = useRouter();
 
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -23,12 +25,12 @@ export default function AdminLoginPage() {
           .single();
         const role = profile?.role || session.user.user_metadata?.role;
         if (role === 'superadmin') {
-          window.location.replace('/superadmin');
+          router.replace('/superadmin');
         }
       }
     };
     checkSession();
-  }, []);
+  }, [router, supabase]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,7 +63,7 @@ export default function AdminLoginPage() {
       return;
     }
 
-    window.location.replace('/superadmin');
+    router.replace('/superadmin');
   };
 
   return (
