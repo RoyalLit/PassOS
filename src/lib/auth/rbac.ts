@@ -23,7 +23,14 @@ export async function getCurrentUser(): Promise<Profile | null> {
 
     return profile;
   } catch (error) {
-    console.error('Unexpected error in getCurrentUser:', error instanceof Error ? error.message : 'Unknown error');
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    
+    // Don't log or suppress Next.js internal dynamic rendering errors
+    if (message.includes('Dynamic server usage')) {
+      throw error;
+    }
+
+    console.error('Unexpected error in getCurrentUser:', message);
     return null;
   }
 }

@@ -4,6 +4,8 @@ import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'PassOS | Smart Gate Pass System',
   description: 'Production-grade campus access control and student mobility system',
