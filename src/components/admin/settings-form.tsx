@@ -5,6 +5,7 @@ import { AppSettings, updateSettings, ParentApprovalMode } from '@/lib/actions/s
 import { Loader2, Save, MapPin, Navigation, Radius, Users, ShieldCheck, Zap } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { clsx } from 'clsx';
+import { Toggle } from '@/components/ui/toggle';
 
 export function SettingsForm({ initialSettings }: { initialSettings: AppSettings }) {
   const [settings, setSettings] = useState<AppSettings>(initialSettings);
@@ -243,19 +244,10 @@ export function SettingsForm({ initialSettings }: { initialSettings: AppSettings
               <p className="text-muted-foreground text-sm">Require students to be within campus boundaries to request a pass.</p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={handleToggle}
-            className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-              settings.geofencing_enabled ? 'bg-blue-600' : 'bg-muted'
-            }`}
-          >
-            <span
-              className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
-                settings.geofencing_enabled ? 'translate-x-6' : 'translate-x-1'
-              }`}
-            />
-          </button>
+          <Toggle
+            enabled={settings.geofencing_enabled}
+            onChange={handleToggle}
+          />
         </div>
 
         {settings.geofencing_enabled && (

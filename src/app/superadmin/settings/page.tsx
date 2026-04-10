@@ -2,10 +2,13 @@
 
 import { useState } from 'react';
 import { Settings, Database, Shield } from 'lucide-react';
+import { Toggle } from '@/components/ui/toggle';
 
 export default function SuperadminSettings() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [platformEnabled, setPlatformEnabled] = useState(true);
+  const [selfSignup, setSelfSignup] = useState(false);
 
   return (
     <div className="p-6 max-w-3xl mx-auto space-y-6">
@@ -29,10 +32,11 @@ export default function SuperadminSettings() {
               <p className="font-medium text-foreground">Platform Status</p>
               <p className="text-sm text-muted-foreground">Enable or disable the entire platform</p>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" defaultChecked className="sr-only peer" />
-              <div className="w-11 h-6 bg-muted peer-focus:ring-2 peer-focus:ring-purple-500/50 rounded-full peer peer-checked:after:translate-x-4 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600" />
-            </label>
+            <Toggle
+              enabled={platformEnabled}
+              onChange={setPlatformEnabled}
+              variant="purple"
+            />
           </div>
 
           <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl">
@@ -40,10 +44,11 @@ export default function SuperadminSettings() {
               <p className="font-medium text-foreground">Allow Self-Service Signup</p>
               <p className="text-sm text-muted-foreground">Let new universities create their own accounts</p>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" className="sr-only peer" />
-              <div className="w-11 h-6 bg-muted peer-focus:ring-2 peer-focus:ring-purple-500/50 rounded-full peer peer-checked:after:translate-x-4 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600" />
-            </label>
+            <Toggle
+              enabled={selfSignup}
+              onChange={setSelfSignup}
+              variant="purple"
+            />
           </div>
 
           <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl">

@@ -5,8 +5,9 @@ import { format } from 'date-fns';
 import { 
   CheckCircle, Clock, 
   GraduationCap, Loader2, AlertTriangle, MapPin, ChevronDown, ChevronUp,
-  Link2, ShieldAlert, ArrowRight
+  Link2, ShieldAlert, ArrowRight, Send
 } from 'lucide-react';
+import Link from 'next/link';
 import { clsx } from 'clsx';
 import { REQUEST_TYPES, STATUS_CONFIG } from '@/lib/constants';
 import type { PassRequest, Profile } from '@/types';
@@ -135,6 +136,15 @@ export default function ParentPortal() {
           <h1 className="text-3xl font-bold tracking-tight text-foreground">Parent Portal</h1>
           <p className="text-muted-foreground mt-1 text-base">Review and manage gate pass requests for your ward.</p>
         </div>
+        {data?.student && (
+          <Link
+            href="/parent/request-for-student"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-purple-500/20 active:scale-[0.98]"
+          >
+            <Send className="w-4 h-4" />
+            Request for Student
+          </Link>
+        )}
       </div>
 
       {/* Student Profile / Linking Form */}
