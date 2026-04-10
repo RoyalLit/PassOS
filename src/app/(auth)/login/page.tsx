@@ -39,31 +39,59 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    // Set a timeout to prevent infinite buffering
+    const timeoutId = setTimeout(() => {
+      if (loading) {
+        setLoading(false);
+        setError('Login timed out. Please check your internet connection and try again.');
+        console.error('Login attempt timed out after 15s');
+      }
+    }, 15000);
 
-    if (error) {
-      setError(error.message);
+    try {
+      console.log('Attempting sign in for:', email);
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) {
+        clearTimeout(timeoutId);
+        console.error('Auth error:', signInError.message);
+        setError(signInError.message);
+        setLoading(false);
+        return;
+      }
+
+      console.log('Auth success, fetching profile for:', data.user?.id);
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', data.user?.id)
+        .single();
+
+      if (profileError) {
+        console.warn('Profile fetch error (using metadata fallback):', profileError.message);
+      }
+
+      const role = profileData?.role || data.user?.user_metadata?.role || 'student';
+      console.log('Determined role:', role);
+      
+      const targetPath =
+        role === 'superadmin' ? '/superadmin' :
+        role === 'admin' ? '/admin' :
+        role === 'guard' ? '/guard/scan' :
+        role === 'parent' ? '/parent' : '/student';
+
+      console.log('Redirecting to:', targetPath);
+      clearTimeout(timeoutId);
+      window.location.replace(targetPath);
+    } catch (err) {
+      clearTimeout(timeoutId);
+      console.error('Unexpected login success/error branch:', err);
+      setError('An unexpected error occurred during sign in.');
       setLoading(false);
-      return;
     }
-
-    const { data: profileData } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', data.user?.id)
-      .single();
-
-    const role = profileData?.role || data.user?.user_metadata?.role || 'student';
-    const targetPath =
-      role === 'superadmin' ? '/superadmin' :
-      role === 'admin' ? '/admin' :
-      role === 'guard' ? '/guard/scan' :
-      role === 'parent' ? '/parent' : '/student';
-
-    window.location.replace(targetPath);
   };
 
   return (

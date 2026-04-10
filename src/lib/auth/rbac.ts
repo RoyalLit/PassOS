@@ -2,17 +2,30 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import type { UserRole, Profile } from '@/types';
 
 export async function getCurrentUser(): Promise<Profile | null> {
-  const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
+  try {
+    const supabase = await createServerSupabaseClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+      return null;
+    }
 
-  let { data: profile } = await supabase
-    .from('profiles')
-    .select('*, tenant:tenants(*)')
-    .eq('id', user.id)
-    .single();
+    const { data: profile, error: dbError } = await supabase
+      .from('profiles')
+      .select('*, tenant:tenants(*)')
+      .eq('id', user.id)
+      .single();
 
-  return profile;
+    if (dbError) {
+      console.error('Error fetching user profile:', dbError.message);
+      return null;
+    }
+
+    return profile;
+  } catch (error) {
+    console.error('Unexpected error in getCurrentUser:', error instanceof Error ? error.message : 'Unknown error');
+    return null;
+  }
 }
 
 import { redirect } from 'next/navigation';
