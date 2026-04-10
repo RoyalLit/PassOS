@@ -109,12 +109,14 @@ export function SuperadminSidebar({ userName, avatarUrl }: SuperadminSidebarProp
 
         <div className="mt-auto p-4 border-t border-border">
           <div className="flex items-center gap-3 mb-4 px-2">
-            <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-sm font-medium text-foreground border border-border shadow-sm overflow-hidden">
-              {avatarUrl ? (
-                <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-              ) : (
-                userName.charAt(0).toUpperCase()
-              )}
+            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-purple-600 via-indigo-500 to-blue-500 p-[2px] shadow-lg shadow-purple-500/20">
+              <div className="w-full h-full rounded-full bg-card flex items-center justify-center text-sm font-medium text-foreground overflow-hidden">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  userName.charAt(0).toUpperCase()
+                )}
+              </div>
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground truncate">{userName}</p>

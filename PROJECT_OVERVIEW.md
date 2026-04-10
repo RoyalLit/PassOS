@@ -2,6 +2,19 @@
 
 PassOS is a production-grade campus mobility and gate pass management system designed for high security, ease of use, and visual excellence.
 
+## 📚 Documentation Index
+
+- [**Architecture Guide**](./docs/architecture.md): Deep dive into the QR state machine and security model.
+- [**Database Guide**](./docs/database.md): Schema definitions, RLS policies, and multi-tenancy status.
+- [**Developer Setup**](./docs/setup.md): Environment variables, local installation, and migrations.
+
+---
+
+## 🚦 Project Status
+
+> [!NOTE]
+> **Multi-Tenancy**: Currently **Disabled**. The system is configured for a single university/campus environment. `tenant_id` columns are kept for future scalability but are nullable.
+
 ## 🚀 Technology Stack
 
 ### Core Framework
@@ -60,6 +73,7 @@ Dedicated portals for four distinct user roles, each with unique workflows and s
 - **Activity History**: Complete log of previous permissions and child's campus status.
 
 ### 6. Security Architecture
+See the full [**Architecture Guide**](./docs/architecture.md) for technical details.
 - **Tamper-Proof Passes**: QR codes are cryptographically signed using JWT (HS256) to prevent students from falsifying passes.
-- **State Machine**: Students cannot have two active passes at once; the system tracks specific states (Exited, Returned, etc.).
-- **Geolocation Verification**: Optional GPS tagging on requests to ensure students are where they say they are.
+- **State Machine**: Prevents multiple active passes; tracks atomic transitions (Exited, Returned).
+- **Geolocation Verification**: Optional GPS tagging for request validation.
