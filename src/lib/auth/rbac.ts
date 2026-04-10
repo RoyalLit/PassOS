@@ -4,24 +4,38 @@ import type { UserRole, Profile } from '@/types';
 export async function getCurrentUser(): Promise<Profile | null> {
   try {
     const supabase = await createServerSupabaseClient();
+    
+    console.log('[getCurrentUser] Getting user...');
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
+    console.log('[getCurrentUser] Auth result:', { 
+      hasUser: !!user, 
+      userId: user?.id,
+      error: authError?.message,
+      userMetadata: user?.user_metadata
+    });
+    
     if (authError || !user) {
+      console.log('[getCurrentUser] No user or auth error, returning null');
       return null;
     }
 
-    const { data: profile, error: dbError } = await supabase
+    console.log('[getCurrentUser] Fetching profile for user:', user.id);
+    
+    // First try without tenant join to see if that's the issue
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('*, tenant:tenants(*)')
+      .select('*')
       .eq('id', user.id)
       .single();
 
-    if (dbError) {
-      console.error('Error fetching user profile:', dbError.message);
+    if (profileError) {
+      console.error('[getCurrentUser] Profile fetch error:', profileError.message, profileError.code);
       return null;
     }
-
-    return profile;
+    
+    console.log('[getCurrentUser] Profile found:', profile?.id, profile?.role);
+    return profile as Profile;
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     
@@ -30,7 +44,7 @@ export async function getCurrentUser(): Promise<Profile | null> {
       throw error;
     }
 
-    console.error('Unexpected error in getCurrentUser:', message);
+    console.error('[getCurrentUser] Unexpected error:', message, error);
     return null;
   }
 }

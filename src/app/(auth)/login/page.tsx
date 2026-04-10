@@ -17,20 +17,35 @@ export default function LoginPage() {
 
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      console.log('[LoginPage] Checking session...');
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      console.log('[LoginPage] Session result:', { 
+        hasSession: !!session, 
+        error: sessionError?.message 
+      });
+      
       if (session) {
-        const { data: profile } = await supabase
+        console.log('[LoginPage] Session exists, fetching profile...');
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('role')
           .eq('id', session.user.id)
           .single();
+        
+        console.log('[LoginPage] Profile result:', { profile, error: profileError?.message });
+        
         const role = profile?.role || session.user.user_metadata?.role || 'student';
         const targetPath =
           role === 'superadmin' ? '/superadmin' :
           role === 'admin' ? '/admin' :
           role === 'guard' ? '/guard/scan' :
           role === 'parent' ? '/parent' : '/student';
+        
+        console.log('[LoginPage] Redirecting to:', targetPath);
         router.replace(targetPath);
+      } else {
+        console.log('[LoginPage] No session, showing login form');
       }
     };
     checkSession();
@@ -51,7 +66,7 @@ export default function LoginPage() {
     }, 15000);
 
     try {
-      console.log('Attempting sign in for:', email);
+      console.log('[LoginPage] Attempting sign in for:', email);
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -59,13 +74,13 @@ export default function LoginPage() {
 
       if (signInError) {
         clearTimeout(timeoutId);
-        console.error('Auth error:', signInError.message);
+        console.error('[LoginPage] Auth error:', signInError.message);
         setError(signInError.message);
         setLoading(false);
         return;
       }
 
-      console.log('Auth success, fetching profile for:', data.user?.id);
+      console.log('[LoginPage] Auth success, fetching profile for:', data.user?.id);
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('role')
@@ -73,11 +88,11 @@ export default function LoginPage() {
         .single();
 
       if (profileError) {
-        console.warn('Profile fetch error (using metadata fallback):', profileError.message);
+        console.warn('[LoginPage] Profile fetch error (using metadata fallback):', profileError.message);
       }
 
       const role = profileData?.role || data.user?.user_metadata?.role || 'student';
-      console.log('Determined role:', role);
+      console.log('[LoginPage] Determined role:', role);
       
       const targetPath =
         role === 'superadmin' ? '/superadmin' :
@@ -85,12 +100,12 @@ export default function LoginPage() {
         role === 'guard' ? '/guard/scan' :
         role === 'parent' ? '/parent' : '/student';
 
-      console.log('Redirecting to:', targetPath);
+      console.log('[LoginPage] Redirecting to:', targetPath);
       clearTimeout(timeoutId);
       router.replace(targetPath);
     } catch (err) {
       clearTimeout(timeoutId);
-      console.error('Unexpected login success/error branch:', err);
+      console.error('[LoginPage] Unexpected login error:', err);
       setError('An unexpected error occurred during sign in.');
       setLoading(false);
     }
