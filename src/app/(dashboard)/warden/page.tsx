@@ -26,8 +26,17 @@ export default async function WardenDashboardPage() {
     studentQuery = studentQuery.in('hostel', hostels);
   }
 
-  const { data: hostelStudents } = await studentQuery;
+  const { data: hostelStudents, error: studentError } = await studentQuery;
+  if (studentError) {
+    console.error('Diagnostic: Warden student query failed:', studentError);
+  }
+
   const studentIds = hostelStudents?.map(s => s.id) || [];
+  console.log('Diagnostic: Warden Context:', {
+    tenantId: profile.tenant_id,
+    hostels: hostels,
+    studentCount: studentIds.length
+  });
   
   // Get student states for hostel students
   const { data: studentStates } = studentIds.length > 0
