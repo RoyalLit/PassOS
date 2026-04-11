@@ -103,6 +103,7 @@ export function Sidebar({ role, userName, avatarUrl, wardens, id, email }: Sideb
           { href: '/admin/fraud', label: 'Fraud Alerts', icon: ShieldAlert },
           { href: '/admin/escalation', label: 'Escalation', icon: ShieldAlert },
           { href: '/admin/audit', label: 'Audit Log', icon: FileClock },
+          { href: '/admin/settings', label: 'Control Center', icon: Settings },
         ];
       case 'guard':
         return [
