@@ -48,7 +48,7 @@ export default async function AdminWardensPage() {
   const { data: potentialWardens } = await supabase
     .from('profiles')
     .select('id, full_name, email, hostel, role')
-    .in('role', ['admin', 'guard'])
+    .in('role', ['admin', 'guard', 'warden'])
     .order('full_name');
   
   const existingWardenIds = (wardens || []).map(w => w.profile_id);
