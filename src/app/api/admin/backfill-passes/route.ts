@@ -35,54 +35,47 @@ export async function POST() {
       return acc;
     }, {});
 
-    // Find all approved requests with no pass
-    const { data: passesData } = await supabase.from('passes').select('request_id');
-    const existingRequestIds = (passesData || []).map(p => p.request_id);
-
-    let query = supabase
+    // 1. Get ALL approved requests
+    const { data: allApproved } = await supabase
       .from('pass_requests')
-      .select('id, student_id, status, created_at')
+      .select('id, student_id, created_at')
       .eq('status', 'approved');
 
-    if (existingRequestIds.length > 0) {
-      query = query.not('id', 'in', existingRequestIds);
-    }
+    // 2. Get ALL request IDs that already have passes
+    const { data: allPassesData } = await supabase.from('passes').select('request_id');
+    const existingPassRequestIds = new Set((allPassesData || []).map(p => p.request_id));
 
-    const { data: approvedRequests } = await query;
+    // 3. Find the delta
+    const orphanedRequests = (allApproved || []).filter(req => !existingPassRequestIds.has(req.id));
 
-    const debug = {
-      requests: {
-        totalApproved: totalApproved,
-        distribution: requestStatusCounts,
-        orphaned: approvedRequests?.length || 0,
-      },
-      passes: {
-        total: allPasses?.length || 0,
-        distribution: passStatusCounts,
-      },
-      orphanedList: approvedRequests?.slice(0, 5)
-    };
+    const results = { fixed: 0, failed: 0, fixedIds: [] as string[], errors: [] as string[] };
 
-    if (!approvedRequests || approvedRequests.length === 0) {
-      return NextResponse.json({ message: 'No orphaned requests found.', debug });
-    }
-
-    const results = { fixed: 0, failed: 0, errors: [] as string[] };
-
-    for (const req of approvedRequests) {
-      try {
-        await generatePass(req.id);
-        results.fixed++;
-      } catch (e: any) {
-        results.failed++;
-        results.errors.push(`${req.id}: ${e.message}`);
+    if (orphanedRequests.length > 0) {
+      for (const req of orphanedRequests) {
+        try {
+          await generatePass(req.id);
+          results.fixed++;
+          results.fixedIds.push(req.id);
+        } catch (e: any) {
+          results.failed++;
+          results.errors.push(`${req.id}: ${e.message}`);
+        }
       }
     }
 
+    const debug = {
+      totalApproved: allApproved?.length || 0,
+      totalPasses: allPassesData?.length || 0,
+      orphanedCount: orphanedRequests.length,
+      orphanedIds: orphanedRequests.map(r => r.id),
+      statusDistribution: requestStatusCounts,
+      passDistribution: passStatusCounts,
+    };
+
     return NextResponse.json({
-      message: `Backfill complete.`,
+      message: orphanedRequests.length > 0 ? `Backfill fixed ${results.fixed} passes.` : 'No orphaned requests found.',
       debug,
-      ...results,
+      results
     });
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 });
