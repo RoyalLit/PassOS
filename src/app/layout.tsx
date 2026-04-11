@@ -9,6 +9,22 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
   title: 'PassOS | Smart Gate Pass System',
   description: 'Production-grade campus access control and student mobility system',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'PassOS',
+  },
+  appleTouchIcon: '/icons/icon-192x192.png',
+  formatDetection: {
+    telephone: false,
+  },
+  openGraph: {
+    type: 'website',
+    siteName: 'PassOS',
+    title: 'PassOS | Smart Gate Pass System',
+    description: 'Production-grade campus access control and student mobility system',
+  },
 };
 
 import { ThemeProvider } from '@/components/theme-provider';

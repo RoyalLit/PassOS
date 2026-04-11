@@ -12,11 +12,8 @@ export default async function DashboardLayout({
   const user = await getCurrentUser();
   
   if (!user) {
-    console.log('[DashboardLayout] No user, redirecting to /login');
     redirect('/login');
   }
-
-  console.log('[DashboardLayout] User authenticated:', user.full_name, user.role, 'tenant:', user.tenant_id);
 
   return (
     <div className="min-h-screen bg-background flex">

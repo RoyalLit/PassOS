@@ -26,10 +26,7 @@ export async function updateSession(request: NextRequest) {
     error,
   } = await supabase.auth.getUser();
 
-  console.log('[Middleware] Path:', request.nextUrl.pathname, { hasUser: !!user, error: error?.message });
-
   if (error || !user) {
-    console.log('[Middleware] No valid session, attempting refresh');
     await supabase.auth.refreshSession();
   }
 

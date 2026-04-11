@@ -2,7 +2,7 @@
 // PassOS — Type Definitions
 // ============================================================
 
-export type UserRole = 'student' | 'parent' | 'admin' | 'guard' | 'superadmin';
+export type UserRole = 'student' | 'parent' | 'admin' | 'guard' | 'superadmin' | 'warden';
 
 export type RequestType = 'day_outing' | 'overnight' | 'emergency' | 'medical' | 'academic';
 
@@ -31,7 +31,7 @@ export type Severity = 'low' | 'medium' | 'high' | 'critical';
 
 export type NotificationChannel = 'in_app' | 'email' | 'whatsapp' | 'sms';
 
-export type ApproverType = 'parent' | 'admin' | 'system';
+export type ApproverType = 'parent' | 'admin' | 'warden' | 'system';
 
 export type ApprovalDecision = 'approved' | 'rejected' | 'escalated';
 
@@ -56,6 +56,7 @@ export interface Profile {
   created_at: string;
   updated_at: string;
   tenant?: Tenant;
+  wardens?: Warden[];
 }
 
 export interface PassRequest {
@@ -255,4 +256,240 @@ export interface DashboardStats {
   today_approved: number;
   today_rejected: number;
   flagged_students: number;
+}
+
+// ============================================================
+// Warden Types
+// ============================================================
+
+export interface Warden {
+  id: string;
+  profile_id: string;
+  hostel: string;
+  created_at: string;
+  profile?: Profile;
+}
+
+export interface HostelAssignment {
+  id: string;
+  student_id: string;
+  hostel: string;
+  assigned_by: string | null;
+  assigned_at: string;
+  student?: Profile;
+}
+
+export interface WardenStudent extends Profile {
+  current_state: StudentState;
+  active_pass_id: string | null;
+  parent?: Profile;
+}
+
+export interface WardenDashboardStats {
+  total_students: number;
+  students_inside: number;
+  students_outside: number;
+  students_overdue: number;
+  pending_requests: number;
+  today_passes_issued: number;
+  hostels: string[];
+}
+
+export interface WardenPendingRequest extends PassRequest {
+  student?: WardenStudent;
+}
+
+// ============================================================
+// Pass Time Limits Types
+// ============================================================
+
+export interface PassTimeLimit {
+  id: string;
+  tenant_id: string;
+  pass_type: RequestType;
+  enabled: boolean;
+  allowed_start: string | null; // HH:MM format
+  allowed_end: string | null;   // HH:MM format
+  max_duration_hours: number | null;
+  created_at: string;
+}
+
+// ============================================================
+// Escalation Types
+// ============================================================
+
+export type EscalationEventType = 
+  | 'pass_overdue' 
+  | 'rapid_requests' 
+  | 'suspicious_pattern'
+  | 'late_returns';
+
+export type EscalationPriority = 'low' | 'medium' | 'high' | 'critical';
+
+export type EscalationStatus = 'active' | 'acknowledged' | 'resolved' | 'escalated';
+
+export interface EscalationRule {
+  id: string;
+  tenant_id: string;
+  name: string;
+  description: string | null;
+  event_type: EscalationEventType;
+  threshold_minutes: number;
+  priority: EscalationPriority;
+  notify_student: boolean;
+  notify_parents: boolean;
+  notify_wardens: boolean;
+  notify_admins: boolean;
+  auto_action: string | null;
+  action_params: Record<string, unknown>;
+  is_active: boolean;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EscalationLog {
+  id: string;
+  tenant_id: string | null;
+  student_id: string;
+  pass_id: string | null;
+  rule_id: string | null;
+  trigger_event: string;
+  trigger_details: Record<string, unknown>;
+  actions_taken: EscalationAction[];
+  recipients_notified: string[];
+  priority: EscalationPriority;
+  status: EscalationStatus;
+  acknowledged_by: string | null;
+  acknowledged_at: string | null;
+  resolved_by: string | null;
+  resolved_at: string | null;
+  resolution_notes: string | null;
+  created_at: string;
+  updated_at: string;
+  student?: Profile;
+}
+
+export interface EscalationAction {
+  action: string;
+  timestamp: string;
+  recipients: string[];
+}
+
+export interface EscalationTemplate {
+  id: string;
+  name: string;
+  event_type: EscalationEventType;
+  default_threshold_minutes: number;
+  default_priority: EscalationPriority;
+  notify_student: boolean;
+  notify_parents: boolean;
+  notify_wardens: boolean;
+  notify_admins: boolean;
+  description: string | null;
+  is_system: boolean;
+  created_at: string;
+}
+
+export interface EscalationContact {
+  id: string;
+  tenant_id: string;
+  profile_id: string;
+  contact_type: 'warden' | 'admin' | 'emergency';
+  is_primary: boolean;
+  phone_override: string | null;
+  email_override: string | null;
+  notify_push: boolean;
+  notify_email: boolean;
+  notify_sms: boolean;
+  quiet_until: string | null;
+  created_at: string;
+}
+
+// ============================================================
+// Push Notification Types
+// ============================================================
+
+export interface PushSubscription {
+  id: string;
+  user_id: string;
+  endpoint: string;
+  keys: {
+    p256dh: string;
+    auth: string;
+  };
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface NotificationPreference {
+  id: string;
+  user_id: string;
+  push_enabled: boolean;
+  email_enabled: boolean;
+  notify_pass_approved: boolean;
+  notify_pass_rejected: boolean;
+  notify_pass_overdue: boolean;
+  notify_parent_approval_needed: boolean;
+  notify_escalation: boolean;
+  notify_new_announcement: boolean;
+  quiet_hours_start: string | null;
+  quiet_hours_end: string | null;
+  timezone: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export type NotificationEventType =
+  | 'pass_approved'
+  | 'pass_rejected'
+  | 'pass_overdue'
+  | 'parent_approval_needed'
+  | 'escalation'
+  | 'announcement';
+
+export interface NotificationPayload {
+  title: string;
+  body: string;
+  icon?: string;
+  badge?: string;
+  tag?: string;
+  data?: Record<string, unknown>;
+  actions?: Array<{
+    action: string;
+    title: string;
+  }>;
+}
+
+export interface NotificationTemplate {
+  id: string;
+  event_type: string;
+  title_template: string;
+  body_template: string;
+  channels: NotificationChannel[];
+  created_at: string;
+}
+
+export interface NotificationLog {
+  id: string;
+  user_id: string;
+  title: string;
+  body: string;
+  notification_type: NotificationEventType;
+  data: Record<string, unknown> | null;
+  status: 'pending' | 'sent' | 'failed' | 'read';
+  sent_at: string | null;
+  read_at: string | null;
+  error_message: string | null;
+  created_at: string;
+}
+
+// Client-side push subscription request
+export interface SubscribeRequest {
+  endpoint: string;
+  keys: {
+    p256dh: string;
+    auth: string;
+  };
 }

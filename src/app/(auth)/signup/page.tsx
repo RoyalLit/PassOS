@@ -3,9 +3,8 @@
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
-import { Loader2, CheckCircle, XCircle, Users, GraduationCap } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, GraduationCap, Info } from 'lucide-react';
 import Link from 'next/link';
-import { clsx } from 'clsx';
 
 export default function SignUp() {
   const router = useRouter();
@@ -13,7 +12,6 @@ export default function SignUp() {
     email: '',
     password: '',
     full_name: '',
-    role: 'student',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -26,13 +24,13 @@ export default function SignUp() {
     setLoading(true);
     setError('');
 
-    // 1. Sign up user
+    // 1. Sign up user as student (default role)
     const { data, error: authError } = await supabase.auth.signUp({
       email: formData.email,
       password: formData.password,
       options: {
         data: {
-          role: formData.role,
+          role: 'student',
           full_name: formData.full_name,
         },
       },
@@ -118,32 +116,17 @@ export default function SignUp() {
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-foreground/80 mb-4">I am a...</label>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { id: 'student', label: 'Student', icon: GraduationCap },
-                { id: 'parent', label: 'Parent', icon: Users },
-              ].map((role) => (
-                <button
-                  key={role.id}
-                  type="button"
-                  onClick={() => setFormData({ ...formData, role: role.id })}
-                  className={clsx(
-                    "flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all text-sm font-medium",
-                    formData.role === role.id 
-                      ? "border-blue-600 bg-blue-500/10 text-blue-500" 
-                      : "border-border hover:border-blue-500/30 text-muted-foreground"
-                  )}
-                >
-                  <role.icon className={clsx("w-5 h-5", formData.role === role.id ? "text-blue-500" : "text-muted-foreground/50")} />
-                  {role.label}
-                </button>
-              ))}
+          <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-start gap-3">
+            <Info className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
+            <div className="text-sm">
+              <p className="font-medium text-blue-500">You are signing up as a Student</p>
+              <p className="text-blue-500/80 mt-1">
+                An administrator will need to approve and assign your role. Parents can be linked to your account after verification.
+              </p>
             </div>
           </div>
 
-          <div className="pt-4 flex flex-col gap-4">
+          <div className="pt-2 flex flex-col gap-4">
             <button
               type="submit"
               disabled={loading}

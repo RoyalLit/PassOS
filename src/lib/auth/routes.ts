@@ -10,6 +10,7 @@ export function canAccessRoute(role: UserRole, path: string): boolean {
     '/admin': ['admin'],
     '/guard': ['guard'],
     '/parent': ['parent'],
+    '/warden': ['warden'],
     '/superadmin': ['superadmin'], // explicit block for non-superadmins
   };
 
@@ -30,10 +31,19 @@ export function getRoleDashboardPath(role: UserRole): string {
     case 'student': return '/student';
     case 'guard': return '/guard';
     case 'parent': return '/parent';
+    case 'warden': return '/warden';
     default: return '/login';
   }
 }
 
 export function isSuperadmin(role: UserRole): boolean {
   return role === 'superadmin';
+}
+
+export function isWarden(role: UserRole): boolean {
+  return role === 'warden';
+}
+
+export function isAdminOrAbove(role: UserRole): boolean {
+  return ['admin', 'superadmin', 'warden'].includes(role);
 }

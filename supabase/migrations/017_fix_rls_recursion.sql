@@ -60,12 +60,19 @@ DROP POLICY IF EXISTS "Service role can do anything" ON public.profiles;
 -- Ensure RLS is on
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
--- SIMPLE: Anyone authenticated can see any profile (needed for Guard/Admin views)
--- This is safe because sensitive info isn't in this table, and we're in "Disabled Tenancy" mode.
+-- SELECT: Superadmins see everyone, Admins see everyone except superadmins
 CREATE POLICY "profiles_select_authenticated_v2" 
 ON public.profiles FOR SELECT 
 TO authenticated 
-USING (true);
+USING (
+  is_superadmin() = true
+  OR 
+  (current_user_role() = 'admin' AND role != 'superadmin')
+  OR 
+  id = auth.uid()
+  OR 
+  current_user_role() IS NULL
+);
 
 -- PROTECT: Only the user themselves can update their own profile
 CREATE POLICY "profiles_update_own_v2" 

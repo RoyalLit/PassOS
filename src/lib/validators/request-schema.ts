@@ -16,6 +16,14 @@ export const createRequestSchema = z.object({
   path: ['return_by'],
 });
 
+export const timeLimitSchema = z.object({
+  pass_type: z.enum(['day_outing', 'overnight', 'emergency', 'medical', 'academic']),
+  enabled: z.boolean().default(true),
+  allowed_start: z.string().nullable().optional(), // HH:MM format
+  allowed_end: z.string().nullable().optional(),   // HH:MM format
+  max_duration_hours: z.number().nullable().optional(),
+});
+
 export const approvalSchema = z.object({
   request_id: z.string().uuid(),
   decision: z.enum(['approved', 'rejected']),
@@ -31,5 +39,6 @@ export const scanSchema = z.object({
 });
 
 export type CreateRequestInput = z.infer<typeof createRequestSchema>;
+export type TimeLimitInput = z.infer<typeof timeLimitSchema>;
 export type ApprovalInput = z.infer<typeof approvalSchema>;
 export type ScanInput = z.infer<typeof scanSchema>;

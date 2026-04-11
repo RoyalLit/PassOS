@@ -7,19 +7,21 @@ import { createClient } from '@/lib/supabase/client';
 import { 
   Home, FileText, QrCode, ClipboardList, ShieldAlert,
   Users, Activity, Menu, X, LogOut, FileClock, Heart,
-  Settings, GraduationCap
+  Settings, GraduationCap, Building2, BarChart3, UserCog,
+  Bell
 } from 'lucide-react';
 import { clsx } from 'clsx';
-import type { UserRole } from '@/types';
+import type { UserRole, Warden } from '@/types';
 import { ThemeToggle } from './theme-toggle';
 
 interface SidebarProps {
   role: UserRole;
   userName: string;
   avatarUrl?: string | null;
+  wardens?: Warden[];
 }
 
-export function Sidebar({ role, userName, avatarUrl }: SidebarProps) {
+export function Sidebar({ role, userName, avatarUrl, wardens }: SidebarProps) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -41,13 +43,33 @@ export function Sidebar({ role, userName, avatarUrl }: SidebarProps) {
       } else if (role === 'parent') {
         const { count } = await supabase.from('pass_requests').select('id', { count: 'exact', head: true }).eq('status', 'parent_pending');
         setCounts({ '/parent': count || 0 });
+      } else if (role === 'warden' && wardens) {
+        const hostels = wardens.map(w => w.hostel);
+        if (hostels.length > 0) {
+          const [reqs, overdue] = await Promise.all([
+            supabase.from('pass_requests')
+              .select('id', { count: 'exact', head: true })
+              .in('status', ['pending', 'admin_pending', 'parent_pending', 'parent_approved'])
+              .in('student_id', 
+                supabase.from('profiles')
+                  .select('id')
+                  .eq('role', 'student')
+                  .in('hostel', hostels)
+              ),
+            supabase.rpc('count_overdue_by_hostels', { p_hostels: hostels })
+          ]);
+          setCounts({
+            '/warden/requests': reqs.count || 0,
+            '/warden': (overdue.data as number) || 0
+          });
+        }
       }
     }
 
     fetchCounts();
     const interval = setInterval(fetchCounts, 60000); // Refresh every minute
     return () => clearInterval(interval);
-  }, [role, supabase]);
+  }, [role, supabase, wardens]);
 
   const handleLogout = async () => {
     setLoggingOut(true);
@@ -65,6 +87,7 @@ export function Sidebar({ role, userName, avatarUrl }: SidebarProps) {
           { href: '/student/new-request', label: 'New Request', icon: FileText },
           { href: '/student/my-passes', label: 'My Passes', icon: QrCode },
           { href: '/student/history', label: 'History', icon: FileClock },
+          { href: '/notifications', label: 'Notifications', icon: Bell },
           { href: '/settings', label: 'Settings', icon: Settings },
         ];
       case 'admin':
@@ -73,20 +96,34 @@ export function Sidebar({ role, userName, avatarUrl }: SidebarProps) {
           { href: '/admin/requests', label: 'Approvals', icon: ClipboardList },
           { href: '/admin/users', label: 'Users', icon: Users },
           { href: '/admin/students', label: 'Students', icon: GraduationCap },
+          { href: '/admin/wardens', label: 'Wardens', icon: Building2 },
           { href: '/admin/fraud', label: 'Fraud Alerts', icon: ShieldAlert },
+          { href: '/admin/escalation', label: 'Escalation', icon: ShieldAlert },
           { href: '/admin/audit', label: 'Audit Log', icon: FileClock },
+          { href: '/notifications', label: 'Notifications', icon: Bell },
           { href: '/admin/settings', label: 'Control Center', icon: Settings },
         ];
       case 'guard':
         return [
           { href: '/guard/scan', label: 'Scanner', icon: QrCode },
           { href: '/guard', label: 'Recent Scans', icon: ClipboardList },
+          { href: '/notifications', label: 'Notifications', icon: Bell },
           { href: '/settings', label: 'Settings', icon: Settings },
         ];
       case 'parent':
         return [
           { href: '/parent', label: 'Student Requests', icon: Heart },
+          { href: '/notifications', label: 'Notifications', icon: Bell },
           { href: '/settings', label: 'Settings', icon: Settings },
+        ];
+      case 'warden':
+        return [
+          { href: '/warden', label: 'Dashboard', icon: Activity },
+          { href: '/warden/requests', label: 'Approvals', icon: ClipboardList },
+          { href: '/warden/students', label: 'Students', icon: GraduationCap },
+          { href: '/warden/parents', label: 'Parents', icon: Users },
+          { href: '/warden/analytics', label: 'Analytics', icon: BarChart3 },
+          { href: '/notifications', label: 'Notifications', icon: Bell },
         ];
       default:
         return [];
