@@ -131,6 +131,7 @@ function NewRequestForm() {
       return_by,
       geo_lat: 0, // Fallback
       geo_lng: 0, // Fallback
+      extension_of: extensionOf || undefined,
     };
 
     try {

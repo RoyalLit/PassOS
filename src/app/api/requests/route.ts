@@ -35,6 +35,10 @@ export async function POST(request: Request) {
 
     // 2. One Active Request Rule
     if (!isExtension) {
+      if (new Date(data.departure_at) < new Date()) {
+        return NextResponse.json({ error: 'Validation failed', details: { departure_at: ['Departure must be in the future'] } }, { status: 400 });
+      }
+
       // Run both checks in parallel — cuts 2 sequential round-trips down to 1
       const [
         { data: pendingRequests, error: pendingError },
