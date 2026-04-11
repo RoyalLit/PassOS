@@ -67,9 +67,19 @@ export default function AnalyticsDashboard() {
               <BarChart data={data.chart_data}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                 <XAxis dataKey="date" tickFormatter={(val) => val.split('-').slice(1).join('/')} stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} />
-                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} />
-                <Tooltip cursor={{fill: 'hsl(var(--muted) / 0.1)'}} contentStyle={{backgroundColor: 'hsl(var(--card))', backdropFilter: 'blur(8px)', borderRadius: '12px', border: '1px solid hsl(var(--border))', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.15)', color: 'hsl(var(--foreground))' }} />
-                <Bar dataKey="passes" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} maxBarSize={50} />
+                <YAxis allowDecimals={false} stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} />
+                <Tooltip 
+                  cursor={{ fill: 'hsl(var(--muted))', opacity: 0.3 }} 
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--card))', 
+                    backdropFilter: 'blur(8px)', 
+                    borderRadius: '12px', 
+                    border: '1px solid hsl(var(--border))', 
+                    boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', 
+                    color: 'hsl(var(--foreground))' 
+                  }} 
+                />
+                <Bar dataKey="passes" fill="var(--primary)" radius={[4, 4, 0, 0]} maxBarSize={50} />
               </BarChart>
             </ResponsiveContainer>
           </div>
