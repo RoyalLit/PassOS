@@ -9,12 +9,17 @@ export default async function WardenAnalyticsPage() {
   
   const hostels = profile.wardens?.map(w => w.hostel) || [];
   
-  // Get all students in hostels
-  const { data: hostelStudents } = await supabase
+  let studentQuery = supabase
     .from('profiles')
     .select('id, hostel')
     .eq('role', 'student')
-    .in('hostel', hostels);
+    .eq('tenant_id', profile.tenant_id);
+
+  if (hostels.length > 0) {
+    studentQuery = studentQuery.in('hostel', hostels);
+  }
+
+  const { data: hostelStudents } = await studentQuery;
   
   const studentIds = hostelStudents?.map(s => s.id) || [];
   
@@ -41,10 +46,10 @@ export default async function WardenAnalyticsPage() {
   
   const passesPerDay = await Promise.all(
     last7Days.map(async ({ date, day }) => {
-      const { count } = studentIds.length > 0
         ? await supabase
             .from('passes')
             .select('id', { count: 'exact', head: true })
+            .eq('tenant_id', profile.tenant_id)
             .in('student_id', studentIds)
             .gte('created_at', `${date}T00:00:00`)
             .lt('created_at', `${date}T23:59:59`)
@@ -57,10 +62,10 @@ export default async function WardenAnalyticsPage() {
   // Get approved/rejected counts per day
   const activityData = await Promise.all(
     last7Days.map(async ({ date, day }) => {
-      const { data: requests } = studentIds.length > 0
         ? await supabase
             .from('pass_requests')
             .select('status')
+            .eq('tenant_id', profile.tenant_id)
             .in('student_id', studentIds)
             .gte('created_at', `${date}T00:00:00`)
             .lt('created_at', `${date}T23:59:59`)

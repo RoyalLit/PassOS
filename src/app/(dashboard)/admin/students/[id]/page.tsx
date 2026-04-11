@@ -3,8 +3,9 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { 
   ArrowLeft, Mail, Phone, MapPin, Users, 
   History, ShieldAlert, GraduationCap, Link2, 
-  Unlink, ExternalLink, Activity, AlertCircle
+  Unlink, ExternalLink, Activity, AlertCircle, UserCog
 } from 'lucide-react';
+import { ClientEditProfileButton } from '@/components/common/client-edit-profile-button';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { format } from 'date-fns';
@@ -88,12 +89,7 @@ export default async function StudentDetailPage({
           Back to Directory
         </Link>
         <div className="flex gap-3">
-          <Link 
-            href={`/admin/users?edit=${student.id}`}
-            className="px-4 py-2 bg-card border border-border text-foreground/80 rounded-xl text-sm font-bold shadow-sm hover:bg-muted transition-colors flex items-center justify-center"
-          >
-            Edit Profile
-          </Link>
+          <ClientEditProfileButton user={student as any} variant="button" className="!bg-card !border-border !text-foreground/80 hover:!bg-muted" />
           <button className={clsx(
             "px-4 py-2 rounded-xl text-sm font-bold shadow-sm transition-all",
             student.is_flagged 

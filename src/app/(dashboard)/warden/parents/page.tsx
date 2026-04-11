@@ -3,8 +3,9 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { Badge } from '@/components/ui/badge';
 import { 
   Building2, User, Mail, Phone, Users, Search,
-  CheckCircle2
+  CheckCircle2, UserCog
 } from 'lucide-react';
+import { ClientEditProfileButton } from '@/components/common/client-edit-profile-button';
 import Link from 'next/link';
 import { clsx } from 'clsx';
 import type { Profile } from '@/types';
@@ -101,10 +102,11 @@ export default async function WardenParentsPage() {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-lg text-foreground">
+                      <h3 className="font-bold text-lg text-foreground flex items-center gap-2">
                         {parent.full_name}
+                        <ClientEditProfileButton user={parent as any} variant="icon" />
                       </h3>
-                      <div className="flex flex-wrap items-center gap-3 mt-1 text-sm text-muted-foreground">
+                      <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                         {parent.email && (
                           <span className="flex items-center gap-1">
                             <Mail className="w-4 h-4" />

@@ -3,12 +3,13 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
-  Building2, User, Users, Plus, Trash2, X, CheckCircle2, Loader2
+  Building2, User, Users, Plus, Trash2, X, CheckCircle2, Loader2, UserCog
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { clsx } from 'clsx';
 import type { Warden, Profile } from '@/types';
+import { EditUserModal } from './edit-user-modal';
 
 interface WardenManagementProps {
   allWardens: {
@@ -33,6 +34,7 @@ export function WardenManagement({
   const [selectedHostels, setSelectedHostels] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [editingUser, setEditingUser] = useState<Profile | null>(null);
 
   const handleAddHostel = (hostel: string) => {
     setSelectedHostels(prev => 
@@ -271,6 +273,16 @@ export function WardenManagement({
                     </span>
                   ))}
                   
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setEditingUser(profile)}
+                        className="p-2 text-muted-foreground/50 hover:text-blue-500 hover:bg-blue-500/10 rounded-xl transition-all"
+                        title="Edit Profile"
+                      >
+                        <UserCog className="w-4 h-4" />
+                      </button>
+                    </div>
+                  
                   {assignedHostels.length === 0 && (
                     <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-bold border border-amber-500/20">
                       <X className="w-3 h-3" />
@@ -303,6 +315,14 @@ export function WardenManagement({
           </div>
         )}
       </div>
+
+      {editingUser && (
+        <EditUserModal
+          user={editingUser}
+          isOpen={!!editingUser}
+          onClose={() => setEditingUser(null)}
+        />
+      )}
     </div>
   );
 }

@@ -94,7 +94,6 @@ export function WardenAnalyticsCharts({ stats, hostels }: WardenAnalyticsProps) 
                   <XAxis 
                     dataKey="day" 
                     tick={{ fontSize: 12 }}
-                    tickFormatter={(value) => format(new Date(value), 'EEE')}
                   />
                   <YAxis tick={{ fontSize: 12 }} />
                   <Tooltip 

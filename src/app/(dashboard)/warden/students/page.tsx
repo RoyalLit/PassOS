@@ -2,6 +2,7 @@ import { requireWarden } from '@/lib/auth/rbac';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { Badge } from '@/components/ui/badge';
 import { Building2, User, Mail, Phone, AlertTriangle, Search } from 'lucide-react';
+import { ClientEditProfileButton } from '@/components/common/client-edit-profile-button';
 import Link from 'next/link';
 import { clsx } from 'clsx';
 import type { Profile } from '@/types';
@@ -148,15 +149,18 @@ export default async function WardenStudentsPage({
                         <p className="text-sm text-muted-foreground">{student.email}</p>
                       </div>
                     </div>
-                    <Badge 
-                      variant="outline"
-                      className={clsx(
-                        'capitalize',
-                        stateColors[state as keyof typeof stateColors]
-                      )}
-                    >
-                      {stateLabels[state as keyof typeof stateLabels]}
-                    </Badge>
+                     <div className="flex items-center gap-2">
+                      <ClientEditProfileButton user={student as any} />
+                      <Badge 
+                        variant="outline"
+                        className={clsx(
+                          'capitalize shrink-0',
+                          stateColors[state as keyof typeof stateColors]
+                        )}
+                      >
+                        {stateLabels[state as keyof typeof stateLabels]}
+                      </Badge>
+                    </div>
                   </div>
                 </div>
                 

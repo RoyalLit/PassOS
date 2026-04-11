@@ -13,12 +13,15 @@ import {
 import { clsx } from 'clsx';
 import type { UserRole, Warden } from '@/types';
 import { ThemeToggle } from './theme-toggle';
+import { ClientEditProfileButton } from '@/components/common/client-edit-profile-button';
 
 interface SidebarProps {
   role: UserRole;
   userName: string;
   avatarUrl?: string | null;
   wardens?: Warden[];
+  email?: string; // Added to reconstruct profile for self-edit
+  id?: string;    // Added to reconstruct profile for self-edit
 }
 
 export function Sidebar({ role, userName, avatarUrl, wardens }: SidebarProps) {
@@ -196,6 +199,19 @@ export function Sidebar({ role, userName, avatarUrl, wardens }: SidebarProps) {
               <p className="text-sm font-medium text-foreground truncate">{userName}</p>
               <p className="text-xs text-muted-foreground capitalize">{role}</p>
             </div>
+            {(role !== 'student' || pathname.startsWith('/student')) && (
+              <ClientEditProfileButton 
+                user={{ 
+                  id: id || '', 
+                  full_name: userName, 
+                  role: role, 
+                  email: email || '',
+                  avatar_url: avatarUrl || undefined
+                } as any} 
+                disableRoleChange={true}
+                className="opacity-0 group-hover:opacity-100 transition-opacity"
+              />
+            )}
           </div>
           
           <div className="flex items-center gap-2">

@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { Calendar, MapPin, Clock, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { ClientEditProfileButton } from '@/components/common/client-edit-profile-button';
 import type { PassRequest, Profile } from '@/types';
 
 interface RequestCardProps {
@@ -57,11 +58,12 @@ export function RequestCard({ request, isAdminView = false }: RequestCardProps) 
                 )}
               </div>
               <div>
-                <h3 className="font-bold text-foreground group-hover:text-blue-600 transition-colors">
+                <h3 className="font-bold text-foreground group-hover:text-blue-600 transition-colors flex items-center gap-2">
                   {request.student.full_name} 
+                  <ClientEditProfileButton user={request.student} variant="icon" />
                 </h3>
                 <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest bg-muted px-2 py-0.5 rounded">
-                  {request.student.hostel} • {request.student.room_number}
+                  {request.student.hostel} • {request.student.room_number || 'No Room'}
                 </span>
               </div>
             </div>

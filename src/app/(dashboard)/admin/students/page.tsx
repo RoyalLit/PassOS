@@ -1,6 +1,7 @@
 import { requireRole } from '@/lib/auth/rbac';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { Search, Filter, Mail, Phone, ExternalLink } from 'lucide-react';
+import { ClientEditProfileButton } from '@/components/common/client-edit-profile-button';
 import Link from 'next/link';
 import { RealtimeRefresh } from '@/components/common/realtime-refresh';
 
@@ -119,12 +120,15 @@ export default async function StudentsDirectory() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <Link 
-                        href={`/admin/students/${student.id}`} 
-                        className="inline-flex items-center justify-center p-2 text-muted-foreground/50 hover:text-blue-500 hover:bg-blue-500/10 rounded-lg transition-colors border border-transparent hover:border-blue-500/20"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                      </Link>
+                      <div className="flex items-center justify-end gap-2">
+                        <ClientEditProfileButton user={student as any} />
+                        <Link 
+                          href={`/admin/students/${student.id}`} 
+                          className="inline-flex items-center justify-center p-2 text-muted-foreground/50 hover:text-blue-500 hover:bg-blue-500/10 rounded-lg transition-colors border border-transparent hover:border-blue-500/20"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 );

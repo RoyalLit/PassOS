@@ -26,6 +26,8 @@ export default async function DashboardLayout({
   return (
     <div className="min-h-screen bg-background flex">
       <Sidebar 
+        id={profile.id}
+        email={profile.email}
         role={profile.role} 
         userName={profile.full_name} 
         avatarUrl={profile.avatar_url}
