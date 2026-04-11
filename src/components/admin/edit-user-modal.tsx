@@ -44,26 +44,29 @@ export function EditUserModal({ user, isOpen, onClose, onUpdate, disableRoleChan
     setUpdating(true);
 
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
+      const response = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: user.id,
           role: editForm.role,
           full_name: editForm.full_name,
           phone: editForm.phone,
           hostel: editForm.role === 'student' ? editForm.hostel : null,
           room_number: editForm.role === 'student' ? editForm.room_number : null,
         })
-        .eq('id', user.id);
+      });
 
-      if (error) throw error;
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error);
 
       toast.success('Profile updated successfully');
       onUpdate?.();
       onClose();
       router.refresh();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Update error:', error);
-      toast.error('Failed to update profile');
+      toast.error(error.message || 'Failed to update profile');
     } finally {
       setUpdating(false);
     }
