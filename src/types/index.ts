@@ -23,7 +23,7 @@ export type StudentState = 'inside' | 'outside' | 'overdue';
 
 export type ScanType = 'exit' | 'entry';
 
-export type ScanResult = 'valid' | 'expired' | 'already_used' | 'revoked' | 'invalid_signature' | 'error';
+export type ScanResult = 'valid' | 'expired' | 'already_used' | 'revoked' | 'invalid_signature' | 'late_entry' | 'error';
 
 export type FraudFlagType = 'rapid_requests' | 'repeated_excuse' | 'late_returns' | 'suspicious_pattern' | 'manual_flag';
 
