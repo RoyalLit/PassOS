@@ -23,22 +23,25 @@ export async function POST() {
 
     // DEBUG GATHERING
     const { count: totalApproved } = await supabase.from('pass_requests').select('*', { count: 'exact', head: true }).eq('status', 'approved');
-    const { count: totalPasses } = await supabase.from('passes').select('*', { count: 'exact', head: true });
+    const { data: allPasses } = await supabase.from('passes').select('status, student_id');
+    const passStatusCounts = (allPasses || []).reduce((acc: any, curr: any) => {
+      acc[curr.status] = (acc[curr.status] || 0) + 1;
+      return acc;
+    }, {});
+    
     const { data: allStatuses } = await supabase.from('pass_requests').select('status');
-    const statusCounts = (allStatuses || []).reduce((acc: any, curr: any) => {
+    const requestStatusCounts = (allStatuses || []).reduce((acc: any, curr: any) => {
       acc[curr.status] = (acc[curr.status] || 0) + 1;
       return acc;
     }, {});
 
     // Find all approved requests with no pass
-    // 1. Get all request IDs that already have passes
-    const { data: passes } = await supabase.from('passes').select('request_id');
-    const existingRequestIds = (passes || []).map(p => p.request_id);
+    const { data: passesData } = await supabase.from('passes').select('request_id');
+    const existingRequestIds = (passesData || []).map(p => p.request_id);
 
-    // 2. Clear query for approved requests not in that list
     let query = supabase
       .from('pass_requests')
-      .select('id, student_id, created_at')
+      .select('id, student_id, status, created_at')
       .eq('status', 'approved');
 
     if (existingRequestIds.length > 0) {
@@ -48,11 +51,16 @@ export async function POST() {
     const { data: approvedRequests } = await query;
 
     const debug = {
-      totalApprovedInDb: totalApproved,
-      totalPassesInDb: totalPasses,
-      existingRequestIdsInPassesCount: existingRequestIds.length,
-      statusDistribution: statusCounts,
-      orphanedFound: approvedRequests?.length || 0,
+      requests: {
+        totalApproved: totalApproved,
+        distribution: requestStatusCounts,
+        orphaned: approvedRequests?.length || 0,
+      },
+      passes: {
+        total: allPasses?.length || 0,
+        distribution: passStatusCounts,
+      },
+      orphanedList: approvedRequests?.slice(0, 5)
     };
 
     if (!approvedRequests || approvedRequests.length === 0) {
