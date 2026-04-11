@@ -47,5 +47,5 @@ export const STUDENT_STATE_CONFIG = {
   overdue: { label: 'Overdue', color: 'bg-red-500/10 text-red-500', dot: 'bg-red-500' },
 } as const;
 
-export const MAX_REQUESTS_PER_DAY = 3;
+export const MAX_REQUESTS_PER_DAY = 10;
 export const APPROVAL_TOKEN_EXPIRY_HOURS = 24;
