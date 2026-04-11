@@ -24,6 +24,42 @@ export async function generatePass(request_id: string) {
       throw new Error('Request not approved');
     }
 
+    if (passReq.extension_of) {
+      // EXTENSION LOGIC: Update existing pass instead of creating new one
+      const validUntil = new Date(new Date(passReq.return_by).getTime() + 60 * 60 * 1000).toISOString();
+      const nonce = generateNonce();
+      
+      const signedPayload = await signQRPayload({
+        pass_id: passReq.extension_of,
+        student_id: passReq.student_id,
+        nonce: nonce,
+        valid_until: validUntil,
+      });
+
+      const { data: updatedPass, error: updateError } = await supabase
+        .from('passes')
+        .update({
+          request_id: passReq.id, // Link to the extension request
+          qr_payload: signedPayload,
+          qr_nonce: nonce,
+          valid_until: validUntil,
+          status: 'active'
+        })
+        .eq('id', passReq.extension_of)
+        .select()
+        .single();
+        
+      if (updateError) throw updateError;
+      
+      // Update student state active pass ID just in case it was different
+      await supabase
+        .from('student_states')
+        .update({ active_pass_id: updatedPass.id })
+        .eq('student_id', passReq.student_id);
+
+      return updatedPass;
+    }
+
     const { data: existingPass } = await supabase
       .from('passes')
       .select('id')

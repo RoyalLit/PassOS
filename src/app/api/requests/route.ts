@@ -133,6 +133,7 @@ export async function POST(request: Request) {
         geo_lat: data.geo_lat,
         geo_lng: data.geo_lng,
         geo_valid, // Use server-side calculated value
+        extension_of: data.extension_of,
         status: initialStatus,
       })
       .select()
