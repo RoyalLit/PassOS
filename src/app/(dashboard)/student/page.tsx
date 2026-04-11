@@ -8,6 +8,7 @@ import { format } from 'date-fns';
 import type { PassRequest } from '@/types';
 import { RequestIcon } from '@/components/requests/request-icon';
 import { CopyButton } from '@/components/ui/copy-button';
+import { RealtimeRefresh } from '@/components/common/realtime-refresh';
 import { CancelRequestButton } from '@/components/requests/cancel-request-button';
 
 export default async function StudentDashboard() {
@@ -56,6 +57,7 @@ export default async function StudentDashboard() {
   
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-6">
+      <RealtimeRefresh tables={['pass_requests', 'passes', 'student_states']} />
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Welcome, {profile.full_name.split(' ')[0]}</h1>

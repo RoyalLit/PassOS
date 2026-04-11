@@ -22,11 +22,21 @@ export async function POST() {
     }
 
     // Find all approved requests with no pass
-    const { data: approvedRequests } = await supabase
+    // 1. Get all request IDs that already have passes
+    const { data: passes } = await supabase.from('passes').select('request_id');
+    const existingRequestIds = (passes || []).map(p => p.request_id);
+
+    // 2. Clear query for approved requests not in that list
+    let query = supabase
       .from('pass_requests')
       .select('id')
-      .eq('status', 'approved')
-      .not('id', 'in', `(SELECT request_id FROM passes)`);
+      .eq('status', 'approved');
+
+    if (existingRequestIds.length > 0) {
+      query = query.not('id', 'in', existingRequestIds);
+    }
+
+    const { data: approvedRequests } = await query;
 
     if (!approvedRequests || approvedRequests.length === 0) {
       return NextResponse.json({ message: 'No orphaned requests found. Already clean!', fixed: 0 });
