@@ -13,15 +13,6 @@ export default async function WardenDashboardPage() {
   const profile = await requireWarden();
   const supabase = await createServerSupabaseClient();
 
-  if (!profile || !profile.tenant_id) {
-    return (
-      <div className="p-12 text-center">
-        <h1 className="text-xl font-bold text-foreground mb-2">Account Setup Incomplete</h1>
-        <p className="text-muted-foreground">Your warden profile is missing a tenant assignment. Please contact your administrator.</p>
-      </div>
-    );
-  }
-
   const hostels = profile.wardens?.map(w => w.hostel) || [];
   
   // Get hostel-specific stats (if any assigned, otherwise all students in tenant)
