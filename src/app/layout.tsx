@@ -34,6 +34,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from 'sonner';
 import { getCurrentUser } from '@/lib/auth/rbac';
 import { BrandingProvider } from '@/components/layout/branding-provider';
+import { PushNotificationProvider } from '@/hooks/use-push-notifications';
 
 export default async function RootLayout({
   children,
@@ -52,17 +53,19 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <BrandingProvider tenant={user?.tenant}>
-            <main className="flex-1">
-              {children}
-            </main>
-            <footer className="py-6 border-t border-border bg-card/50 backdrop-blur-sm">
-              <div className="max-w-7xl mx-auto px-4 text-center">
-                <p className="text-xs font-medium text-muted-foreground tracking-widest uppercase">
-                  built with purpose by pahul
-                </p>
-              </div>
-            </footer>
-            <Toaster position="top-center" richColors expand={true} />
+            <PushNotificationProvider>
+              <main className="flex-1">
+                {children}
+              </main>
+              <footer className="py-6 border-t border-border bg-card/50 backdrop-blur-sm">
+                <div className="max-w-7xl mx-auto px-4 text-center">
+                  <p className="text-xs font-medium text-muted-foreground tracking-widest uppercase">
+                    built with purpose by pahul
+                  </p>
+                </div>
+              </footer>
+              <Toaster position="top-center" richColors expand={true} />
+            </PushNotificationProvider>
           </BrandingProvider>
         </ThemeProvider>
       </body>
