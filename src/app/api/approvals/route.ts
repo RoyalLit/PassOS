@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { verifyApprovalToken } from '@/lib/crypto/approval-tokens';
 import { requireRole } from '@/lib/auth/rbac';
 import { approvalSchema } from '@/lib/validators/request-schema';
@@ -101,7 +102,8 @@ export async function POST(request: Request) {
     }
 
     // Route 2: Admin or Warden Approval via Session
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const supabaseSession = await createServerSupabaseClient();
+    const { data: { user }, error: authError } = await supabaseSession.auth.getUser();
     if (!user || authError) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

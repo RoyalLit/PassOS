@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { requireRole } from '@/lib/auth/rbac';
 import { generatePass } from '@/app/api/passes/route';
 import { checkRateLimit, getRateLimitHeaders } from '@/lib/rate-limit';
@@ -26,14 +27,15 @@ export async function POST(request: Request) {
 
     // 2. Auth & Role Verification
     // Both admins and wardens can bulk approve, assuming they pass the RLS checks or custom logic
-    const supabase = createAdminClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const supabaseSession = await createServerSupabaseClient();
+    const { data: { user }, error: authError } = await supabaseSession.auth.getUser();
     
     // Check if the user is authorized as admin or warden (we'll fetch profile directly to be safe)
     if (!user || authError) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const supabase = createAdminClient();
     const { data: profile } = await supabase
       .from('profiles')
       .select('id, role')
