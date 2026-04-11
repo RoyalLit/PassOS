@@ -100,6 +100,7 @@ export default function UsersPage() {
 
   // Update effect to handle editId once users are loaded
   useEffect(() => {
+    const editId = searchParams.get('edit');
     if (editId && users.length > 0) {
       const userToEdit = users.find(u => u.id === editId);
       if (userToEdit) {
