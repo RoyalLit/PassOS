@@ -12,7 +12,7 @@ export async function getCurrentUser(): Promise<Profile | null> {
 
     const { data: profile, error: dbError } = await supabase
       .from('profiles')
-      .select('*, tenant:tenants(*)')
+      .select('*, tenant:tenant_id (*)')
       .eq('id', user.id)
       .single();
 
@@ -54,7 +54,7 @@ export async function getAuthDiagnostics() {
 
   const { data: profile, error } = await supabase
     .from('profiles')
-    .select('*, tenant:tenants(*)')
+    .select('*, tenant:tenant_id (*)')
     .eq('id', user.id)
     .single();
 
