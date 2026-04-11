@@ -15,12 +15,16 @@ export default async function StudentDashboard() {
   const supabase = await createServerSupabaseClient();
 
   // Get active passes
-  const { data: activePasses } = await supabase
+  const { data: activePasses, error: passError } = await supabase
     .from('passes')
-    .select('*, request:pass_requests(*)')
+    .select('*, request:pass_requests!request_id(*)')
     .eq('student_id', profile.id)
     .in('status', ['active', 'used_exit'])
     .order('created_at', { ascending: false });
+
+  if (passError) {
+    console.error('[StudentDashboard] Error fetching passes:', passError.message, passError.code);
+  }
 
   // Get recent requests
   const { data: recentRequests } = await supabase

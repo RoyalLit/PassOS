@@ -9,12 +9,16 @@ export default async function MyPassesPage() {
   const profile = await requireRole('student');
   const supabase = await createServerSupabaseClient();
 
-  const { data: passes } = await supabase
+  const { data: passes, error: passError } = await supabase
     .from('passes')
-    .select('*, request:pass_requests(*)')
+    .select('*, request:pass_requests!request_id(*)')
     .eq('student_id', profile.id)
     .in('status', ['active', 'used_exit'])
     .order('created_at', { ascending: false });
+
+  if (passError) {
+    console.error('[MyPasses] Error fetching passes:', passError.message, passError.code);
+  }
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-8">
