@@ -108,6 +108,7 @@ export function EditUserModal({ user, isOpen, onClose, onUpdate, disableRoleChan
         </h2>
         
         <form onSubmit={handleUpdate} className="space-y-4">
+          <div>
             <label className="block text-sm font-medium text-foreground mb-1">
               Role {disableRoleChange && <span className="text-[10px] text-muted-foreground font-normal ml-2">(Locked)</span>}
             </label>

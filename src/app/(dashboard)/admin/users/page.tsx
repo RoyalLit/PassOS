@@ -553,6 +553,8 @@ export default function UsersPage() {
               </>
             )}
           </div>
+        </div>
+      )}
       {showEditModal && editingUser && (
         <EditUserModal
           user={editingUser}

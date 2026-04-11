@@ -15,6 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Loader2, Plus, Pencil, Trash2, AlertTriangle, Check, Clock, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
+import { ClientEditProfileButton } from '@/components/common/client-edit-profile-button';
 import type { EscalationRule, EscalationTemplate, EscalationLog, EscalationEventType, EscalationPriority } from '@/types';
 
 const EVENT_TYPES: { value: EscalationEventType; label: string }[] = [
@@ -419,8 +420,11 @@ export function EscalationManagement() {
                 ) : (
                   logs.map((log) => (
                     <TableRow key={log.id}>
-                      <TableCell className="font-medium">
+                      <TableCell className="font-medium flex items-center gap-2">
                         {(log.student as unknown as { full_name: string })?.full_name || 'Unknown'}
+                        {log.student && (
+                          <ClientEditProfileButton user={log.student as any} variant="icon" />
+                        )}
                       </TableCell>
                       <TableCell>
                         {EVENT_TYPES.find(e => e.value === log.trigger_event)?.label || log.trigger_event}

@@ -24,7 +24,7 @@ interface SidebarProps {
   id?: string;    // Added to reconstruct profile for self-edit
 }
 
-export function Sidebar({ role, userName, avatarUrl, wardens }: SidebarProps) {
+export function Sidebar({ role, userName, avatarUrl, wardens, id, email }: SidebarProps) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);

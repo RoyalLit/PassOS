@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import type { FraudFlag } from '@/types';
 import { clsx } from 'clsx';
+import { ClientEditProfileButton } from '@/components/common/client-edit-profile-button';
 
 interface FraudTableProps {
   flags: FraudFlag[];
@@ -246,7 +247,10 @@ export function FraudTable({ flags }: FraudTableProps) {
                       {selectedFlag.student?.full_name?.charAt(0)}
                     </div>
                     <div>
-                      <h3 className="font-bold text-lg text-foreground">{selectedFlag.student?.full_name}</h3>
+                      <h3 className="font-bold text-lg text-foreground flex items-center gap-2">
+                        {selectedFlag.student?.full_name}
+                        <ClientEditProfileButton user={selectedFlag.student as any} variant="icon" />
+                      </h3>
                       <p className="text-sm text-muted-foreground">{selectedFlag.student?.email}</p>
                     </div>
                   </div>

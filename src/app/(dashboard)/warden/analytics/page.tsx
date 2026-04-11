@@ -46,6 +46,7 @@ export default async function WardenAnalyticsPage() {
   
   const passesPerDay = await Promise.all(
     last7Days.map(async ({ date, day }) => {
+      const { count } = studentIds.length > 0
         ? await supabase
             .from('passes')
             .select('id', { count: 'exact', head: true })
@@ -62,6 +63,7 @@ export default async function WardenAnalyticsPage() {
   // Get approved/rejected counts per day
   const activityData = await Promise.all(
     last7Days.map(async ({ date, day }) => {
+      const { data: dayRequests } = studentIds.length > 0
         ? await supabase
             .from('pass_requests')
             .select('status')
@@ -71,7 +73,7 @@ export default async function WardenAnalyticsPage() {
             .lt('created_at', `${date}T23:59:59`)
         : { data: [] };
 
-      const reqs = requests || [];
+      const reqs = dayRequests || [];
       return {
         day,
         requests: reqs.length,
