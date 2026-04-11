@@ -92,7 +92,6 @@ export function Sidebar({ role, userName, avatarUrl, wardens, id, email }: Sideb
           { href: '/student/new-request', label: 'New Request', icon: FileText },
           { href: '/student/my-passes', label: 'My Passes', icon: QrCode },
           { href: '/student/history', label: 'History', icon: FileClock },
-          { href: '/settings', label: 'Settings', icon: Settings },
         ];
       case 'admin':
         return [
@@ -104,18 +103,15 @@ export function Sidebar({ role, userName, avatarUrl, wardens, id, email }: Sideb
           { href: '/admin/fraud', label: 'Fraud Alerts', icon: ShieldAlert },
           { href: '/admin/escalation', label: 'Escalation', icon: ShieldAlert },
           { href: '/admin/audit', label: 'Audit Log', icon: FileClock },
-          { href: '/admin/settings', label: 'Control Center', icon: Settings },
         ];
       case 'guard':
         return [
           { href: '/guard/scan', label: 'Scanner', icon: QrCode },
           { href: '/guard', label: 'Recent Scans', icon: ClipboardList },
-          { href: '/settings', label: 'Settings', icon: Settings },
         ];
       case 'parent':
         return [
           { href: '/parent', label: 'Student Requests', icon: Heart },
-          { href: '/settings', label: 'Settings', icon: Settings },
         ];
       case 'warden':
         return [
@@ -124,7 +120,6 @@ export function Sidebar({ role, userName, avatarUrl, wardens, id, email }: Sideb
           { href: '/warden/students', label: 'Students', icon: GraduationCap },
           { href: '/warden/parents', label: 'Parents', icon: Users },
           { href: '/warden/analytics', label: 'Analytics', icon: BarChart3 },
-          { href: '/settings', label: 'Settings', icon: Settings },
         ];
       default:
         return [];
