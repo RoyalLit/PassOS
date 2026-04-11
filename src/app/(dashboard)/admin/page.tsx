@@ -5,7 +5,7 @@ import { SearchInput } from '@/components/ui/search-input';
 import { RealtimeRefresh } from '@/components/common/realtime-refresh';
 import { ActivityCharts } from '@/components/admin/activity-charts';
 import { QuickActions } from '@/components/admin/quick-actions';
-import { ActivityFeed } from '@/components/admin/activity-feed';
+import { MobilityPulse } from '@/components/admin/mobility-pulse';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Filter, TrendingUp, TrendingDown, Users, Clock, AlertTriangle, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
@@ -49,10 +49,16 @@ export default async function AdminDashboard(props: { searchParams: Promise<{ q?
     .select('created_at, status')
     .gte('created_at', last7Days.toISOString());
 
-  // Get recent activity feed
-  const { data: recentActivity } = await supabase
-    .from('audit_logs')
-    .select('*')
+  // Get live mobility pulse (recent scans)
+  const { data: recentScans } = await supabase
+    .from('pass_scans')
+    .select(`
+      *,
+      pass:passes(
+        id,
+        student:profiles(full_name, avatar_url)
+      )
+    `)
     .order('created_at', { ascending: false })
     .limit(10);
 
@@ -151,7 +157,7 @@ export default async function AdminDashboard(props: { searchParams: Promise<{ q?
       {/* Charts and Activity */}
       <div className="grid md:grid-cols-2 gap-6">
         <ActivityCharts activityData={weekActivity || []} />
-        <ActivityFeed activities={recentActivity || []} />
+        <MobilityPulse scans={(recentScans as any) || []} />
       </div>
 
       {/* Action Center */}

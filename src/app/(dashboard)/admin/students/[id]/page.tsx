@@ -88,9 +88,12 @@ export default async function StudentDetailPage({
           Back to Directory
         </Link>
         <div className="flex gap-3">
-          <button className="px-4 py-2 bg-card border border-border text-foreground/80 rounded-xl text-sm font-bold shadow-sm hover:bg-muted transition-colors">
+          <Link 
+            href={`/admin/users?edit=${student.id}`}
+            className="px-4 py-2 bg-card border border-border text-foreground/80 rounded-xl text-sm font-bold shadow-sm hover:bg-muted transition-colors flex items-center justify-center"
+          >
             Edit Profile
-          </button>
+          </Link>
           <button className={clsx(
             "px-4 py-2 rounded-xl text-sm font-bold shadow-sm transition-all",
             student.is_flagged 

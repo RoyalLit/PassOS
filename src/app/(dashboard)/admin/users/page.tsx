@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { toast } from 'sonner';
+import { useSearchParams, useRouter } from 'next/navigation';
 import type { UserRole } from '@/types';
 
 interface Profile {
@@ -50,7 +51,6 @@ const ROLE_CONFIG = {
   guard: { label: 'Security', icon: ShieldCheck, color: 'emerald' },
   warden: { label: 'Wardens', icon: Bed, color: 'cyan' },
   admin: { label: 'Admins', icon: Users, color: 'amber' },
-  superadmin: { label: 'Superadmins', icon: ShieldCheck, color: 'red' },
 } as const;
 
 export default function UsersPage() {
@@ -77,6 +77,40 @@ export default function UsersPage() {
   });
 
   const [editForm, setEditForm] = useState<Partial<Profile>>({});
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  useEffect(() => {
+    fetchUsers().then(() => {
+      const action = searchParams.get('action');
+      const editId = searchParams.get('edit');
+
+      if (action === 'add') {
+        setShowCreateModal(true);
+        // Clear params
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
+      } else if (editId) {
+        // Need to find the user in the already fetched list
+        // Wait for users to be fetched if they haven't been
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Update effect to handle editId once users are loaded
+  useEffect(() => {
+    if (editId && users.length > 0) {
+      const userToEdit = users.find(u => u.id === editId);
+      if (userToEdit) {
+        openEditModal(userToEdit);
+        // Clear params to avoid loop/re-open
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, users.length]);
 
   useEffect(() => {
     fetchUsers();
@@ -668,7 +702,7 @@ export default function UsersPage() {
                 <button
                   type="submit"
                   disabled={updating}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-xl font-bold text-sm hover:bg-primary/90 transition-all disabled:opacity-50 shadow-lg shadow-primary/20"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-all disabled:opacity-50 shadow-lg shadow-blue-500/20"
                 >
                   {updating && <Loader2 className="w-4 h-4 animate-spin" />}
                   Save Changes

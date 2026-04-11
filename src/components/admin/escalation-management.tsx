@@ -224,30 +224,44 @@ export function EscalationManagement() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="space-y-8 animate-pulse">
+        <div className="flex justify-between items-center mb-6">
+          <div className="space-y-2">
+            <div className="h-6 w-48 bg-muted rounded" />
+            <div className="h-4 w-64 bg-muted rounded" />
+          </div>
+          <div className="h-10 w-32 bg-muted rounded-xl" />
+        </div>
+        <div className="grid gap-6">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-40 bg-card border border-border rounded-2xl" />
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <Tabs defaultValue="rules" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="rules">Escalation Rules</TabsTrigger>
-          <TabsTrigger value="templates">Templates</TabsTrigger>
-          <TabsTrigger value="logs">Active Escalations ({logs.filter(l => l.status !== 'resolved').length})</TabsTrigger>
+      <Tabs defaultValue="rules" className="space-y-8">
+        <TabsList className="bg-muted/50 p-1">
+          <TabsTrigger value="rules" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">Escalation Rules</TabsTrigger>
+          <TabsTrigger value="templates" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">Templates</TabsTrigger>
+          <TabsTrigger value="logs" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">Active Escalations ({logs.filter(l => l.status !== 'resolved').length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="rules" className="space-y-4">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center mb-6">
             <div>
-              <h3 className="text-lg font-medium">Escalation Rules</h3>
-              <p className="text-sm text-muted-foreground">
+              <h3 className="text-xl font-bold text-foreground">Escalation Rules</h3>
+              <p className="text-sm text-muted-foreground mt-1">
                 Configure when and how escalations are triggered
               </p>
             </div>
-            <Button onClick={openCreateDialog}>
+            <Button 
+              onClick={openCreateDialog}
+              className="bg-blue-600 text-white hover:bg-blue-700 rounded-xl font-bold shadow-lg shadow-blue-500/20"
+            >
               <Plus className="h-4 w-4 mr-2" />
               Add Rule
             </Button>
@@ -582,11 +596,15 @@ export function EscalationManagement() {
               </div>
             </div>
 
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+            <DialogFooter className="pt-6">
+              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)} className="rounded-xl">
                 Cancel
               </Button>
-              <Button type="submit" disabled={saving}>
+              <Button 
+                type="submit" 
+                disabled={saving}
+                className="bg-blue-600 text-white hover:bg-blue-700 rounded-xl font-bold shadow-lg shadow-blue-500/20 px-8"
+              >
                 {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 {editingRule ? 'Update Rule' : 'Create Rule'}
               </Button>
