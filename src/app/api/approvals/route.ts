@@ -120,7 +120,7 @@ export async function POST(request: Request) {
     approver_type = userProfile.role;
 
     // Must be in a pending state
-    if (!['pending', 'admin_pending', 'parent_pending'].includes(passReq.status)) {
+    if (!['pending', 'admin_pending', 'parent_pending', 'parent_approved'].includes(passReq.status)) {
       return NextResponse.json({ error: 'Request not in approvable state' }, { status: 400 });
     }
 
