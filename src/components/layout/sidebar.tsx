@@ -13,7 +13,6 @@ import {
 import { clsx } from 'clsx';
 import type { UserRole, Warden } from '@/types';
 import { ThemeToggle } from './theme-toggle';
-import { NotificationBell } from '../notifications/notification-bell';
 
 interface SidebarProps {
   role: UserRole;
@@ -90,7 +89,6 @@ export function Sidebar({ role, userName, avatarUrl, wardens }: SidebarProps) {
           { href: '/student/new-request', label: 'New Request', icon: FileText },
           { href: '/student/my-passes', label: 'My Passes', icon: QrCode },
           { href: '/student/history', label: 'History', icon: FileClock },
-          { href: '/notifications', label: 'Notifications', icon: Bell },
           { href: '/settings', label: 'Settings', icon: Settings },
         ];
       case 'admin':
@@ -103,20 +101,17 @@ export function Sidebar({ role, userName, avatarUrl, wardens }: SidebarProps) {
           { href: '/admin/fraud', label: 'Fraud Alerts', icon: ShieldAlert },
           { href: '/admin/escalation', label: 'Escalation', icon: ShieldAlert },
           { href: '/admin/audit', label: 'Audit Log', icon: FileClock },
-          { href: '/notifications', label: 'Notifications', icon: Bell },
           { href: '/admin/settings', label: 'Control Center', icon: Settings },
         ];
       case 'guard':
         return [
           { href: '/guard/scan', label: 'Scanner', icon: QrCode },
           { href: '/guard', label: 'Recent Scans', icon: ClipboardList },
-          { href: '/notifications', label: 'Notifications', icon: Bell },
           { href: '/settings', label: 'Settings', icon: Settings },
         ];
       case 'parent':
         return [
           { href: '/parent', label: 'Student Requests', icon: Heart },
-          { href: '/notifications', label: 'Notifications', icon: Bell },
           { href: '/settings', label: 'Settings', icon: Settings },
         ];
       case 'warden':
@@ -126,7 +121,6 @@ export function Sidebar({ role, userName, avatarUrl, wardens }: SidebarProps) {
           { href: '/warden/students', label: 'Students', icon: GraduationCap },
           { href: '/warden/parents', label: 'Parents', icon: Users },
           { href: '/warden/analytics', label: 'Analytics', icon: BarChart3 },
-          { href: '/notifications', label: 'Notifications', icon: Bell },
         ];
       default:
         return [];
@@ -164,15 +158,6 @@ export function Sidebar({ role, userName, avatarUrl, wardens }: SidebarProps) {
               const Icon = link.icon;
               const isActive = pathname === link.href || (pathname.startsWith(link.href) && link.href !== `/${role}`);
               
-              if (link.href === '/notifications') {
-                return (
-                  <div key="notifications" className="flex items-center gap-3 px-1 py-1 rounded-xl text-sm font-medium text-muted-foreground hover:bg-muted/50 hover:text-foreground hover:translate-x-1 transition-all group/link relative">
-                    <NotificationBell />
-                    <span className="flex-1 -ml-1">Notifications</span>
-                  </div>
-                );
-              }
-
               return (
                 <Link
                   key={link.href}
