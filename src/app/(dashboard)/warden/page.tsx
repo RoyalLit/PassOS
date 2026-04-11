@@ -97,7 +97,7 @@ export default async function WardenDashboardPage() {
             Warden Dashboard
           </h1>
           <p className="text-muted-foreground">
-            Managing {hostels.length > 1 ? `${hostels.length} hostels` : hostel}
+            Managing {hostels.length > 1 ? `${hostels.length} hostels` : hostels[0]}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">

@@ -4,7 +4,12 @@ import { Badge } from '@/components/ui/badge';
 import { Building2, User, Mail, Phone, AlertTriangle, Search } from 'lucide-react';
 import Link from 'next/link';
 import { clsx } from 'clsx';
-import type { WardenStudent } from '@/types';
+import type { Profile } from '@/types';
+
+interface StudentWithState extends Profile {
+  student_states?: { current_state: string; active_pass_id: string | null }[];
+  parent?: Profile;
+}
 
 interface SearchParams {
   filter?: string;
@@ -43,8 +48,8 @@ export default async function WardenStudentsPage({
   const { data: students } = await query;
   
   // Filter by state if specified
-  const filteredStudents = (students || []).filter((student: WardenStudent) => {
-    const state = student.student_states?.current_state || 'inside';
+  const filteredStudents = (students || []).filter((student: StudentWithState) => {
+    const state = student.student_states?.[0]?.current_state || 'inside';
     
     if (filter === 'inside' && state !== 'inside') return false;
     if (filter === 'outside' && state !== 'outside') return false;
@@ -113,8 +118,8 @@ export default async function WardenStudentsPage({
       {/* Student Grid */}
       {filteredStudents.length > 0 ? (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredStudents.map((student: WardenStudent) => {
-            const state = student.student_states?.current_state || 'inside';
+          {filteredStudents.map((student: StudentWithState) => {
+            const state = student.student_states?.[0]?.current_state || 'inside';
             
             return (
               <div 

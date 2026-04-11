@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = await createServerSupabaseClient();
+    const adminClient = createAdminClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
@@ -20,7 +22,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data, error } = await supabase.rpc('save_push_subscription', {
+    const { data, error } = await adminClient.rpc('save_push_subscription', {
       p_user_id: user.id,
       p_endpoint: endpoint,
       p_keys: keys,
@@ -40,7 +42,8 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = await createServerSupabaseClient();
+    const adminClient = createAdminClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
@@ -54,7 +57,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Missing endpoint parameter' }, { status: 400 });
     }
 
-    const { data, error } = await supabase.rpc('delete_push_subscription', {
+    const { data, error } = await adminClient.rpc('delete_push_subscription', {
       p_user_id: user.id,
       p_endpoint: endpoint,
     });
@@ -73,14 +76,15 @@ export async function DELETE(request: NextRequest) {
 
 export async function GET() {
   try {
-    const supabase = await createClient();
+    const supabase = await createServerSupabaseClient();
+    const adminClient = createAdminClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { data: subscriptions, error } = await supabase
+    const { data: subscriptions, error } = await adminClient
       .from('push_subscriptions')
       .select('id, endpoint, keys, is_active, created_at')
       .eq('user_id', user.id)

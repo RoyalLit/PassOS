@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import type { NotificationPayload, NotificationEventType } from '@/types';
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
@@ -11,7 +11,7 @@ interface SendPushResult {
 }
 
 export async function getUserSubscriptions(userId: string) {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { data, error } = await supabase
     .from('push_subscriptions')
     .select('id, endpoint, keys')
@@ -30,7 +30,7 @@ export async function checkNotificationPreference(
   userId: string,
   eventType: NotificationEventType
 ): Promise<boolean> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   
   const { data, error } = await supabase
     .from('notification_preferences')
@@ -56,7 +56,7 @@ export async function checkNotificationPreference(
   };
 
   const preferenceField = eventPreferenceMap[eventType];
-  if (preferenceField && !data[preferenceField]) {
+  if (preferenceField && !(data as Record<string, unknown>)[preferenceField]) {
     return false;
   }
 
@@ -123,7 +123,7 @@ export async function notifyUser(
     return { success: true, sent: 0, failed: 0 };
   }
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const logId = await supabase.rpc('log_notification', {
     p_user_id: userId,
@@ -222,8 +222,8 @@ export function formatNotificationTemplate(
 ): { title: string; body: string } {
   const template = NotificationTemplates[eventType];
   
-  let title = template.title;
-  let body = template.body;
+  let title: string = template.title;
+  let body: string = template.body;
 
   for (const [key, value] of Object.entries(variables)) {
     title = title.replace(new RegExp(`\\{${key}\\}`, 'g'), value);

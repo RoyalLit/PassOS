@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
-type RealtimeTable = 'pass_requests' | 'passes' | 'pass_scans' | 'student_states' | 'fraud_flags';
+type RealtimeTable = 'pass_requests' | 'passes' | 'pass_scans' | 'student_states' | 'fraud_flags' | 'escalation_logs';
 
 export function useRealtime(tables: RealtimeTable[]) {
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());

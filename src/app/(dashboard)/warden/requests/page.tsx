@@ -16,6 +16,15 @@ export default async function WardenRequestsPage() {
   
   const hostels = profile.wardens?.map(w => w.hostel) || [];
   
+  // First get student IDs from warden's hostels
+  const { data: hostelStudents } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('role', 'student')
+    .in('hostel', hostels);
+  
+  const studentIds = hostelStudents?.map(s => s.id) || [];
+  
   // Get pending requests from warden's hostels
   const { data: requests } = await supabase
     .from('pass_requests')
@@ -27,14 +36,7 @@ export default async function WardenRequestsPage() {
         student_states(current_state)
       )
     `)
-    .eq('role', 'student')
-    .in('student_id', 
-      supabase
-        .from('profiles')
-        .select('id')
-        .eq('role', 'student')
-        .in('hostel', hostels)
-    )
+    .in('student_id', studentIds)
     .in('status', ['pending', 'admin_pending', 'parent_pending', 'parent_approved'])
     .order('created_at', { ascending: false });
   

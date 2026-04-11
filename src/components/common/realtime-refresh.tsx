@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
-type RealtimeTable = 'profiles' | 'pass_requests' | 'passes' | 'pass_scans' | 'student_states' | 'fraud_flags';
+type RealtimeTable = 'profiles' | 'pass_requests' | 'passes' | 'pass_scans' | 'student_states' | 'fraud_flags' | 'escalation_logs';
 
 interface RealtimeRefreshProps {
   tables: RealtimeTable[];

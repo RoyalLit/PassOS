@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
-  Building2, User, Plus, Trash2, X, CheckCircle2, Loader2
+  Building2, User, Users, Plus, Trash2, X, CheckCircle2, Loader2
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';

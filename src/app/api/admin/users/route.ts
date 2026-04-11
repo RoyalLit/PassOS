@@ -24,7 +24,7 @@ export async function GET(request: Request) {
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (role && ['student', 'parent', 'guard', 'admin'].includes(role)) {
+    if (role && ['student', 'parent', 'guard', 'admin', 'warden', 'superadmin'].includes(role)) {
       query = query.eq('role', role);
     }
 
@@ -55,9 +55,9 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!['student', 'parent', 'guard'].includes(role)) {
+    if (!['student', 'parent', 'guard', 'warden'].includes(role)) {
       return NextResponse.json(
-        { error: 'Invalid role. Must be student, parent, or guard' },
+        { error: 'Invalid role. Must be student, parent, guard, or warden' },
         { status: 400 }
       );
     }
@@ -139,6 +139,58 @@ export async function POST(request: Request) {
     });
   } catch (error: unknown) {
     console.error('Create user error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    await requireRole('admin');
+    const supabaseAdmin = createAdminClient();
+    const body = await request.json();
+    const { user_id, role, full_name, phone, hostel, room_number } = body;
+
+    if (!user_id) {
+      return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+    }
+
+    // Role validation
+    if (role && !['student', 'parent', 'guard', 'warden', 'admin'].includes(role)) {
+      return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
+    }
+
+    // Update Auth User Metadata if role or name changed
+    if (role || full_name) {
+      const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(
+        user_id,
+        {
+          user_metadata: {
+            ...(role ? { role } : {}),
+            ...(full_name ? { full_name } : {}),
+          }
+        }
+      );
+      if (authError) throw authError;
+    }
+
+    // Update Profile
+    const { error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .update({
+        ...(role ? { role } : {}),
+        ...(full_name ? { full_name } : {}),
+        ...(phone !== undefined ? { phone: phone || null } : {}),
+        ...(hostel !== undefined ? { hostel: hostel || null } : {}),
+        ...(room_number !== undefined ? { room_number: room_number || null } : {}),
+      })
+      .eq('id', user_id);
+
+    if (profileError) throw profileError;
+
+    return NextResponse.json({ success: true });
+  } catch (error: unknown) {
+    console.error('Update user error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Internal server error';
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }

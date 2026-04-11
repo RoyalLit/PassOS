@@ -15,7 +15,10 @@ export const metadata: Metadata = {
     statusBarStyle: 'default',
     title: 'PassOS',
   },
-  appleTouchIcon: '/icons/icon-192x192.png',
+  icons: {
+    icon: '/icons/icon-192x192.png',
+    apple: '/icons/icon-192x192.png',
+  },
   formatDetection: {
     telephone: false,
   },

@@ -9,6 +9,10 @@ import Link from 'next/link';
 import { clsx } from 'clsx';
 import type { Profile } from '@/types';
 
+interface ParentWithChildren extends Profile {
+  children?: (Profile & { student_states?: { current_state: string }[] })[];
+}
+
 export default async function WardenParentsPage() {
   const profile = await requireWarden();
   const supabase = await createServerSupabaseClient();
@@ -33,7 +37,7 @@ export default async function WardenParentsPage() {
     .order('full_name');
 
   // Filter to only show parents whose children are in warden's hostels
-  const filteredParents = (parents || []).filter((parent: Profile) => {
+  const filteredParents = (parents || []).filter((parent: ParentWithChildren) => {
     const children = parent.children || [];
     return children.some((child: Profile & { student_states?: { current_state: string }[] }) => 
       hostels.includes(child.hostel || '')
@@ -68,7 +72,7 @@ export default async function WardenParentsPage() {
       {/* Parent List */}
       {filteredParents.length > 0 ? (
         <div className="space-y-4">
-          {filteredParents.map((parent: Profile & { children?: (Profile & { student_states?: { current_state: string }[] })[] }) => {
+          {filteredParents.map((parent: ParentWithChildren) => {
             const children = parent.children || [];
             const hostelChildren = children.filter((child: Profile & { student_states?: { current_state: string }[] }) => 
               hostels.includes(child.hostel || '')

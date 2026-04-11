@@ -1,16 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 export async function GET() {
   try {
-    const supabase = await createClient();
+    const supabase = await createServerSupabaseClient();
+    const adminClient = createAdminClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { data: preferences, error: prefsError } = await supabase.rpc(
+    const { data: preferences, error: prefsError } = await adminClient.rpc(
       'get_notification_preferences',
       { p_user_id: user.id }
     );
@@ -32,7 +34,8 @@ export async function GET() {
 
 export async function PUT(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = await createServerSupabaseClient();
+    const adminClient = createAdminClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
@@ -54,7 +57,7 @@ export async function PUT(request: NextRequest) {
       timezone,
     } = body;
 
-    const { data: preferences, error: prefsError } = await supabase.rpc(
+    const { data: preferences, error: prefsError } = await adminClient.rpc(
       'update_notification_preferences',
       {
         p_user_id: user.id,

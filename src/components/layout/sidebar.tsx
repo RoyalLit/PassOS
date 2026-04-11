@@ -46,16 +46,18 @@ export function Sidebar({ role, userName, avatarUrl, wardens }: SidebarProps) {
       } else if (role === 'warden' && wardens) {
         const hostels = wardens.map(w => w.hostel);
         if (hostels.length > 0) {
+          const { data: hostelStudents } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('role', 'student')
+            .in('hostel', hostels);
+          const studentIds = hostelStudents?.map(s => s.id) || [];
+          
           const [reqs, overdue] = await Promise.all([
             supabase.from('pass_requests')
               .select('id', { count: 'exact', head: true })
               .in('status', ['pending', 'admin_pending', 'parent_pending', 'parent_approved'])
-              .in('student_id', 
-                supabase.from('profiles')
-                  .select('id')
-                  .eq('role', 'student')
-                  .in('hostel', hostels)
-              ),
+              .in('student_id', studentIds),
             supabase.rpc('count_overdue_by_hostels', { p_hostels: hostels })
           ]);
           setCounts({

@@ -1,5 +1,5 @@
-import { createClient } from '@/lib/supabase/server';
-import { notifyUser, formatNotificationTemplate } from '@/lib/push/notifications';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { notifyUser } from '@/lib/push/notifications';
 import type { EscalationRule, EscalationLog, EscalationEventType, EscalationPriority } from '@/types';
 
 interface EscalationContext {
@@ -18,7 +18,7 @@ interface EscalationResult {
 }
 
 export async function triggerEscalation(context: EscalationContext): Promise<EscalationResult> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { studentId, passId, eventType, tenantId, details } = context;
 
   const result: EscalationResult = { success: true, notificationsSent: 0, errors: [] };
@@ -77,7 +77,7 @@ export async function triggerEscalation(context: EscalationContext): Promise<Esc
 async function checkThreshold(rule: EscalationRule, context: EscalationContext): Promise<boolean> {
   if (!context.passId) return true;
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   if (rule.event_type === 'pass_overdue') {
     const { data: pass } = await supabase
@@ -99,7 +99,7 @@ async function checkThreshold(rule: EscalationRule, context: EscalationContext):
 }
 
 async function createEscalationLog(
-  supabase: Awaited<ReturnType<typeof createClient>>,
+  supabase: ReturnType<typeof createAdminClient>,
   rule: EscalationRule,
   context: EscalationContext
 ): Promise<string> {
@@ -121,7 +121,7 @@ async function createEscalationLog(
 }
 
 async function getEscalationRecipients(
-  supabase: Awaited<ReturnType<typeof createClient>>,
+  supabase: ReturnType<typeof createAdminClient>,
   studentId: string,
   tenantId: string,
   rule: EscalationRule
@@ -188,7 +188,7 @@ async function sendEscalationNotification(
   rule: EscalationRule,
   context: EscalationContext
 ): Promise<{ success: boolean; error?: string }> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   
   const { data: student } = await supabase
     .from('profiles')
@@ -240,7 +240,7 @@ async function sendEscalationNotification(
 }
 
 async function updateEscalationActions(
-  supabase: Awaited<ReturnType<typeof createClient>>,
+  supabase: ReturnType<typeof createAdminClient>,
   logId: string,
   action: string,
   recipients: string[]
@@ -253,7 +253,7 @@ async function updateEscalationActions(
 }
 
 async function executeAutoAction(
-  supabase: Awaited<ReturnType<typeof createClient>>,
+  supabase: ReturnType<typeof createAdminClient>,
   rule: EscalationRule,
   context: EscalationContext
 ): Promise<void> {
@@ -301,7 +301,7 @@ export async function acknowledgeEscalation(
   logId: string,
   userId: string
 ): Promise<boolean> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { error } = await supabase.rpc('acknowledge_escalation', {
     p_log_id: logId,
     p_acknowledged_by: userId,
@@ -315,7 +315,7 @@ export async function resolveEscalation(
   userId: string,
   notes?: string
 ): Promise<boolean> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { error } = await supabase.rpc('resolve_escalation', {
     p_log_id: logId,
     p_resolved_by: userId,
@@ -326,7 +326,7 @@ export async function resolveEscalation(
 }
 
 export async function getActiveEscalations(tenantId: string) {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('escalation_logs')
@@ -350,7 +350,7 @@ export async function checkPassOverdueAndEscalate(
   studentId: string,
   tenantId: string
 ): Promise<void> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data: pass } = await supabase
     .from('passes')

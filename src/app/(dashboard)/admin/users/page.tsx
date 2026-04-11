@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { 
   UserPlus, Users, GraduationCap, User, ShieldCheck, 
   X, Loader2, Search, Trash2, Copy, Check, ChevronDown,
-  Mail, Phone, Building
+  Mail, Phone, Building, Bed
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { toast } from 'sonner';
@@ -26,7 +26,7 @@ interface Profile {
 interface NewUserForm {
   full_name: string;
   email: string;
-  role: 'student' | 'parent' | 'guard';
+  role: 'student' | 'parent' | 'guard' | 'warden';
   phone: string;
   hostel: string;
   room_number: string;
@@ -48,6 +48,7 @@ const ROLE_CONFIG = {
   student: { label: 'Students', icon: GraduationCap, color: 'blue' },
   parent: { label: 'Parents', icon: User, color: 'purple' },
   guard: { label: 'Security', icon: ShieldCheck, color: 'emerald' },
+  warden: { label: 'Wardens', icon: Bed, color: 'cyan' },
   admin: { label: 'Admins', icon: Users, color: 'amber' },
   superadmin: { label: 'Superadmins', icon: ShieldCheck, color: 'red' },
 } as const;
@@ -61,6 +62,8 @@ export default function UsersPage() {
   const [creating, setCreating] = useState(false);
   const [createdUser, setCreatedUser] = useState<CreatedUser | null>(null);
   const [copied, setCopied] = useState(false);
+  const [editingUser, setEditingUser] = useState<Profile | null>(null);
+  const [updating, setUpdating] = useState(false);
   const [form, setForm] = useState<NewUserForm>({
     full_name: '',
     email: '',
@@ -158,6 +161,30 @@ export default function UsersPage() {
     }
   };
 
+  const handleUpdateRole = async (userId: string, newRole: UserRole) => {
+    setUpdating(true);
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, role: newRole }),
+      });
+
+      if (!res.ok) {
+        const json = await res.json();
+        throw new Error(json.error);
+      }
+
+      toast.success('Role updated successfully');
+      setEditingUser(null);
+      fetchUsers();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to update role');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   const filteredUsers = users.filter(user => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
@@ -173,6 +200,7 @@ export default function UsersPage() {
     student: users.filter(u => u.role === 'student').length,
     parent: users.filter(u => u.role === 'parent').length,
     guard: users.filter(u => u.role === 'guard').length,
+    warden: users.filter(u => u.role === 'warden').length,
     admin: users.filter(u => u.role === 'admin').length,
     superadmin: users.filter(u => u.role === 'superadmin').length,
   };
@@ -315,12 +343,26 @@ export default function UsersPage() {
                         )}
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button
-                          onClick={() => handleDeleteUser(user.id)}
-                          className="p-2 text-red-500/50 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          <select
+                            value={user.role}
+                            onChange={(e) => handleUpdateRole(user.id, e.target.value as UserRole)}
+                            disabled={updating}
+                            className="text-xs bg-background border border-border rounded-lg px-2 py-1 outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
+                          >
+                            <option value="student">Student</option>
+                            <option value="parent">Parent</option>
+                            <option value="guard">Guard</option>
+                            <option value="warden">Warden</option>
+                            <option value="admin">Admin</option>
+                          </select>
+                          <button
+                            onClick={() => handleDeleteUser(user.id)}
+                            className="p-2 text-red-500/50 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -400,6 +442,7 @@ export default function UsersPage() {
                         <option value="student">Student</option>
                         <option value="parent">Parent</option>
                         <option value="guard">Security Guard</option>
+                        <option value="warden">Warden</option>
                       </select>
                       <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
                     </div>
