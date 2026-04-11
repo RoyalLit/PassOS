@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Plus, Clock, Users, CheckCircle2 } from 'lucide-react';
 import { STATUS_CONFIG, REQUEST_TYPES } from '@/lib/constants';
 import { clsx } from 'clsx';
+import { format } from 'date-fns';
 import type { PassRequest } from '@/types';
 import { RequestIcon } from '@/components/requests/request-icon';
 import { CopyButton } from '@/components/ui/copy-button';
@@ -90,7 +91,7 @@ export default async function StudentDashboard() {
               <div className="relative z-10 flex justify-between items-center gap-4">
                 <div>
                   <h2 className="text-xl font-bold mb-1">Active Pass Available</h2>
-                  <p className="text-blue-100 text-sm">Valid until {activePasses[0].valid_until && new Date(activePasses[0].valid_until).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                  <p className="text-blue-100 text-sm">Valid until {activePasses[0].valid_until && format(new Date(activePasses[0].valid_until), 'MMM d, h:mm a')}</p>
                 </div>
                 <div className="flex gap-3">
                   <Link 

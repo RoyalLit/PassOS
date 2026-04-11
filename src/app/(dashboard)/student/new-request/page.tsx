@@ -8,6 +8,7 @@ import { REQUEST_TYPES, PREDEFINED_REASONS } from '@/lib/constants';
 import { getSettings, AppSettings } from '@/lib/actions/settings';
 import { isWithinCampus } from '@/lib/geo/campus-boundary';
 import { RequestIcon } from '@/components/requests/request-icon';
+import { createClient } from '@/lib/supabase/client';
 import { clsx } from 'clsx';
 import Link from 'next/link';
 
@@ -20,7 +21,7 @@ function NewRequestForm() {
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [geoStatus, setGeoStatus] = useState<'checking' | 'valid' | 'invalid' | 'disabled'>('checking');
 
-  const { register, handleSubmit, watch } = useForm({
+  const { register, handleSubmit, watch, setValue } = useForm({
     defaultValues: {
       request_type: 'day_outing',
       outing_date: new Date().toISOString().split('T')[0],
@@ -45,6 +46,30 @@ function NewRequestForm() {
         const s = await getSettings();
         setSettings(s);
         
+        if (extensionOf) {
+          const supabase = createClient();
+          const { data: passData } = await supabase
+            .from('passes')
+            .select('request:pass_requests(*)')
+            .eq('id', extensionOf)
+            .single();
+            
+          if (passData?.request) {
+            const req = passData.request as any;
+            setValue('request_type', req.request_type);
+            setValue('destination', req.destination || 'Extension');
+            setValue('reason', 'Other');
+            setValue('manual_reason', req.reason || 'Extending pass');
+            if (req.departure_at) {
+              const depDate = new Date(req.departure_at);
+              const dateStr = depDate.getFullYear() + '-' + String(depDate.getMonth() + 1).padStart(2, '0') + '-' + String(depDate.getDate()).padStart(2, '0');
+              setValue('start_date', dateStr);
+              setValue('outing_date', dateStr);
+              setValue('time_out', depDate.toTimeString().slice(0, 5));
+            }
+          }
+        }
+
         if (!s.geofencing_enabled) {
           setGeoStatus('disabled');
           return;
@@ -101,7 +126,7 @@ function NewRequestForm() {
     const payload = {
       request_type: formData.request_type,
       reason: extensionOf ? `EXTENSION of ${extensionOf}: ${finalReason}` : finalReason,
-      destination: formData.destination,
+      destination: formData.destination || 'Extension',
       departure_at,
       return_by,
       geo_lat: 0, // Fallback
@@ -152,8 +177,9 @@ function NewRequestForm() {
         <form onSubmit={handleSubmit(onSubmit)} className="divide-y divide-border">
           
           {/* Section 1: Type Selection */}
-          <div className="p-8 space-y-6">
-            <div className="flex items-center gap-3 mb-2">
+          {!extensionOf && (
+            <div className="p-8 space-y-6">
+              <div className="flex items-center gap-3 mb-2">
               <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
                 <Calendar className="w-4 h-4 text-blue-600" />
               </div>
@@ -193,6 +219,7 @@ function NewRequestForm() {
               ))}
             </div>
           </div>
+          )}
 
           {/* Section 2: Timing */}
           <div className="p-8 space-y-6 bg-muted/5">
@@ -292,6 +319,7 @@ function NewRequestForm() {
           </div>
 
           {/* Section 3: Details */}
+          {!extensionOf && (
             <div className="p-8 space-y-6">
               <div className="space-y-2">
                 <label className="text-sm font-bold text-foreground/80">Destination</label>
@@ -337,6 +365,7 @@ function NewRequestForm() {
                 </div>
               )}
             </div>
+          )}
 
           {/* Section 4: Location Check */}
           {geoStatus !== 'disabled' && (
