@@ -4,7 +4,6 @@ import { QRDisplay } from '@/components/passes/qr-display';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import type { Pass } from '@/types';
-import { RealtimeRefresh } from '@/components/common/realtime-refresh';
 
 export default async function MyPassesPage() {
   const profile = await requireRole('student');
@@ -19,7 +18,6 @@ export default async function MyPassesPage() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-8">
-      <RealtimeRefresh tables={['passes', 'pass_requests']} />
       <div className="flex items-center gap-4 mb-4">
         <Link href="/student" className="p-2 bg-card rounded-full border border-border shadow-sm hover:bg-muted transition-colors">
           <ArrowLeft className="w-5 h-5 text-foreground/80" />

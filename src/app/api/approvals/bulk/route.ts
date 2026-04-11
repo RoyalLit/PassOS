@@ -77,8 +77,7 @@ export async function POST(request: Request) {
       request_id: req.id,
       tenant_id: req.tenant_id,
       approver_id: profile.id,
-      // DB check constraint only allows 'parent','admin','system' — map warden to 'admin'
-      approver_type: profile.role === 'warden' ? 'admin' : profile.role,
+      approver_type: profile.role,
       decision,
       reason: reason || (decision === 'approved' ? 'Bulk approved' : 'Bulk rejected'),
       ip_address: clientIp,

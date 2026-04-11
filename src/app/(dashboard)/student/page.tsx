@@ -8,7 +8,6 @@ import { format } from 'date-fns';
 import type { PassRequest } from '@/types';
 import { RequestIcon } from '@/components/requests/request-icon';
 import { CopyButton } from '@/components/ui/copy-button';
-import { RealtimeRefresh } from '@/components/common/realtime-refresh';
 import { CancelRequestButton } from '@/components/requests/cancel-request-button';
 
 export default async function StudentDashboard() {
@@ -16,28 +15,20 @@ export default async function StudentDashboard() {
   const supabase = await createServerSupabaseClient();
 
   // Get active passes
-  const { data: activePasses, error: passesError } = await supabase
+  const { data: activePasses } = await supabase
     .from('passes')
     .select('*, request:pass_requests(*)')
     .eq('student_id', profile.id)
     .in('status', ['active', 'used_exit'])
     .order('created_at', { ascending: false });
 
-  if (passesError) {
-    console.error('Student Dashboard - Passes Fetch Error:', passesError);
-  }
-
   // Get recent requests
-  const { data: recentRequests, error: requestsError } = await supabase
+  const { data: recentRequests } = await supabase
     .from('pass_requests')
     .select('*')
     .eq('student_id', profile.id)
     .order('created_at', { ascending: false })
     .limit(5);
-
-  if (requestsError) {
-    console.error('Student Dashboard - Recent Requests Fetch Error:', requestsError);
-  }
 
   // Check for any PENDING or ACTIVE request specifically for the "One Pass" rule
   const { data: pendingRequests } = await supabase
@@ -65,7 +56,6 @@ export default async function StudentDashboard() {
   
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-6">
-      <RealtimeRefresh tables={['pass_requests', 'passes', 'student_states']} />
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Welcome, {profile.full_name.split(' ')[0]}</h1>

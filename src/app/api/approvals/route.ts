@@ -119,8 +119,7 @@ export async function POST(request: Request) {
     }
 
     approver_id = userProfile.id;
-    // DB check constraint only allows 'parent','admin','system' — map warden to 'admin'
-    approver_type = userProfile.role === 'warden' ? 'admin' : userProfile.role;
+    approver_type = userProfile.role;
 
     // Must be in a pending state
     if (!['pending', 'admin_pending', 'parent_pending', 'parent_approved'].includes(passReq.status)) {

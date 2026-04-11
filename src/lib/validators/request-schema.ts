@@ -9,7 +9,6 @@ export const createRequestSchema = z.object({
   proof_urls: z.array(z.string().url()).optional(),
   geo_lat: z.number().optional(),
   geo_lng: z.number().optional(),
-  extension_of: z.string().uuid().optional(),
 }).refine((data) => new Date(data.return_by) > new Date(data.departure_at), {
   message: 'Return time must be after departure time',
   path: ['return_by'],

@@ -24,42 +24,6 @@ export async function generatePass(request_id: string) {
       throw new Error('Request not approved');
     }
 
-    if (passReq.extension_of) {
-      // EXTENSION LOGIC: Update existing pass instead of creating new one
-      const validUntil = new Date(new Date(passReq.return_by).getTime() + 60 * 60 * 1000).toISOString();
-      const nonce = generateNonce();
-      
-      const signedPayload = await signQRPayload({
-        pass_id: passReq.extension_of,
-        student_id: passReq.student_id,
-        nonce: nonce,
-        valid_until: validUntil,
-      });
-
-      const { data: updatedPass, error: updateError } = await supabase
-        .from('passes')
-        .update({
-          request_id: passReq.id, // Link to the extension request
-          qr_payload: signedPayload,
-          qr_nonce: nonce,
-          valid_until: validUntil,
-          status: 'active'
-        })
-        .eq('id', passReq.extension_of)
-        .select()
-        .single();
-        
-      if (updateError) throw updateError;
-      
-      // Update student state active pass ID just in case it was different
-      await supabase
-        .from('student_states')
-        .update({ active_pass_id: updatedPass.id })
-        .eq('student_id', passReq.student_id);
-
-      return updatedPass;
-    }
-
     const { data: existingPass } = await supabase
       .from('passes')
       .select('id')
@@ -75,8 +39,9 @@ export async function generatePass(request_id: string) {
     // Valid from departure time, valid until return by. Add 1 hour buffer to expiry.
     const validUntil = new Date(new Date(passReq.return_by).getTime() + 60 * 60 * 1000).toISOString();
     
-    // Generate a pre-known ID to embed in the QR signature
-    const generatedId = crypto.randomUUID();
+    // We need a pre-generated ID to sign
+    const { data: idData } = await supabase.rpc('get_uuid').single();
+    const generatedId = (idData as string) || crypto.randomUUID();
 
     const signedPayload = await signQRPayload({
       pass_id: generatedId,
