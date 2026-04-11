@@ -89,7 +89,7 @@ export default async function WardenRequestsPage() {
 
       {/* Request List */}
       <div className="mt-6">
-        <BulkRequestList requests={requests as any || []} isAdminView={false} />
+        <BulkRequestList requests={requests as any || []} isAdminView={true} />
       </div>
 
       {(!requests || requests.length === 0) && (

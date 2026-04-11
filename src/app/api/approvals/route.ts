@@ -100,10 +100,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, next_status: nextStatus });
     }
 
-    // Route 2: Admin Approval via Session
-    const adminProfile = await requireRole('admin');
-    approver_id = adminProfile.id;
-    approver_type = 'admin';
+    // Route 2: Admin or Warden Approval via Session
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (!user || authError) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { data: userProfile } = await supabase
+      .from('profiles')
+      .select('id, role')
+      .eq('id', user.id)
+      .single();
+
+    if (!userProfile || (userProfile.role !== 'admin' && userProfile.role !== 'warden')) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    approver_id = userProfile.id;
+    approver_type = userProfile.role;
 
     // Must be in a pending state
     if (!['pending', 'admin_pending', 'parent_pending'].includes(passReq.status)) {
