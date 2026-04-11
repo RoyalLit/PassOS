@@ -21,6 +21,15 @@ export async function POST() {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
+    // DEBUG GATHERING
+    const { count: totalApproved } = await supabase.from('pass_requests').select('*', { count: 'exact', head: true }).eq('status', 'approved');
+    const { count: totalPasses } = await supabase.from('passes').select('*', { count: 'exact', head: true });
+    const { data: allStatuses } = await supabase.from('pass_requests').select('status');
+    const statusCounts = (allStatuses || []).reduce((acc: any, curr: any) => {
+      acc[curr.status] = (acc[curr.status] || 0) + 1;
+      return acc;
+    }, {});
+
     // Find all approved requests with no pass
     // 1. Get all request IDs that already have passes
     const { data: passes } = await supabase.from('passes').select('request_id');
@@ -29,7 +38,7 @@ export async function POST() {
     // 2. Clear query for approved requests not in that list
     let query = supabase
       .from('pass_requests')
-      .select('id')
+      .select('id, student_id, created_at')
       .eq('status', 'approved');
 
     if (existingRequestIds.length > 0) {
@@ -38,8 +47,16 @@ export async function POST() {
 
     const { data: approvedRequests } = await query;
 
+    const debug = {
+      totalApprovedInDb: totalApproved,
+      totalPassesInDb: totalPasses,
+      existingRequestIdsInPassesCount: existingRequestIds.length,
+      statusDistribution: statusCounts,
+      orphanedFound: approvedRequests?.length || 0,
+    };
+
     if (!approvedRequests || approvedRequests.length === 0) {
-      return NextResponse.json({ message: 'No orphaned requests found. Already clean!', fixed: 0 });
+      return NextResponse.json({ message: 'No orphaned requests found.', debug });
     }
 
     const results = { fixed: 0, failed: 0, errors: [] as string[] };
@@ -54,23 +71,9 @@ export async function POST() {
       }
     }
 
-    const { count: totalApproved } = await supabase.from('pass_requests').select('*', { count: 'exact', head: true }).eq('status', 'approved');
-    const { count: totalPasses } = await supabase.from('passes').select('*', { count: 'exact', head: true });
-    
-    const { data: sampleRequests } = await supabase
-      .from('pass_requests')
-      .select('id, status, created_at')
-      .order('created_at', { ascending: false })
-      .limit(10);
-
     return NextResponse.json({
       message: `Backfill complete.`,
-      debug: {
-        totalApproved,
-        totalPasses,
-        sampleRequests,
-        existingRequestIdsCount: existingRequestIds.length
-      },
+      debug,
       ...results,
     });
   } catch (e: any) {
