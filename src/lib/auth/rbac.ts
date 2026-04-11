@@ -12,12 +12,19 @@ export async function getCurrentUser(): Promise<Profile | null> {
 
     const { data: profile, error: dbError } = await supabase
       .from('profiles')
-      .select('*')
+      .select('*, tenant:tenants(*)')
       .eq('id', user.id)
       .single();
 
     if (dbError) {
-      console.error('Error fetching user profile:', dbError.message);
+      // Identity Sync Error: User exists in Auth but not in Profiles
+      // This is a critical state that causes redirect loops.
+      // We log it specifically so we can see it in server logs.
+      console.error('SYSTEM IDENTITY ERROR: User exists but profile lookup failed.', {
+        userId: user.id,
+        error: dbError.message,
+        code: dbError.code
+      });
       return null;
     }
 
@@ -32,6 +39,34 @@ export async function getCurrentUser(): Promise<Profile | null> {
     console.error('Unexpected error in getCurrentUser:', message);
     return null;
   }
+}
+
+/**
+ * Diagnostic helper to detect the exact nature of an auth failure.
+ * Returns null if no user is signed in at all.
+ * Returns { user } but no profile if the identity sync is broken.
+ */
+export async function getAuthDiagnostics() {
+  const supabase = await createServerSupabaseClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) return { authenticated: false, profile: null };
+
+  const { data: profile, error } = await supabase
+    .from('profiles')
+    .select('*, tenant:tenants(*)')
+    .eq('id', user.id)
+    .single();
+
+  return {
+    authenticated: true,
+    user,
+    profile: profile as Profile | null,
+    error: error ? {
+      message: error.message,
+      code: error.code
+    } : null
+  };
 }
 
 import { redirect } from 'next/navigation';

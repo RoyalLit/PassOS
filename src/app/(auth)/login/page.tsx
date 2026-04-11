@@ -19,19 +19,29 @@ export default function LoginPage() {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        const { data: profile } = await supabase
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('role')
           .eq('id', session.user.id)
           .single();
-        const role = profile?.role || session.user.user_metadata?.role || 'student';
-        const targetPath =
-          role === 'superadmin' ? '/superadmin' :
-          role === 'admin' ? '/admin' :
-          role === 'guard' ? '/guard/scan' :
-          role === 'warden' ? '/warden' :
-          role === 'parent' ? '/parent' : '/student';
-        router.replace(targetPath);
+        
+        // If profile exists OR we have role in metadata, we can redirect.
+        // Otherwise, stay on login page so user can see they are technically signed in but "broken".
+        const role = profile?.role || session.user.user_metadata?.role;
+        
+        if (role) {
+          const targetPath =
+            role === 'superadmin' ? '/superadmin' :
+            role === 'admin' ? '/admin' :
+            role === 'guard' ? '/guard/scan' :
+            role === 'warden' ? '/warden' :
+            role === 'parent' ? '/parent' : '/student';
+          router.replace(targetPath);
+        } else {
+           console.warn('Authenticated session found but no profile role. Staying on login page to avoid loops.');
+           // We might want to clear session if it's truly broken, but for now let dashboard handle it.
+           router.replace('/student'); // Dashboard will show the Sync Error screen.
+        }
       }
     };
     checkSession();
