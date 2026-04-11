@@ -67,6 +67,7 @@ export default function UsersPage() {
   const [showRoleConfirm, setShowRoleConfirm] = useState(false);
   const [editingUser, setEditingUser] = useState<Profile | null>(null);
   const [updating, setUpdating] = useState(false);
+  const [resetPasswordResult, setResetPasswordResult] = useState<string | null>(null);
   const [form, setForm] = useState<NewUserForm>({
     full_name: '',
     email: '',
@@ -131,6 +132,30 @@ export default function UsersPage() {
       toast.error('Failed to load users');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!editingUser) return;
+    const newPassword = Math.random().toString(36).slice(-10) + '!' + Math.random().toString(36).slice(-2).toUpperCase();
+    setUpdating(true);
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: editingUser.id,
+          new_password: newPassword
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error);
+      setResetPasswordResult(newPassword);
+      toast.success('Password reset successfully');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to reset password');
+    } finally {
+      setUpdating(false);
     }
   };
 
@@ -620,7 +645,10 @@ export default function UsersPage() {
           
           <div className="relative w-full max-w-lg bg-card rounded-2xl shadow-2xl border border-border p-6 max-h-[90vh] overflow-y-auto">
             <button
-              onClick={() => setShowEditModal(false)}
+              onClick={() => {
+                setShowEditModal(false);
+                setResetPasswordResult(null);
+              }}
               className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
             >
               <X className="w-5 h-5" />
@@ -694,6 +722,55 @@ export default function UsersPage() {
                   </div>
                 </div>
               )}
+
+              <div className="pt-6 border-t border-border mt-6">
+                <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-amber-500" />
+                  Security & Access
+                </h3>
+                
+                {resetPasswordResult ? (
+                  <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <p className="text-xs font-medium text-amber-600 dark:text-amber-400">
+                      New Temporary Password Generated:
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <code className="flex-1 px-3 py-2 bg-background border border-amber-500/30 rounded-lg text-sm font-mono break-all text-foreground">
+                        {resetPasswordResult}
+                      </code>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(resetPasswordResult);
+                          setCopied(true);
+                          toast.success('Password copied to clipboard');
+                          setTimeout(() => setCopied(false), 2000);
+                        }}
+                        className="p-2 bg-background border border-amber-500/30 rounded-lg hover:bg-muted transition-colors"
+                      >
+                        {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4 text-muted-foreground" />}
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground italic">
+                      Copy this now. It will not be shown again once you close this modal.
+                    </p>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={updating}
+                    onClick={() => {
+                      if (confirm('Are you sure you want to reset this user\'s password? This action cannot be undone.')) {
+                        handleResetPassword();
+                      }
+                    }}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-amber-500/30 text-amber-600 dark:text-amber-400 rounded-xl text-sm font-bold hover:bg-amber-500/10 transition-all disabled:opacity-50"
+                  >
+                    <ShieldCheck className="w-4 h-4" />
+                    Reset User Password
+                  </button>
+                )}
+              </div>
 
               <div className="flex gap-3 pt-4">
                 <button

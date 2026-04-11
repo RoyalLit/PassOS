@@ -66,6 +66,7 @@ export async function POST(request: Request) {
 
     const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
+      password: tempPassword,
       email_confirm: true,
       user_metadata: {
         role,
@@ -149,7 +150,7 @@ export async function PATCH(request: Request) {
     await requireRole('admin');
     const supabaseAdmin = createAdminClient();
     const body = await request.json();
-    const { user_id, role, full_name, phone, hostel, room_number } = body;
+    const { user_id, role, full_name, phone, hostel, room_number, new_password } = body;
 
     if (!user_id) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
@@ -160,11 +161,12 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
     }
 
-    // Update Auth User Metadata if role or name changed
-    if (role || full_name) {
+    // Update Auth User Metadata or Password
+    if (role || full_name || new_password) {
       const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(
         user_id,
         {
+          ...(new_password ? { password: new_password } : {}),
           user_metadata: {
             ...(role ? { role } : {}),
             ...(full_name ? { full_name } : {}),
