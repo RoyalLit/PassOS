@@ -30,7 +30,7 @@ export default async function WardenStudentsPage({
   
   const hostels = profile.wardens?.map(w => w.hostel) || [];
   
-  // Get students from warden's hostels
+  // Get students from warden's hostels (or all if unassigned)
   let query = supabase
     .from('profiles')
     .select(`
@@ -38,8 +38,11 @@ export default async function WardenStudentsPage({
       parent:profiles!parent_id(id, full_name, email, phone),
       student_states(current_state, active_pass_id)
     `)
-    .eq('role', 'student')
-    .in('hostel', hostels);
+    .eq('role', 'student');
+
+  if (hostels.length > 0) {
+    query = query.in('hostel', hostels);
+  }
   
   if (search) {
     query = query.or(`full_name.ilike.%${search}%,email.ilike.%${search}%,room_number.ilike.%${search}%`);
@@ -79,7 +82,7 @@ export default async function WardenStudentsPage({
             Student Directory
           </h1>
           <p className="text-muted-foreground">
-            {filteredStudents.length} student{filteredStudents.length !== 1 ? 's' : ''} in your hostels
+            {filteredStudents.length} student{filteredStudents.length !== 1 ? 's' : ''} {hostels.length > 0 ? 'in your hostels' : 'across all hostels'}
           </p>
         </div>
       </div>
@@ -216,7 +219,9 @@ export default async function WardenStudentsPage({
               ? `No students match "${search}"`
               : filter !== 'all' 
                 ? `No students are currently ${filter}`
-                : 'No students assigned to your hostels'
+                : hostels.length > 0 
+                  ? 'No students assigned to your hostels'
+                  : 'No students found in the system'
             }
           </p>
         </div>

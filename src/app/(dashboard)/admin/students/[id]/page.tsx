@@ -145,7 +145,7 @@ export default async function StudentDetailPage({
           {/* Contact & Housing Card */}
           <div className="bg-card rounded-3xl border border-border shadow-sm p-8 space-y-8">
             <h2 className="text-xl font-bold flex items-center gap-3 text-foreground">
-              <Activity className="w-5 h-5 text-blue-600" /> Essential Information
+              <Activity className="w-5 h-5 text-primary" /> Essential Information
             </h2>
             
             <div className="grid sm:grid-cols-2 gap-8">
@@ -249,27 +249,27 @@ export default async function StudentDetailPage({
         {/* Right Column: Supervision & Meta */}
         <div className="space-y-8">
           {/* Parent Supervision Card */}
-          <div className="bg-slate-900 rounded-3xl p-8 text-white shadow-xl shadow-slate-200 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
+          <div className="bg-card rounded-3xl p-8 text-card-foreground shadow-sm border border-border relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform text-foreground">
               <Users className="w-24 h-24" />
             </div>
             
             <div className="relative z-10 space-y-6">
               <h2 className="text-xl font-bold flex items-center gap-3">
-                <Users className="w-6 h-6 text-blue-400" /> Parental Link
+                <Users className="w-6 h-6 text-primary" /> Parental Link
               </h2>
 
               {student.parent ? (
                 <div className="space-y-6">
-                  <div className="p-5 rounded-2xl bg-white/5 border border-white/10">
-                    <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1.5">Linked Guardian</p>
-                    <p className="font-bold text-white text-lg">{student.parent.full_name}</p>
-                    <p className="text-sm text-slate-400 mt-0.5">{student.parent.email}</p>
+                  <div className="p-5 rounded-2xl bg-muted/30 border border-border">
+                    <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1.5">Linked Guardian</p>
+                    <p className="font-bold text-foreground text-lg">{student.parent.full_name}</p>
+                    <p className="text-sm text-muted-foreground mt-0.5">{student.parent.email}</p>
                   </div>
                   
                   <div className="flex gap-3">
-                    <button className="flex-1 py-3.5 bg-white/5 hover:bg-white/10 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 border border-white/5">
-                      <Unlink className="w-4 h-4 text-red-400" /> Unlink
+                    <button className="flex-1 py-3.5 bg-muted/50 hover:bg-muted rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 border border-border">
+                      <Unlink className="w-4 h-4 text-destructive" /> Unlink
                     </button>
                      <Link 
                        href={`/admin/parents/${student.parent.id}`}
@@ -281,15 +281,15 @@ export default async function StudentDetailPage({
                 </div>
               ) : (
                 <div className="space-y-6">
-                  <div className="p-5 rounded-2xl bg-white/5 border border-white/10">
-                    <p className="text-sm text-slate-400 italic">No parent account linked to this student.</p>
+                  <div className="p-5 rounded-2xl bg-muted/30 border border-border">
+                    <p className="text-sm text-muted-foreground italic">No parent account linked to this student.</p>
                   </div>
                   
                   <div className="flex flex-col gap-3">
-                    <button className="w-full py-4 bg-blue-600 hover:bg-blue-700 rounded-2xl text-sm font-bold transition-all shadow-xl shadow-blue-900/50 flex items-center justify-center gap-2">
+                    <button className="w-full py-4 bg-primary hover:bg-primary/90 rounded-2xl text-sm font-bold transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 text-primary-foreground">
                       <Link2 className="w-4 h-4" /> Link Parent Account
                     </button>
-                    <p className="text-[10px] text-center text-slate-500 uppercase tracking-widest leading-relaxed">
+                    <p className="text-[10px] text-center text-muted-foreground uppercase tracking-widest leading-relaxed">
                       Parents must sign up for an account before they can be linked to a student.
                     </p>
                   </div>

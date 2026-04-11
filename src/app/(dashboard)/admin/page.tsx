@@ -133,15 +133,15 @@ export default async function AdminDashboard(props: { searchParams: Promise<{ q?
         <CardContent>
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
-              <p className="text-2xl font-bold text-green-500">{stats.todayApproved}</p>
+              <p className="text-2xl font-bold text-success">{stats.todayApproved}</p>
               <p className="text-xs text-muted-foreground">Approved</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-red-500">{stats.todayRejected}</p>
+              <p className="text-2xl font-bold text-destructive">{stats.todayRejected}</p>
               <p className="text-xs text-muted-foreground">Rejected</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-blue-500">{stats.todayTotal}</p>
+              <p className="text-2xl font-bold text-primary">{stats.todayTotal}</p>
               <p className="text-xs text-muted-foreground">Total Requests</p>
             </div>
           </div>

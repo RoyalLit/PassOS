@@ -15,13 +15,17 @@ export default async function WardenDashboardPage() {
   
   const hostels = profile.wardens?.map(w => w.hostel) || [];
   
-  // Get hostel-specific stats
-  const { data: hostelStudents } = await supabase
+  // Get hostel-specific stats (if any assigned, otherwise all students)
+  let studentQuery = supabase
     .from('profiles')
     .select('id, hostel')
-    .eq('role', 'student')
-    .in('hostel', hostels);
+    .eq('role', 'student');
   
+  if (hostels.length > 0) {
+    studentQuery = studentQuery.in('hostel', hostels);
+  }
+
+  const { data: hostelStudents } = await studentQuery;
   const studentIds = hostelStudents?.map(s => s.id) || [];
   
   // Get student states for hostel students
@@ -49,13 +53,19 @@ export default async function WardenDashboardPage() {
   
   // Get today's passes issued count
   const today = new Date().toISOString().split('T')[0];
-  const { count: todayPasses } = studentIds.length > 0
-    ? await supabase
-        .from('passes')
-        .select('id', { count: 'exact', head: true })
-        .in('student_id', studentIds)
-        .gte('created_at', today)
-    : { count: 0 };
+  let passesQuery = supabase
+    .from('passes')
+    .select('id', { count: 'exact', head: true })
+    .gte('created_at', today);
+  
+  if (studentIds.length > 0 && hostels.length > 0) {
+    passesQuery = passesQuery.in('student_id', studentIds);
+  } else if (hostels.length > 0) {
+    // If we have hostels but no students (unlikely but safe)
+    passesQuery = passesQuery.in('student_id', []);
+  }
+
+  const { count: todayPasses } = await passesQuery;
 
   const stats = [
     {
@@ -97,7 +107,10 @@ export default async function WardenDashboardPage() {
             Warden Dashboard
           </h1>
           <p className="text-muted-foreground">
-            Managing {hostels.length > 1 ? `${hostels.length} hostels` : hostels[0]}
+            {hostels.length > 0 
+              ? `Managing ${hostels.length > 1 ? `${hostels.length} hostels` : hostels[0]}`
+              : 'Managing All Hostels'
+            }
           </p>
         </div>
         <div className="flex flex-wrap gap-2">

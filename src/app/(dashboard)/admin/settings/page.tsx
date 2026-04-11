@@ -11,11 +11,11 @@ export default async function AdminSettingsPage() {
     <div className="p-6 max-w-4xl mx-auto space-y-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-3">
-            <SettingsIcon className="w-8 h-8 text-blue-600" />
+          <h1 className="text-3xl font-extrabold tracking-tight text-foreground flex items-center gap-3">
+            <SettingsIcon className="w-8 h-8 text-primary" />
             Control Center
           </h1>
-          <p className="text-slate-500 mt-1">Configure global application behavior and campus boundaries.</p>
+          <p className="text-muted-foreground mt-1">Configure global application behavior and campus boundaries.</p>
         </div>
       </div>
 

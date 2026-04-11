@@ -343,6 +343,7 @@ export default function UsersPage() {
                           user.role === 'student' && 'bg-blue-500/10 text-blue-600',
                           user.role === 'parent' && 'bg-purple-500/10 text-purple-600',
                           user.role === 'guard' && 'bg-emerald-500/10 text-emerald-600',
+                          user.role === 'warden' && 'bg-violet-500/10 text-violet-600',
                           user.role === 'admin' && 'bg-amber-500/10 text-amber-600',
                         )}>
                           <RoleIcon className="w-3 h-3" />
@@ -596,7 +597,7 @@ export default function UsersPage() {
                   <select
                     value={editForm.role}
                     onChange={(e) => setEditForm({ ...editForm, role: e.target.value as UserRole })}
-                    className="w-full appearance-none px-4 py-2.5 bg-background border border-border rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full appearance-none px-4 py-2.5 bg-background border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none"
                   >
                     <option value="student">Student</option>
                     <option value="parent">Parent</option>
@@ -616,7 +617,7 @@ export default function UsersPage() {
                   value={editForm.full_name}
                   onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
                   placeholder="John Doe"
-                  className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none"
                 />
               </div>
 
@@ -627,7 +628,7 @@ export default function UsersPage() {
                   value={editForm.phone}
                   onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
                   placeholder="+91 98765 43210"
-                  className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none"
                 />
               </div>
 
@@ -640,7 +641,7 @@ export default function UsersPage() {
                       value={editForm.hostel}
                       onChange={(e) => setEditForm({ ...editForm, hostel: e.target.value })}
                       placeholder="Block A"
-                      className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none"
                     />
                   </div>
                   <div>
@@ -650,7 +651,7 @@ export default function UsersPage() {
                       value={editForm.room_number}
                       onChange={(e) => setEditForm({ ...editForm, room_number: e.target.value })}
                       placeholder="101"
-                      className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none"
                     />
                   </div>
                 </div>
@@ -667,7 +668,7 @@ export default function UsersPage() {
                 <button
                   type="submit"
                   disabled={updating}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-all disabled:opacity-50"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-xl font-bold text-sm hover:bg-primary/90 transition-all disabled:opacity-50 shadow-lg shadow-primary/20"
                 >
                   {updating && <Loader2 className="w-4 h-4 animate-spin" />}
                   Save Changes
@@ -681,13 +682,13 @@ export default function UsersPage() {
       {showRoleConfirm && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-background/40 backdrop-blur-md" onClick={() => setShowRoleConfirm(false)} />
-          <div className="relative w-full max-w-sm bg-card rounded-2xl shadow-2xl border border-red-500/20 p-6 text-center animate-in zoom-in duration-200">
-            <div className="w-16 h-16 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="relative w-full max-w-sm bg-card rounded-2xl shadow-2xl border border-destructive/20 p-6 text-center animate-in zoom-in duration-200">
+            <div className="w-16 h-16 bg-destructive/10 text-destructive rounded-full flex items-center justify-center mx-auto mb-4">
               <AlertCircle className="w-8 h-8" />
             </div>
             <h3 className="text-xl font-bold text-foreground mb-2">Changing Role?</h3>
             <p className="text-sm text-muted-foreground mb-6">
-              You are about to change this user&apos;s role from <span className="font-bold text-foreground uppercase">{editingUser?.role}</span> to <span className="font-bold text-blue-600 uppercase">{editForm.role}</span>. This affects their system permissions.
+              You are about to change this user&apos;s role from <span className="font-bold text-foreground uppercase">{editingUser?.role}</span> to <span className="font-bold text-primary uppercase">{editForm.role}</span>. This affects their system permissions.
             </p>
             <div className="flex gap-3">
               <button
@@ -698,7 +699,7 @@ export default function UsersPage() {
               </button>
               <button
                 onClick={() => handleUpdateUser()}
-                className="flex-1 px-4 py-3 bg-red-500 text-white rounded-xl font-bold text-sm hover:bg-red-600 transition-all shadow-lg shadow-red-500/20"
+                className="flex-1 px-4 py-3 bg-destructive text-destructive-foreground rounded-xl font-bold text-sm hover:bg-destructive/90 transition-all shadow-lg shadow-destructive/20"
               >
                 Yes, Change
               </button>

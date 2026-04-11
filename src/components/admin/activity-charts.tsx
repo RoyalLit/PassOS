@@ -26,6 +26,29 @@ interface ActivityChartsProps {
   activityData: ActivityData[];
 }
 
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-card border border-border p-3 rounded-xl shadow-xl backdrop-blur-md">
+        <p className="text-sm font-bold mb-2 text-foreground">{label}</p>
+        <div className="space-y-1.5">
+          {payload.map((entry: any, index: number) => (
+            <div key={index} className="flex items-center justify-between gap-4">
+              <span className="text-xs font-medium" style={{ color: entry.fill }}>
+                {entry.name}
+              </span>
+              <span className="text-xs font-bold text-foreground">
+                {entry.value}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
 export function ActivityCharts({ activityData }: ActivityChartsProps) {
   const chartData = useMemo(() => {
     const days: { date: string; approved: number; rejected: number; pending: number }[] = [];
@@ -76,7 +99,12 @@ export function ActivityCharts({ activityData }: ActivityChartsProps) {
       <CardContent>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+            <BarChart 
+              data={chartData} 
+              margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+              barGap={0}
+              barCategoryGap="30%"
+            >
               <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-muted" />
               <XAxis 
                 dataKey="date" 
@@ -93,18 +121,13 @@ export function ActivityCharts({ activityData }: ActivityChartsProps) {
                 className="text-muted-foreground"
               />
               <Tooltip 
-                cursor={{ fill: 'hsl(var(--muted))', opacity: 0.4 }}
-                contentStyle={{
-                  backgroundColor: 'hsl(var(--card))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '12px',
-                  fontSize: '12px',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                }}
+                content={<CustomTooltip />}
+                cursor={{ fill: 'hsl(var(--muted))', opacity: 0.2 }}
+                animationDuration={200}
               />
-              <Bar dataKey="approved" name="Approved" fill="var(--success)" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="rejected" name="Rejected" fill="var(--destructive)" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="pending" name="Pending" fill="var(--warning)" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="approved" name="Approved" stackId="a" fill="var(--success)" radius={[0, 0, 0, 0]} barSize={24} />
+              <Bar dataKey="rejected" name="Rejected" stackId="a" fill="var(--destructive)" radius={[0, 0, 0, 0]} barSize={24} />
+              <Bar dataKey="pending" name="Pending" stackId="a" fill="var(--warning)" radius={[4, 4, 0, 0]} barSize={24} />
             </BarChart>
           </ResponsiveContainer>
         </div>

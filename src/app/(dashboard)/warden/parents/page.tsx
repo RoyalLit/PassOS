@@ -38,6 +38,9 @@ export default async function WardenParentsPage() {
 
   // Filter to only show parents whose children are in warden's hostels
   const filteredParents = (parents || []).filter((parent: ParentWithChildren) => {
+    // If no hostels assigned, show all parents
+    if (hostels.length === 0) return true;
+
     const children = parent.children || [];
     return children.some((child: Profile & { student_states?: { current_state: string }[] }) => 
       hostels.includes(child.hostel || '')
@@ -53,7 +56,7 @@ export default async function WardenParentsPage() {
             Parent Directory
           </h1>
           <p className="text-muted-foreground">
-            {filteredParents.length} parent{filteredParents.length !== 1 ? 's' : ''} of hostel students
+            {filteredParents.length} parent{filteredParents.length !== 1 ? 's' : ''} {hostels.length > 0 ? 'of hostel students' : 'in the system'}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -75,7 +78,7 @@ export default async function WardenParentsPage() {
           {filteredParents.map((parent: ParentWithChildren) => {
             const children = parent.children || [];
             const hostelChildren = children.filter((child: Profile & { student_states?: { current_state: string }[] }) => 
-              hostels.includes(child.hostel || '')
+              hostels.length === 0 || hostels.includes(child.hostel || '')
             );
 
             return (
@@ -125,7 +128,7 @@ export default async function WardenParentsPage() {
                 {/* Children */}
                 <div className="p-4 bg-muted/20">
                   <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">
-                    Children in Your Hostels
+                    {hostels.length > 0 ? 'Children in Your Hostels' : 'Managed Children'}
                   </p>
                   <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     {hostelChildren.map((child: Profile & { student_states?: { current_state: string }[] }) => {
@@ -176,7 +179,10 @@ export default async function WardenParentsPage() {
           <Users className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
           <h3 className="font-bold text-foreground mb-2">No parents found</h3>
           <p className="text-muted-foreground">
-            No parents have linked students in your hostels yet.
+            {hostels.length > 0 
+              ? 'No parents have linked students in your hostels yet.'
+              : 'No parents found in the system.'
+            }
           </p>
         </div>
       )}

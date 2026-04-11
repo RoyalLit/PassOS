@@ -87,7 +87,7 @@ const DialogContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTML
         <div
           ref={ref}
           className={clsx(
-            "relative z-50 w-full max-w-lg rounded-lg bg-white p-6 shadow-lg",
+            "relative z-50 w-full max-w-lg rounded-xl bg-card p-6 shadow-xl border border-border",
             className
           )}
           onClick={(e) => e.stopPropagation()}
@@ -128,7 +128,7 @@ DialogTitle.displayName = "DialogTitle"
 
 const DialogDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
   ({ className, ...props }, ref) => (
-    <p ref={ref} className={clsx("text-sm text-slate-500", className)} {...props} />
+    <p ref={ref} className={clsx("text-sm text-muted-foreground", className)} {...props} />
   )
 )
 DialogDescription.displayName = "DialogDescription"

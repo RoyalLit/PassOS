@@ -16,12 +16,17 @@ export default async function WardenRequestsPage() {
   
   const hostels = profile.wardens?.map(w => w.hostel) || [];
   
-  // First get student IDs from warden's hostels
-  const { data: hostelStudents } = await supabase
+  // First get student IDs from warden's hostels (or all if unassigned)
+  let studentQuery = supabase
     .from('profiles')
     .select('id')
-    .eq('role', 'student')
-    .in('hostel', hostels);
+    .eq('role', 'student');
+  
+  if (hostels.length > 0) {
+    studentQuery = studentQuery.in('hostel', hostels);
+  }
+
+  const { data: hostelStudents } = await studentQuery;
   
   const studentIds = hostelStudents?.map(s => s.id) || [];
   
@@ -218,7 +223,10 @@ export default async function WardenRequestsPage() {
           <CheckCircle2 className="w-12 h-12 mx-auto text-green-500/50 mb-4" />
           <h3 className="font-bold text-foreground mb-2">All caught up!</h3>
           <p className="text-muted-foreground">
-            No pending requests from your hostel students.
+            {hostels.length > 0 
+              ? 'No pending requests from your hostel students.'
+              : 'No pending requests in the entire system.'
+            }
           </p>
         </div>
       )}

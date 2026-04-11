@@ -8,11 +8,11 @@ export interface BadgeProps
 
 function Badge({ className, variant = "default", ...props }: BadgeProps) {
   const variants = {
-    default: "border-transparent bg-slate-900 text-slate-50 hover:bg-slate-900/80",
-    secondary: "border-transparent bg-slate-100 text-slate-900 hover:bg-slate-100/80",
-    destructive: "border-transparent bg-red-100 text-red-700 hover:bg-red-200",
-    success: "border-transparent bg-green-100 text-green-700 hover:bg-green-200",
-    outline: "text-slate-950 border border-slate-200",
+    default: "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
+    secondary: "border-transparent bg-muted text-muted-foreground hover:bg-muted/80",
+    destructive: "border-transparent bg-destructive/10 text-destructive hover:bg-destructive/20",
+    success: "border-transparent bg-success/10 text-success hover:bg-success/20",
+    outline: "text-foreground border border-border",
   }
 
   return (
