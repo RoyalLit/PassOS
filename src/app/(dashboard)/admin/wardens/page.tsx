@@ -13,20 +13,17 @@ export default async function AdminWardensPage() {
   const profile = await requireRole('admin');
   const supabase = await createServerSupabaseClient();
   
-  // Get all wardens with their profiles
-  const { data: wardens } = await supabase
+  // Get all profiles with warden role
+  const { data: wardenProfiles } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('role', 'warden')
+    .order('full_name');
+
+  // Get all assignments
+  const { data: assignments } = await supabase
     .from('wardens')
-    .select(`
-      *,
-      profile:profiles!profile_id(
-        id,
-        full_name,
-        email,
-        hostel,
-        avatar_url
-      )
-    `)
-    .order('created_at', { ascending: false });
+    .select('*');
   
   // Get all students to extract unique hostels
   const { data: students } = await supabase
@@ -37,22 +34,34 @@ export default async function AdminWardensPage() {
   
   const uniqueHostels = [...new Set((students || []).map(s => s.hostel).filter(Boolean))] as string[];
   
-  // Group wardens by hostel
-  const wardensByHostel = (wardens || []).reduce((acc: Record<string, (Warden & { profile?: Profile })[]>, warden) => {
-    if (!acc[warden.hostel]) acc[warden.hostel] = [];
-    acc[warden.hostel].push(warden);
+  // Group assignments by profile_id and by hostel
+  const assignmentsByWarden = (assignments || []).reduce((acc: Record<string, string[]>, curr) => {
+    if (!acc[curr.profile_id]) acc[curr.profile_id] = [];
+    acc[curr.profile_id].push(curr.hostel);
     return acc;
   }, {});
+
+  const wardensByHostel = (assignments || []).reduce((acc: Record<string, any[]>, curr) => {
+    if (!acc[curr.hostel]) acc[curr.hostel] = [];
+    const profile = wardenProfiles?.find(p => p.id === curr.profile_id);
+    acc[curr.hostel].push({ ...curr, profile });
+    return acc;
+  }, {});
+
+  // Combine data for the management list
+  const allWardens = (wardenProfiles || []).map(profile => ({
+    profile,
+    assignedHostels: assignmentsByWarden[profile.id] || []
+  }));
   
-  // Get all users who could be wardens (admins can elevate users)
+  // Get potential users (admins/guards who aren't wardens yet)
   const { data: potentialWardens } = await supabase
     .from('profiles')
     .select('id, full_name, email, hostel, role')
-    .in('role', ['admin', 'guard', 'warden'])
+    .in('role', ['admin', 'guard'])
     .order('full_name');
   
-  const existingWardenIds = (wardens || []).map(w => w.profile_id);
-  const availableUsers = (potentialWardens || []).filter(u => !existingWardenIds.includes(u.id));
+  const availableUsers = potentialWardens || [];
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
@@ -70,7 +79,7 @@ export default async function AdminWardensPage() {
 
       {/* Warden Management Component */}
       <WardenManagement 
-        wardens={wardens as (Warden & { profile?: Profile })[] || []}
+        allWardens={allWardens}
         availableUsers={availableUsers as (Profile & { role: string })[] || []}
         hostels={uniqueHostels}
         wardensByHostel={wardensByHostel}

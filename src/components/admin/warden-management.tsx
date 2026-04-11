@@ -11,14 +11,17 @@ import { clsx } from 'clsx';
 import type { Warden, Profile } from '@/types';
 
 interface WardenManagementProps {
-  wardens: (Warden & { profile?: Profile })[];
+  allWardens: {
+    profile: Profile;
+    assignedHostels: string[];
+  }[];
   availableUsers: (Profile & { role: string })[];
   hostels: string[];
-  wardensByHostel: Record<string, (Warden & { profile?: Profile })[]>;
+  wardensByHostel: Record<string, any[]>;
 }
 
 export function WardenManagement({
-  wardens: initialWardens,
+  allWardens,
   availableUsers,
   hostels,
   wardensByHostel,
@@ -108,13 +111,13 @@ export function WardenManagement({
     <div className="bg-card rounded-2xl border shadow-sm overflow-hidden">
       <div className="px-6 py-4 border-b bg-muted/10 flex justify-between items-center">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-purple-500/10">
-            <Users className="w-5 h-5 text-purple-500" />
+          <div className="p-2 rounded-lg bg-blue-500/10">
+            <Users className="w-5 h-5 text-blue-500" />
           </div>
           <div>
-            <h2 className="font-bold text-foreground">Assigned Wardens</h2>
+            <h2 className="font-bold text-foreground">Warden Directory</h2>
             <p className="text-sm text-muted-foreground">
-              {initialWardens.length} warden assignment{initialWardens.length !== 1 ? 's' : ''}
+              {allWardens.length} warden{allWardens.length !== 1 ? 's' : ''} total
             </p>
           </div>
         </div>
@@ -221,51 +224,70 @@ export function WardenManagement({
 
       {/* Warden List */}
       <div className="divide-y divide-border">
-        {initialWardens.length > 0 ? (
-          initialWardens.map(warden => (
+        {allWardens.length > 0 ? (
+          allWardens.map(({ profile, assignedHostels }) => (
             <div 
-              key={`${warden.id}-${warden.hostel}`}
+              key={profile.id}
               className="p-4 hover:bg-muted/5 transition-colors"
             >
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center">
-                    {warden.profile?.avatar_url ? (
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                    {profile.avatar_url ? (
                       <img 
-                        src={warden.profile.avatar_url} 
+                        src={profile.avatar_url} 
                         alt="" 
                         className="w-full h-full rounded-xl object-cover"
                       />
                     ) : (
-                      <User className="w-6 h-6 text-purple-500" />
+                      <User className="w-6 h-6 text-primary" />
                     )}
                   </div>
                   <div>
                     <p className="font-bold text-foreground">
-                      {warden.profile?.full_name || 'Unknown'}
+                      {profile.full_name}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      {warden.profile?.email}
+                      {profile.email}
                     </p>
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-4">
-                  <span className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-sm font-medium">
-                    <Building2 className="w-4 h-4" />
-                    {warden.hostel}
-                  </span>
+                <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                  {assignedHostels.map(hostel => (
+                    <span 
+                      key={hostel}
+                      className="group flex items-center gap-2 pl-3 pr-1 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-medium border border-blue-500/20 shadow-sm"
+                    >
+                      <Building2 className="w-3 h-3" />
+                      {hostel}
+                      <button
+                        onClick={() => handleRemove(profile.id, hostel)}
+                        className="p-1 rounded-full hover:bg-red-500 hover:text-white transition-all opacity-40 group-hover:opacity-100"
+                        title="Remove assignment"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
                   
+                  {assignedHostels.length === 0 && (
+                    <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-bold border border-amber-500/20">
+                      <X className="w-3 h-3" />
+                      UNASSIGNED
+                    </span>
+                  )}
+
                   <button
-                    onClick={() => handleRemove(warden.profile_id, warden.hostel)}
-                    disabled={deletingId === warden.id}
-                    className="p-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors disabled:opacity-50"
+                    onClick={() => {
+                      setSelectedUser(profile.id);
+                      setIsAdding(true);
+                      setSelectedHostels(assignedHostels);
+                    }}
+                    className="ml-2 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:opacity-90 transition-all shadow-sm"
                   >
-                    {deletingId === warden.id ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : (
-                      <Trash2 className="w-5 h-5" />
-                    )}
+                    <Plus className="w-3.5 h-3.5" />
+                    {assignedHostels.length > 0 ? 'Add Hostel' : 'Assign'}
                   </button>
                 </div>
               </div>
@@ -274,19 +296,10 @@ export function WardenManagement({
         ) : (
           <div className="p-12 text-center">
             <Users className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-            <h3 className="font-bold text-foreground mb-2">No wardens assigned</h3>
+            <h3 className="font-bold text-foreground mb-2">No wardens found</h3>
             <p className="text-muted-foreground mb-4">
-              Assign wardens to manage specific hostels
+              Create a warden user first in the Users section
             </p>
-            {!isAdding && (
-              <button
-                onClick={() => setIsAdding(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-500 hover:bg-blue-600 text-white font-medium transition-all"
-              >
-                <Plus className="w-4 h-4" />
-                Assign Warden
-              </button>
-            )}
           </div>
         )}
       </div>
