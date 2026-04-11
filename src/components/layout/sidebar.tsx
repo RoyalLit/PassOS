@@ -196,17 +196,13 @@ export function Sidebar({ role, userName, avatarUrl, wardens, id, email }: Sideb
               <p className="text-xs text-muted-foreground capitalize">{role}</p>
             </div>
             {(role !== 'student' || pathname.startsWith('/student')) && (
-              <ClientEditProfileButton 
-                user={{ 
-                  id: id || '', 
-                  full_name: userName, 
-                  role: role, 
-                  email: email || '',
-                  avatar_url: avatarUrl || undefined
-                } as any} 
-                disableRoleChange={true}
-                className="opacity-70 hover:opacity-100 transition-all hover:scale-110 active:scale-95"
-              />
+              <Link 
+                href="/settings"
+                className="opacity-70 hover:opacity-100 transition-all hover:scale-110 active:scale-95 p-2 hover:bg-muted rounded-xl text-blue-600 dark:text-blue-400"
+                title="Profile Settings"
+              >
+                <Settings size={18} />
+              </Link>
             )}
           </div>
           
