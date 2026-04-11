@@ -75,9 +75,8 @@ export async function generatePass(request_id: string) {
     // Valid from departure time, valid until return by. Add 1 hour buffer to expiry.
     const validUntil = new Date(new Date(passReq.return_by).getTime() + 60 * 60 * 1000).toISOString();
     
-    // We need a pre-generated ID to sign
-    const { data: idData } = await supabase.rpc('get_uuid').single();
-    const generatedId = (idData as string) || crypto.randomUUID();
+    // Generate a pre-known ID to embed in the QR signature
+    const generatedId = crypto.randomUUID();
 
     const signedPayload = await signQRPayload({
       pass_id: generatedId,
