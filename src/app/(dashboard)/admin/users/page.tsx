@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { 
   UserPlus, Users, GraduationCap, User, ShieldCheck, 
   X, Loader2, Search, Trash2, Copy, Check, ChevronDown,
-  Mail, Phone, Building, Bed
+  Mail, Phone, Building, Bed, UserCog, AlertCircle
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { toast } from 'sonner';
@@ -62,6 +62,8 @@ export default function UsersPage() {
   const [creating, setCreating] = useState(false);
   const [createdUser, setCreatedUser] = useState<CreatedUser | null>(null);
   const [copied, setCopied] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showRoleConfirm, setShowRoleConfirm] = useState(false);
   const [editingUser, setEditingUser] = useState<Profile | null>(null);
   const [updating, setUpdating] = useState(false);
   const [form, setForm] = useState<NewUserForm>({
@@ -73,6 +75,8 @@ export default function UsersPage() {
     room_number: '',
     parent_email: '',
   });
+
+  const [editForm, setEditForm] = useState<Partial<Profile>>({});
 
   useEffect(() => {
     fetchUsers();
@@ -161,13 +165,38 @@ export default function UsersPage() {
     }
   };
 
-  const handleUpdateRole = async (userId: string, newRole: UserRole) => {
+  const openEditModal = (user: Profile) => {
+    setEditingUser(user);
+    setEditForm({
+      id: user.id,
+      full_name: user.full_name,
+      phone: user.phone || '',
+      hostel: user.hostel || '',
+      room_number: user.room_number || '',
+      role: user.role,
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateUser = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!editingUser) return;
+
+    // Check if role changed and confirm if not already confirmed
+    if (editForm.role !== editingUser.role && !showRoleConfirm) {
+      setShowRoleConfirm(true);
+      return;
+    }
+
     setUpdating(true);
     try {
       const res = await fetch('/api/admin/users', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: userId, role: newRole }),
+        body: JSON.stringify({ 
+          user_id: editingUser.id, 
+          ...editForm 
+        }),
       });
 
       if (!res.ok) {
@@ -175,11 +204,13 @@ export default function UsersPage() {
         throw new Error(json.error);
       }
 
-      toast.success('Role updated successfully');
+      toast.success('User updated successfully');
+      setShowEditModal(false);
+      setShowRoleConfirm(false);
       setEditingUser(null);
       fetchUsers();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to update role');
+      toast.error(error instanceof Error ? error.message : 'Failed to update user');
     } finally {
       setUpdating(false);
     }
@@ -344,21 +375,17 @@ export default function UsersPage() {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <select
-                            value={user.role}
-                            onChange={(e) => handleUpdateRole(user.id, e.target.value as UserRole)}
-                            disabled={updating}
-                            className="text-xs bg-background border border-border rounded-lg px-2 py-1 outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
+                          <button
+                            onClick={() => openEditModal(user)}
+                            className="p-2 text-muted-foreground/50 hover:text-blue-500 hover:bg-blue-500/10 rounded-lg transition-colors"
+                            title="Edit Profile"
                           >
-                            <option value="student">Student</option>
-                            <option value="parent">Parent</option>
-                            <option value="guard">Guard</option>
-                            <option value="warden">Warden</option>
-                            <option value="admin">Admin</option>
-                          </select>
+                            <UserCog className="w-4 h-4" />
+                          </button>
                           <button
                             onClick={() => handleDeleteUser(user.id)}
                             className="p-2 text-red-500/50 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                            title="Delete User"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -544,6 +571,138 @@ export default function UsersPage() {
                 </form>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {showEditModal && editingUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setShowEditModal(false)} />
+          
+          <div className="relative w-full max-w-lg bg-card rounded-2xl shadow-2xl border border-border p-6 max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={() => setShowEditModal(false)}
+              className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <h2 className="text-xl font-bold text-foreground mb-6">Edit Profile</h2>
+            
+            <form onSubmit={handleUpdateUser} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">Role</label>
+                <div className="relative">
+                  <select
+                    value={editForm.role}
+                    onChange={(e) => setEditForm({ ...editForm, role: e.target.value as UserRole })}
+                    className="w-full appearance-none px-4 py-2.5 bg-background border border-border rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                  >
+                    <option value="student">Student</option>
+                    <option value="parent">Parent</option>
+                    <option value="guard">Security Guard</option>
+                    <option value="warden">Warden</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">Full Name</label>
+                <input
+                  type="text"
+                  required
+                  value={editForm.full_name}
+                  onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
+                  placeholder="John Doe"
+                  className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">Phone</label>
+                <input
+                  type="tel"
+                  value={editForm.phone}
+                  onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                  placeholder="+91 98765 43210"
+                  className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+
+              {editForm.role === 'student' && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1">Hostel</label>
+                    <input
+                      type="text"
+                      value={editForm.hostel}
+                      onChange={(e) => setEditForm({ ...editForm, hostel: e.target.value })}
+                      placeholder="Block A"
+                      className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1">Room</label>
+                    <input
+                      type="text"
+                      value={editForm.room_number}
+                      onChange={(e) => setEditForm({ ...editForm, room_number: e.target.value })}
+                      placeholder="101"
+                      className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="flex-1 px-4 py-2.5 border border-border rounded-xl font-bold text-sm hover:bg-muted transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={updating}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-all disabled:opacity-50"
+                >
+                  {updating && <Loader2 className="w-4 h-4 animate-spin" />}
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showRoleConfirm && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-background/40 backdrop-blur-md" onClick={() => setShowRoleConfirm(false)} />
+          <div className="relative w-full max-w-sm bg-card rounded-2xl shadow-2xl border border-red-500/20 p-6 text-center animate-in zoom-in duration-200">
+            <div className="w-16 h-16 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <AlertCircle className="w-8 h-8" />
+            </div>
+            <h3 className="text-xl font-bold text-foreground mb-2">Changing Role?</h3>
+            <p className="text-sm text-muted-foreground mb-6">
+              You are about to change this user&apos;s role from <span className="font-bold text-foreground uppercase">{editingUser?.role}</span> to <span className="font-bold text-blue-600 uppercase">{editForm.role}</span>. This affects their system permissions.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowRoleConfirm(false)}
+                className="flex-1 px-4 py-3 border border-border rounded-xl font-bold text-sm hover:bg-muted transition-all text-foreground"
+              >
+                Go Back
+              </button>
+              <button
+                onClick={() => handleUpdateUser()}
+                className="flex-1 px-4 py-3 bg-red-500 text-white rounded-xl font-bold text-sm hover:bg-red-600 transition-all shadow-lg shadow-red-500/20"
+              >
+                Yes, Change
+              </button>
+            </div>
           </div>
         </div>
       )}

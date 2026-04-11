@@ -32,9 +32,9 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
-    --success: #10b981;
+    --success: #2563eb;
     --destructive: #ef4444;
-    --warning: #f59e0b;
+    --warning: #94a3b8;
   }
 
   .dark {
@@ -53,9 +53,9 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
-    --success: #10b981;
+    --success: #3b82f6;
     --destructive: #ef4444;
-    --warning: #f59e0b;
+    --warning: #475569;
   }
 }
 
