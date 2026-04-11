@@ -1,5 +1,6 @@
 import { getCurrentUser, requireWarden } from '@/lib/auth/rbac';
 import { Sidebar } from '@/components/layout/sidebar';
+import { LiveDataSync } from '@/components/common/live-data-sync';
 import { redirect } from 'next/navigation';
 import type { Warden } from '@/types';
 
@@ -32,6 +33,12 @@ export default async function DashboardLayout({
         userName={profile.full_name} 
         avatarUrl={profile.avatar_url}
         wardens={wardens}
+      />
+      
+      <LiveDataSync 
+        tenantId={profile.tenant_id} 
+        role={profile.role} 
+        userId={profile.id} 
       />
       
       <main className="flex-1 min-w-0 md:pl-64 focus:outline-none">
