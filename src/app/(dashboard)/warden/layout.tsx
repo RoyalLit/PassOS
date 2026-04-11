@@ -9,23 +9,7 @@ export default async function WardenLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const profile = await requireWarden();
+  await requireWarden();
   
-
-  return (
-    <div className="min-h-screen bg-background flex">
-      <Sidebar 
-        role={profile.role} 
-        userName={profile.full_name} 
-        avatarUrl={profile.avatar_url}
-        wardens={profile.wardens}
-      />
-      
-      <main className="flex-1 min-w-0 md:pl-64 focus:outline-none">
-        <div className="h-full">
-          {children}
-        </div>
-      </main>
-    </div>
-  );
+  return <>{children}</>;
 }

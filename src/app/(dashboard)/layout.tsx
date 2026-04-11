@@ -9,15 +9,27 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const user = await getCurrentUser();
+  const profile = await getCurrentUser();
   
-  if (!user) {
+  if (!profile) {
     redirect('/login');
+  }
+
+  // If warden, fetch their assignments for the sidebar counts
+  let wardens: Warden[] = [];
+  if (profile.role === 'warden') {
+    const wardenProfile = await requireWarden();
+    wardens = wardenProfile.wardens || [];
   }
 
   return (
     <div className="min-h-screen bg-background flex">
-      <Sidebar role={user.role} userName={user.full_name} avatarUrl={user.avatar_url} />
+      <Sidebar 
+        role={profile.role} 
+        userName={profile.full_name} 
+        avatarUrl={profile.avatar_url}
+        wardens={wardens}
+      />
       
       <main className="flex-1 min-w-0 md:pl-64 focus:outline-none">
         <div className="h-full">

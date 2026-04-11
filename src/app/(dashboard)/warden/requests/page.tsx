@@ -20,7 +20,8 @@ export default async function WardenRequestsPage() {
   let studentQuery = supabase
     .from('profiles')
     .select('id')
-    .eq('role', 'student');
+    .eq('role', 'student')
+    .eq('tenant_id', profile.tenant_id);
   
   if (hostels.length > 0) {
     studentQuery = studentQuery.in('hostel', hostels);

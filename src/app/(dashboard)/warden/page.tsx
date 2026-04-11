@@ -19,7 +19,8 @@ export default async function WardenDashboardPage() {
   let studentQuery = supabase
     .from('profiles')
     .select('id, hostel')
-    .eq('role', 'student');
+    .eq('role', 'student')
+    .eq('tenant_id', profile.tenant_id);
   
   if (hostels.length > 0) {
     studentQuery = studentQuery.in('hostel', hostels);
@@ -56,6 +57,7 @@ export default async function WardenDashboardPage() {
   let passesQuery = supabase
     .from('passes')
     .select('id', { count: 'exact', head: true })
+    .eq('tenant_id', profile.tenant_id)
     .gte('created_at', today);
   
   if (studentIds.length > 0 && hostels.length > 0) {

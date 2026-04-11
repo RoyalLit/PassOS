@@ -48,6 +48,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
       role === 'superadmin' ? '/superadmin' :
       role === 'admin' ? '/admin' :
       role === 'guard' ? '/guard/scan' :
+      role === 'warden' ? '/warden' :
       role === 'parent' ? '/parent' : '/student';
 
     router.replace(targetPath);

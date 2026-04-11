@@ -33,12 +33,9 @@ export default async function WardenStudentsPage({
   // Get students from warden's hostels (or all if unassigned)
   let query = supabase
     .from('profiles')
-    .select(`
-      *,
-      parent:profiles!parent_id(id, full_name, email, phone),
-      student_states(current_state, active_pass_id)
-    `)
-    .eq('role', 'student');
+    .select('*, student_states(current_state, active_pass_id), parent:profiles!parent_id(*)')
+    .eq('role', 'student')
+    .eq('tenant_id', profile.tenant_id);
 
   if (hostels.length > 0) {
     query = query.in('hostel', hostels);
