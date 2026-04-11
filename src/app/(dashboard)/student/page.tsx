@@ -7,6 +7,7 @@ import { clsx } from 'clsx';
 import type { PassRequest } from '@/types';
 import { RequestIcon } from '@/components/requests/request-icon';
 import { CopyButton } from '@/components/ui/copy-button';
+import { CancelRequestButton } from '@/components/requests/cancel-request-button';
 
 export default async function StudentDashboard() {
   const profile = await requireRole('student');
@@ -164,11 +165,16 @@ export default async function StudentDashboard() {
                         </div>
                       </div>
                       
-                      <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center shrink-0">
+                      <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center shrink-0 gap-2">
                         <span className={clsx("px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5", statusConfig.color)}>
                           <span className={clsx("w-1.5 h-1.5 rounded-full", statusConfig.dot)}></span>
                           {statusConfig.label}
                         </span>
+                        {['pending', 'parent_pending', 'admin_pending'].includes(request.status) && (
+                          <div className="mt-2 sm:mt-1">
+                            <CancelRequestButton requestId={request.id} />
+                          </div>
+                        )}
                       </div>
                     </div>
                   );

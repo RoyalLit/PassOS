@@ -8,6 +8,7 @@ import {
 import { clsx } from 'clsx';
 import { format } from 'date-fns';
 import { RequestActions } from '@/components/requests/request-actions';
+import { BulkRequestList } from '@/components/requests/bulk-request-list';
 import type { WardenPendingRequest } from '@/types';
 
 export default async function WardenRequestsPage() {
@@ -87,146 +88,18 @@ export default async function WardenRequestsPage() {
       </div>
 
       {/* Request List */}
-      {requests && requests.length > 0 ? (
-        <div className="space-y-4">
-          {(requests as WardenPendingRequest[]).map((request) => {
-            const status = statusConfig[request.status as keyof typeof statusConfig] || statusConfig.pending;
-            const type = typeConfig[request.request_type as keyof typeof typeConfig] || { label: request.request_type, color: 'slate' };
-            const student = request.student;
-            const parent = student?.parent;
-            
-            return (
-              <div 
-                key={request.id}
-                className="bg-card rounded-2xl border shadow-sm overflow-hidden"
-              >
-                <div className="p-6">
-                  <div className="flex flex-col lg:flex-row lg:items-start gap-6">
-                    {/* Student Info */}
-                    <div className="flex-1 space-y-4">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                            {student?.avatar_url ? (
-                              <img 
-                                src={student.avatar_url} 
-                                alt="" 
-                                className="w-full h-full rounded-xl object-cover"
-                              />
-                            ) : (
-                              <User className="w-6 h-6 text-blue-500" />
-                            )}
-                          </div>
-                          <div>
-                            <h3 className="font-bold text-foreground">
-                              {student?.full_name || 'Unknown Student'}
-                            </h3>
-                            <p className="text-sm text-muted-foreground">
-                              {student?.hostel} {student?.room_number && `• Room ${student.room_number}`}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-end gap-2">
-                          <Badge 
-                            variant="outline"
-                            className={clsx(
-                              'capitalize',
-                              type.color === 'blue' ? 'bg-blue-500/10 text-blue-600' :
-                              type.color === 'purple' ? 'bg-purple-500/10 text-purple-600' :
-                              type.color === 'red' ? 'bg-red-500/10 text-red-600' :
-                              type.color === 'green' ? 'bg-green-500/10 text-green-600' :
-                              'bg-orange-500/10 text-orange-600'
-                            )}
-                          >
-                            {type.label}
-                          </Badge>
-                          <Badge 
-                            variant="outline"
-                            className={clsx('capitalize', status.color)}
-                          >
-                            {status.label}
-                          </Badge>
-                        </div>
-                      </div>
-                      
-                      {/* Request Details */}
-                      <div className="grid sm:grid-cols-2 gap-4 p-4 rounded-xl bg-muted/30">
-                        <div className="space-y-1">
-                          <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Reason</p>
-                          <p className="text-sm text-foreground font-medium">{request.reason}</p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Destination</p>
-                          <p className="text-sm text-foreground font-medium flex items-center gap-1">
-                            <MapPin className="w-4 h-4 text-muted-foreground" />
-                            {request.destination}
-                          </p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Departure</p>
-                          <p className="text-sm text-foreground font-medium flex items-center gap-1">
-                            <Calendar className="w-4 h-4 text-muted-foreground" />
-                            {format(new Date(request.departure_at), 'MMM d, yyyy • h:mm a')}
-                          </p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Return By</p>
-                          <p className="text-sm text-foreground font-medium flex items-center gap-1">
-                            <Clock className="w-4 h-4 text-muted-foreground" />
-                            {format(new Date(request.return_by), 'MMM d, yyyy • h:mm a')}
-                          </p>
-                        </div>
-                      </div>
-                      
-                      {/* Parent Info */}
-                      {parent && (
-                        <div className="p-4 rounded-xl bg-purple-500/5 border border-purple-500/10">
-                          <p className="text-xs text-purple-600 dark:text-purple-400 uppercase tracking-wider font-bold mb-2">
-                            Parent / Guardian
-                          </p>
-                          <div className="grid sm:grid-cols-3 gap-3">
-                            <div className="flex items-center gap-2">
-                              <User className="w-4 h-4 text-muted-foreground" />
-                              <span className="text-sm text-foreground">{parent.full_name}</span>
-                            </div>
-                            {parent.email && (
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm text-muted-foreground">{parent.email}</span>
-                              </div>
-                            )}
-                            {parent.phone && (
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm text-muted-foreground">{parent.phone}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    
-                    {/* Actions */}
-                    <div className="lg:w-64 shrink-0">
-                      <RequestActions 
-                        requestId={request.id}
-                        currentStatus={request.status}
-                        approverType="warden"
-                        studentId={request.student_id}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
+      <div className="mt-6">
+        <BulkRequestList requests={requests as any || []} isAdminView={false} />
+      </div>
+
+      {(!requests || requests.length === 0) && (
         <div className="bg-card rounded-2xl border shadow-sm p-12 text-center">
           <CheckCircle2 className="w-12 h-12 mx-auto text-green-500/50 mb-4" />
           <h3 className="font-bold text-foreground mb-2">All caught up!</h3>
           <p className="text-muted-foreground">
             {hostels.length > 0 
               ? 'No pending requests from your hostel students.'
-              : 'No pending requests in the entire system.'
+              : 'No pending requests in the system.'
             }
           </p>
         </div>

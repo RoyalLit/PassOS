@@ -1,6 +1,7 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { requireRole } from '@/lib/auth/rbac';
 import { RequestCard } from '@/components/requests/request-card';
+import { BulkRequestList } from '@/components/requests/bulk-request-list';
 
 export default async function AdminRequestsPage() {
   await requireRole('admin');
@@ -26,19 +27,7 @@ export default async function AdminRequestsPage() {
       </div>
       
       <div className="grid gap-6">
-        {requests?.length ? (
-          requests.map((request) => (
-            <RequestCard 
-              key={request.id} 
-              request={request}
-              isAdminView={true}
-            />
-          ))
-        ) : (
-          <div className="text-center py-20 bg-card rounded-2xl border border-border shadow-sm">
-            <p className="text-muted-foreground">No requests found in the system.</p>
-          </div>
-        )}
+        <BulkRequestList requests={requests || []} isAdminView={true} />
       </div>
     </div>
   );
