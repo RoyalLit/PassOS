@@ -51,6 +51,7 @@ const ROLE_CONFIG = {
   guard: { label: 'Security', icon: ShieldCheck, color: 'emerald' },
   warden: { label: 'Wardens', icon: Bed, color: 'cyan' },
   admin: { label: 'Admins', icon: Users, color: 'amber' },
+  superadmin: { label: 'Superadmins', icon: ShieldCheck, color: 'red' },
 } as const;
 
 export default function UsersPage() {
@@ -288,8 +289,10 @@ export default function UsersPage() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {Object.entries(ROLE_CONFIG).map(([key, config]) => {
-          const Icon = config.icon;
+        {Object.entries(ROLE_CONFIG)
+          .filter(([key]) => key !== 'superadmin')
+          .map(([key, config]) => {
+            const Icon = config.icon;
           const count = userCounts[key as UserRole] || 0;
           const isActive = filterRole === key;
           return (
@@ -354,7 +357,7 @@ export default function UsersPage() {
                 </tr>
               ) : (
                 filteredUsers.map((user) => {
-                  const RoleIcon = ROLE_CONFIG[user.role]?.icon || User;
+                  const RoleIcon = (ROLE_CONFIG as any)[user.role]?.icon || User;
                   return (
                     <tr key={user.id} className="hover:bg-muted/5 transition-colors">
                       <td className="px-6 py-4">
