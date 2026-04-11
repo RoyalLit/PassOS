@@ -13,6 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import { clsx } from 'clsx';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
+import Link from 'next/link';
 
 interface Notification {
   id: string;
@@ -157,9 +158,11 @@ export function NotificationBell() {
         <Separator />
         
         <div className="p-2 bg-muted/10">
-          <Button variant="ghost" className="w-full text-xs h-8" asChild>
-            <a href="/notifications/settings">Notification Settings</a>
-          </Button>
+          <Link href="/settings" className="block w-full">
+            <Button variant="ghost" className="w-full text-xs h-8">
+              Notification Settings
+            </Button>
+          </Link>
         </div>
       </PopoverContent>
     </Popover>
