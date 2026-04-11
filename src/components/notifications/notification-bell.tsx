@@ -1,162 +1,166 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { useState, useEffect, useCallback } from 'react';
+import { Bell, BellOff, Loader2, Check } from 'lucide-react';
+import { 
+  Popover, 
+  PopoverContent, 
+  PopoverTrigger 
+} from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
-import { Bell, Check, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { clsx } from 'clsx';
 import { formatDistanceToNow } from 'date-fns';
-import type { NotificationLog } from '@/types';
+import { toast } from 'sonner';
 
-interface NotificationBellProps {
-  userId: string;
+interface Notification {
+  id: string;
+  title: string;
+  body: string;
+  status: string;
+  created_at: string;
+  read_at: string | null;
 }
 
-export function NotificationBell({ userId }: NotificationBellProps) {
-  const [open, setOpen] = useState(false);
-  const [notifications, setNotifications] = useState<NotificationLog[]>([]);
-  const [loading, setLoading] = useState(false);
+export function NotificationBell() {
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
 
-  useEffect(() => {
-    if (open) {
-      fetchNotifications();
-    }
-  }, [open, userId]);
-
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/notifications/history?limit=20');
-      if (response.ok) {
-        const { notifications: data } = await response.json();
-        setNotifications(data);
-        setUnreadCount(data.filter((n: NotificationLog) => n.status !== 'read').length);
+      const res = await fetch('/api/notifications/history?limit=10');
+      if (res.ok) {
+        const data = await res.json();
+        setNotifications(data.notifications || []);
+        setUnreadCount(data.notifications?.filter((n: Notification) => !n.read_at).length || 0);
       }
     } catch (error) {
-      console.error('Error fetching notifications:', error);
+      console.error('Failed to fetch notifications:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const markAsRead = async (notificationId: string) => {
+  useEffect(() => {
+    fetchNotifications();
+    // Poll for new notifications every 2 minutes
+    const interval = setInterval(fetchNotifications, 120000);
+    return () => clearInterval(interval);
+  }, [fetchNotifications]);
+
+  const markAllAsRead = async () => {
     try {
-      await fetch('/api/notifications/read', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ notificationId }),
-      });
-      
-      setNotifications((prev) =>
-        prev.map((n) =>
-          n.id === notificationId ? { ...n, status: 'read' as const } : n
-        )
-      );
-      setUnreadCount((prev) => Math.max(0, prev - 1));
+      const res = await fetch('/api/notifications/read', { method: 'POST' });
+      if (res.ok) {
+        setNotifications(prev => prev.map(n => ({ ...n, read_at: new Date().toISOString() })));
+        setUnreadCount(0);
+        toast.success('All notifications marked as read');
+      }
     } catch (error) {
-      console.error('Error marking notification as read:', error);
+      toast.error('Failed to mark notifications as read');
     }
   };
 
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case 'pass_approved':
-        return '🎉';
-      case 'pass_rejected':
-        return '❌';
-      case 'pass_overdue':
-        return '⚠️';
-      case 'parent_approval_needed':
-        return '👆';
-      case 'escalation':
-        return '🚨';
-      case 'announcement':
-        return '📢';
-      default:
-        return '🔔';
+  const markAsRead = async (id: string) => {
+    try {
+      const res = await fetch('/api/notifications/read', { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notification_id: id })
+      });
+      if (res.ok) {
+        setNotifications(prev => prev.map(n => n.id === id ? { ...n, read_at: new Date().toISOString() } : n));
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      }
+    } catch (error) {
+      console.error('Failed to mark as read:', error);
     }
   };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
+        <button className="relative p-2 text-muted-foreground hover:text-foreground transition-colors group">
+          <Bell className={clsx("w-5 h-5", unreadCount > 0 && "animate-wiggle")} />
           {unreadCount > 0 && (
-            <Badge
-              variant="destructive"
-              className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center"
-            >
-              {unreadCount > 9 ? '9+' : unreadCount}
-            </Badge>
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-card" />
           )}
-        </Button>
+        </button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="end">
-        <div className="flex items-center justify-between border-b px-4 py-3">
-          <h4 className="font-semibold">Notifications</h4>
+      
+      <PopoverContent align="end" className="w-80 p-0 overflow-hidden bg-card border border-border shadow-xl">
+        <div className="p-4 flex items-center justify-between bg-muted/30">
+          <h4 className="font-bold text-sm">Notifications</h4>
           {unreadCount > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-auto p-0 text-xs text-muted-foreground hover:text-foreground"
-              onClick={() => {
-                notifications
-                  .filter((n) => n.status !== 'read')
-                  .forEach((n) => markAsRead(n.id));
-              }}
+            <button 
+              onClick={markAllAsRead}
+              className="text-[10px] font-bold uppercase text-blue-600 hover:text-blue-700 transition-colors"
             >
-              <Check className="h-3 w-3 mr-1" />
-              Mark all read
-            </Button>
+              Mark all as read
+            </button>
           )}
         </div>
-        <ScrollArea className="h-[400px]">
-          {loading ? (
-            <div className="flex items-center justify-center p-8">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        
+        <Separator />
+        
+        <div className="max-h-[350px] overflow-y-auto">
+          {loading && notifications.length === 0 ? (
+            <div className="p-8 flex items-center justify-center">
+              <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
             </div>
           ) : notifications.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-8 text-center">
-              <Bell className="h-12 w-12 text-muted-foreground/50 mb-3" />
-              <p className="text-sm text-muted-foreground">No notifications yet</p>
+            <div className="p-8 text-center">
+              <BellOff className="w-8 h-8 mx-auto text-muted-foreground/30 mb-2" />
+              <p className="text-sm text-muted-foreground">No new notifications</p>
             </div>
           ) : (
-            <div className="divide-y">
+            <div className="divide-y divide-border">
               {notifications.map((notification) => (
-                <div
+                <div 
                   key={notification.id}
-                  className={`px-4 py-3 hover:bg-muted/50 transition-colors cursor-pointer ${
-                    notification.status !== 'read' ? 'bg-muted/30' : ''
-                  }`}
-                  onClick={() => {
-                    if (notification.status !== 'read') {
-                      markAsRead(notification.id);
-                    }
-                  }}
+                  onClick={() => !notification.read_at && markAsRead(notification.id)}
+                  className={clsx(
+                    "p-4 cursor-pointer transition-colors hover:bg-muted/50",
+                    !notification.read_at && "bg-blue-500/5"
+                  )}
                 >
                   <div className="flex gap-3">
-                    <span className="text-xl">{getNotificationIcon(notification.notification_type)}</span>
+                    <div className={clsx(
+                      "mt-1 w-2 h-2 rounded-full shrink-0",
+                      notification.read_at ? "bg-transparent" : "bg-blue-500"
+                    )} />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{notification.title}</p>
-                      <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
+                      <p className={clsx(
+                        "text-sm font-medium leading-none mb-1",
+                        !notification.read_at ? "text-foreground" : "text-muted-foreground"
+                      )}>
+                        {notification.title}
+                      </p>
+                      <p className="text-xs text-muted-foreground line-clamp-2">
                         {notification.body}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-[10px] text-muted-foreground/60 mt-2 capitalize">
                         {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                       </p>
                     </div>
-                    {notification.status !== 'read' && (
-                      <div className="h-2 w-2 rounded-full bg-primary mt-2" />
-                    )}
                   </div>
                 </div>
               ))}
             </div>
           )}
-        </ScrollArea>
+        </div>
+        
+        <Separator />
+        
+        <div className="p-2 bg-muted/10">
+          <Button variant="ghost" className="w-full text-xs h-8" asChild>
+            <a href="/notifications/settings">Notification Settings</a>
+          </Button>
+        </div>
       </PopoverContent>
     </Popover>
   );

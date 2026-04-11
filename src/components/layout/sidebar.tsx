@@ -13,6 +13,7 @@ import {
 import { clsx } from 'clsx';
 import type { UserRole, Warden } from '@/types';
 import { ThemeToggle } from './theme-toggle';
+import { NotificationBell } from '../notifications/notification-bell';
 
 interface SidebarProps {
   role: UserRole;
@@ -163,6 +164,15 @@ export function Sidebar({ role, userName, avatarUrl, wardens }: SidebarProps) {
               const Icon = link.icon;
               const isActive = pathname === link.href || (pathname.startsWith(link.href) && link.href !== `/${role}`);
               
+              if (link.href === '/notifications') {
+                return (
+                  <div key="notifications" className="flex items-center gap-3 px-1 py-1 rounded-xl text-sm font-medium text-muted-foreground hover:bg-muted/50 hover:text-foreground hover:translate-x-1 transition-all group/link relative">
+                    <NotificationBell />
+                    <span className="flex-1 -ml-1">Notifications</span>
+                  </div>
+                );
+              }
+
               return (
                 <Link
                   key={link.href}
