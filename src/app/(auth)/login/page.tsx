@@ -29,6 +29,7 @@ export default function LoginPage() {
           role === 'superadmin' ? '/superadmin' :
           role === 'admin' ? '/admin' :
           role === 'guard' ? '/guard/scan' :
+          role === 'warden' ? '/warden' :
           role === 'parent' ? '/parent' : '/student';
         router.replace(targetPath);
       }
@@ -76,6 +77,7 @@ export default function LoginPage() {
         role === 'superadmin' ? '/superadmin' :
         role === 'admin' ? '/admin' :
         role === 'guard' ? '/guard/scan' :
+        role === 'warden' ? '/warden' :
         role === 'parent' ? '/parent' : '/student';
 
       clearTimeout(timeoutId);

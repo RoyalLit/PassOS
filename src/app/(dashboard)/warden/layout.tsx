@@ -11,12 +11,6 @@ export default async function WardenLayout({
 }) {
   const profile = await requireWarden();
   
-  // If warden has no hostels assigned, show message
-  const hostels = profile.wardens?.map(w => w.hostel) || [];
-  
-  if (hostels.length === 0) {
-    redirect('/warden/no-hostels');
-  }
 
   return (
     <div className="min-h-screen bg-background flex">
