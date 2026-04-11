@@ -92,18 +92,6 @@ export default async function WardenRequestsPage() {
         <BulkRequestList requests={requests as any || []} isAdminView={true} />
       </div>
 
-      {(!requests || requests.length === 0) && (
-        <div className="bg-card rounded-2xl border shadow-sm p-12 text-center">
-          <CheckCircle2 className="w-12 h-12 mx-auto text-green-500/50 mb-4" />
-          <h3 className="font-bold text-foreground mb-2">All caught up!</h3>
-          <p className="text-muted-foreground">
-            {hostels.length > 0 
-              ? 'No pending requests from your hostel students.'
-              : 'No pending requests in the system.'
-            }
-          </p>
-        </div>
-      )}
     </div>
   );
 }

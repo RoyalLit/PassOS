@@ -77,8 +77,14 @@ export function BulkRequestList({ requests, isAdminView = false }: BulkRequestLi
 
   if (!requests?.length) {
     return (
-      <div className="text-center py-20 bg-card rounded-2xl border border-border shadow-sm">
-        <p className="text-muted-foreground">No requests found in the system.</p>
+      <div className="bg-card rounded-2xl border shadow-sm p-12 text-center">
+        <div className="w-16 h-16 bg-green-500/10 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Check className="w-8 h-8" />
+        </div>
+        <h3 className="font-bold text-foreground mb-2 text-xl tracking-tight">All caught up!</h3>
+        <p className="text-muted-foreground">
+          No requests found in the system right now.
+        </p>
       </div>
     );
   }
