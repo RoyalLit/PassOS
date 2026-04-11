@@ -14,7 +14,7 @@ export function QuickActions() {
         </Button>
       </Link>
       <Link href="/admin/settings">
-        <Button className="bg-card border border-border text-foreground/80 hover:bg-muted rounded-xl font-bold shadow-sm" size="sm">
+        <Button className="bg-blue-600 text-white hover:bg-blue-700 rounded-xl font-bold shadow-lg shadow-blue-500/20" size="sm">
           <Settings className="h-4 w-4 mr-2" />
           Settings
         </Button>

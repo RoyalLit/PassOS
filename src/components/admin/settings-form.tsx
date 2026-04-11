@@ -150,7 +150,7 @@ export function SettingsForm({ initialSettings }: { initialSettings: AppSettings
                     }));
                   }
                 }}
-                className="text-xs font-bold text-blue-600 hover:text-blue-500 uppercase tracking-widest bg-blue-500/10 px-3 py-1.5 rounded-lg transition-colors"
+                className="text-xs font-bold text-white uppercase tracking-widest bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg transition-all shadow-sm shadow-blue-500/20 active:scale-95"
               >
                 + Add Reason
               </button>
@@ -200,7 +200,7 @@ export function SettingsForm({ initialSettings }: { initialSettings: AppSettings
                     }));
                   }
                 }}
-                className="text-xs font-bold text-purple-600 hover:text-purple-500 uppercase tracking-widest bg-purple-500/10 px-3 py-1.5 rounded-lg transition-colors"
+                className="text-xs font-bold text-white uppercase tracking-widest bg-purple-600 hover:bg-purple-700 px-3 py-1.5 rounded-lg transition-all shadow-sm shadow-purple-500/20 active:scale-95"
               >
                 + Add Reason
               </button>
