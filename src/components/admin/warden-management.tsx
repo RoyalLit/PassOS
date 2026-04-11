@@ -284,7 +284,7 @@ export function WardenManagement({
                       setIsAdding(true);
                       setSelectedHostels(assignedHostels);
                     }}
-                    className="ml-2 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:opacity-90 transition-all shadow-sm"
+                    className="ml-2 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     {assignedHostels.length > 0 ? 'Add Hostel' : 'Assign'}
