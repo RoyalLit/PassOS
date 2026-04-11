@@ -1,6 +1,7 @@
-import { getCurrentUser } from '@/lib/auth/rbac';
+import { getCurrentUser, requireWarden } from '@/lib/auth/rbac';
 import { Sidebar } from '@/components/layout/sidebar';
 import { redirect } from 'next/navigation';
+import type { Warden } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
