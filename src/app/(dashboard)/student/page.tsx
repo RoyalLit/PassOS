@@ -16,20 +16,28 @@ export default async function StudentDashboard() {
   const supabase = await createServerSupabaseClient();
 
   // Get active passes
-  const { data: activePasses } = await supabase
+  const { data: activePasses, error: passesError } = await supabase
     .from('passes')
     .select('*, request:pass_requests(*)')
     .eq('student_id', profile.id)
     .in('status', ['active', 'used_exit'])
     .order('created_at', { ascending: false });
 
+  if (passesError) {
+    console.error('Student Dashboard - Passes Fetch Error:', passesError);
+  }
+
   // Get recent requests
-  const { data: recentRequests } = await supabase
+  const { data: recentRequests, error: requestsError } = await supabase
     .from('pass_requests')
     .select('*')
     .eq('student_id', profile.id)
     .order('created_at', { ascending: false })
     .limit(5);
+
+  if (requestsError) {
+    console.error('Student Dashboard - Recent Requests Fetch Error:', requestsError);
+  }
 
   // Check for any PENDING or ACTIVE request specifically for the "One Pass" rule
   const { data: pendingRequests } = await supabase
