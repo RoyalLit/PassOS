@@ -150,6 +150,8 @@ export async function POST(request: Request) {
         console.error('Pass Generation crashed:', e);
         return NextResponse.json({ error: `Pass Generation crashed: ${errorMessage}` }, { status: 500 });
       }
+    } else {
+      console.log('Request was rejected, no pass generated');
     }
 
     return NextResponse.json({ success: true, final_status: finalStatus });
