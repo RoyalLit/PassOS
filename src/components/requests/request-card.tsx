@@ -44,6 +44,8 @@ export function RequestCard({ request, isAdminView = false }: RequestCardProps) 
     }
   };
 
+  const displayReason = String(request.reason).replace(/^EXTENSION of [0-9a-fA-F-]+:\s*(Other:\s*)?/, 'Extension: ');
+
   return (
     <div className="bg-card border border-border rounded-2xl p-6 shadow-sm hover:shadow-md transition-all hover:border-blue-500/30 group">
       <div className="flex justify-between items-start mb-4">
@@ -83,7 +85,7 @@ export function RequestCard({ request, isAdminView = false }: RequestCardProps) 
         </div>
       </div>
 
-      <p className="text-foreground/80 mb-6 font-medium leading-relaxed italic border-l-4 border-blue-500/30 pl-4 py-1 bg-muted/20 rounded-r-xl">&ldquo;{String(request.reason)}&rdquo;</p>
+      <p className="text-foreground/80 mb-6 font-medium leading-relaxed italic border-l-4 border-blue-500/30 pl-4 py-1 bg-muted/20 rounded-r-xl">&ldquo;{displayReason}&rdquo;</p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-bold text-muted-foreground mb-6 pb-6 border-b border-border">
         <div className="flex items-center gap-2.5">

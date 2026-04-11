@@ -112,27 +112,29 @@ export function BulkRequestList({ requests, isAdminView = false }: BulkRequestLi
             <div 
               key={request.id} 
               className={clsx(
-                "relative transition-all duration-200 rounded-2xl",
+                "flex flex-row items-stretch gap-4 transition-all duration-200 rounded-2xl relative",
                 isSelected && "ring-2 ring-blue-500 shadow-md transform scale-[1.01]"
               )}
             >
               {isSelectable && (
                 <div 
-                  className="absolute top-4 left-4 z-10 cursor-pointer p-2 bg-background/80 backdrop-blur-sm rounded-lg shadow-sm border border-border"
+                  className="shrink-0 flex items-start pt-6 cursor-pointer"
                   onClick={() => toggleSelection(request.id)}
                 >
-                  {isSelected ? (
-                    <CheckSquare className="w-6 h-6 text-blue-600" />
-                  ) : (
-                    <Square className="w-6 h-6 text-muted-foreground" />
-                  )}
+                  <div className="p-2 bg-card rounded-lg shadow-sm border border-border hover:bg-muted transition-colors">
+                    {isSelected ? (
+                      <CheckSquare className="w-6 h-6 text-blue-600" />
+                    ) : (
+                      <Square className="w-6 h-6 text-muted-foreground" />
+                    )}
+                  </div>
                 </div>
               )}
               
               <div 
                 className={clsx(
-                  "h-full w-full",
-                  isSelectable && "cursor-pointer pl-14" 
+                  "flex-1 min-w-0",
+                  isSelectable && "cursor-pointer" 
                 )}
                 onClick={() => isSelectable && toggleSelection(request.id)}
               >

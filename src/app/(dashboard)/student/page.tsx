@@ -143,10 +143,11 @@ export default async function StudentDashboard() {
                     icon: 'AlertCircle',
                     color: 'slate'
                   };
+                  const displayReason = String(request.reason).replace(/^EXTENSION of [0-9a-fA-F-]+:\s*(Other:\s*)?/, 'Extension: ');
                   
                   return (
                     <div key={request.id} className="p-6 flex flex-col sm:flex-row gap-4 justify-between hover:bg-muted/5 transition-colors">
-                      <div className="flex items-start gap-4">
+                      <div className="flex items-start gap-4 flex-1 min-w-0">
                         <div className={clsx(
                           "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 mt-1 uppercase text-[10px] font-black",
                           typeConfig.color === 'blue' ? 'bg-blue-500/10 text-blue-500' :
@@ -155,20 +156,20 @@ export default async function StudentDashboard() {
                         )}>
                           <RequestIcon iconName={typeConfig.icon} className="w-5 h-5" />
                         </div>
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1">
                           <h3 className="font-bold text-foreground">{typeConfig.label}</h3>
-                          <p className="text-sm text-muted-foreground mt-1 truncate">{request.reason}</p>
+                          <p className="text-sm text-muted-foreground mt-1 truncate">{displayReason}</p>
                           <div className="flex items-center gap-3 mt-3 text-xs text-muted-foreground font-medium">
-                            <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> {new Date(request.departure_at).toLocaleDateString()}</span>
+                            <span className="flex items-center gap-1.5 whitespace-nowrap"><Clock className="w-3.5 h-3.5" /> {new Date(request.departure_at).toLocaleDateString()}</span>
                             <span>•</span>
-                            <span className="truncate">{request.destination}</span>
+                            <span className="truncate">{request.destination === 'Extension' ? 'Time Extension' : request.destination}</span>
                           </div>
                         </div>
                       </div>
                       
                       <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center shrink-0 gap-2">
-                        <span className={clsx("px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5", statusConfig.color)}>
-                          <span className={clsx("w-1.5 h-1.5 rounded-full", statusConfig.dot)}></span>
+                        <span className={clsx("px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 whitespace-nowrap shrink-0", statusConfig.color)}>
+                          <span className={clsx("w-1.5 h-1.5 rounded-full shrink-0", statusConfig.dot)}></span>
                           {statusConfig.label}
                         </span>
                         {['pending', 'parent_pending', 'admin_pending'].includes(request.status) && (
