@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { 
-  X, ChevronDown, ShieldCheck, Check, Copy, Loader2, UserCog 
+  X, ChevronDown, ShieldCheck, Check, Copy, Loader2, UserCog, Lock 
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
@@ -24,6 +24,12 @@ export function EditUserModal({ user, isOpen, onClose, onUpdate, disableRoleChan
   const [updating, setUpdating] = useState(false);
   const [copied, setCopied] = useState(false);
   const [resetPasswordResult, setResetPasswordResult] = useState<string | null>(null);
+  const [showPasswordChange, setShowPasswordChange] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({
+    current: '',
+    new: '',
+    confirm: '',
+  });
   
   const [editForm, setEditForm] = useState({
     role: user.role,
@@ -83,6 +89,41 @@ export function EditUserModal({ user, isOpen, onClose, onUpdate, disableRoleChan
     } catch (error) {
       console.error('Password reset error:', error);
       toast.error('Failed to reset password');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordForm.new !== passwordForm.confirm) {
+      toast.error('Passwords do not match');
+      return;
+    }
+    if (passwordForm.new.length < 8) {
+      toast.error('Password must be at least 8 characters');
+      return;
+    }
+
+    setUpdating(true);
+    try {
+      const response = await fetch('/api/profile/password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          current_password: passwordForm.current,
+          new_password: passwordForm.new
+        })
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error);
+
+      toast.success('Password changed successfully');
+      setShowPasswordChange(false);
+      setPasswordForm({ current: '', new: '', confirm: '' });
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to change password');
     } finally {
       setUpdating(false);
     }
@@ -183,7 +224,64 @@ export function EditUserModal({ user, isOpen, onClose, onUpdate, disableRoleChan
               Security & Access
             </h3>
             
-            {resetPasswordResult ? (
+            {disableRoleChange ? (
+              <div className="space-y-4">
+                {!showPasswordChange ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswordChange(true)}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-xl text-sm font-bold hover:bg-blue-500/20 transition-all"
+                  >
+                    <Lock className="w-4 h-4" />
+                    Change Password
+                  </button>
+                ) : (
+                  <div className="space-y-4 bg-muted/30 p-4 rounded-2xl border border-border animate-in slide-in-from-top-2 duration-300">
+                    <div className="flex items-center justify-between mb-2">
+                       <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Change Password</h4>
+                       <button 
+                         type="button" 
+                         onClick={() => setShowPasswordChange(false)}
+                         className="text-xs text-blue-600 hover:underline"
+                       >
+                         Cancel
+                       </button>
+                    </div>
+                    <div className="space-y-3">
+                      <input
+                        type="password"
+                        placeholder="Current Password"
+                        value={passwordForm.current}
+                        onChange={(e) => setPasswordForm({ ...passwordForm, current: e.target.value })}
+                        className="w-full px-4 py-2 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                      <input
+                        type="password"
+                        placeholder="New Password"
+                        value={passwordForm.new}
+                        onChange={(e) => setPasswordForm({ ...passwordForm, new: e.target.value })}
+                        className="w-full px-4 py-2 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                      <input
+                        type="password"
+                        placeholder="Confirm New Password"
+                        value={passwordForm.confirm}
+                        onChange={(e) => setPasswordForm({ ...passwordForm, confirm: e.target.value })}
+                        className="w-full px-4 py-2 bg-background border border-border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                      <button
+                        type="button"
+                        disabled={updating || !passwordForm.current || !passwordForm.new || !passwordForm.confirm}
+                        onClick={handleChangePassword}
+                        className="w-full py-2 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 disabled:opacity-50 transition-all shadow-md shadow-blue-500/10"
+                      >
+                        Update Password
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : resetPasswordResult ? (
               <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
                 <p className="text-xs font-medium text-amber-600 dark:text-amber-400">
                   New Temporary Password Generated:

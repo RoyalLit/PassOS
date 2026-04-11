@@ -124,6 +124,7 @@ export function Sidebar({ role, userName, avatarUrl, wardens, id, email }: Sideb
           { href: '/warden/students', label: 'Students', icon: GraduationCap },
           { href: '/warden/parents', label: 'Parents', icon: Users },
           { href: '/warden/analytics', label: 'Analytics', icon: BarChart3 },
+          { href: '/settings', label: 'Settings', icon: Settings },
         ];
       default:
         return [];
@@ -209,7 +210,7 @@ export function Sidebar({ role, userName, avatarUrl, wardens, id, email }: Sideb
                   avatar_url: avatarUrl || undefined
                 } as any} 
                 disableRoleChange={true}
-                className="opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110 active:scale-95"
+                className="opacity-70 hover:opacity-100 transition-all hover:scale-110 active:scale-95"
               />
             )}
           </div>
