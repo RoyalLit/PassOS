@@ -54,8 +54,23 @@ export async function POST() {
       }
     }
 
+    const { count: totalApproved } = await supabase.from('pass_requests').select('*', { count: 'exact', head: true }).eq('status', 'approved');
+    const { count: totalPasses } = await supabase.from('passes').select('*', { count: 'exact', head: true });
+    
+    const { data: sampleRequests } = await supabase
+      .from('pass_requests')
+      .select('id, status, created_at')
+      .order('created_at', { ascending: false })
+      .limit(10);
+
     return NextResponse.json({
       message: `Backfill complete.`,
+      debug: {
+        totalApproved,
+        totalPasses,
+        sampleRequests,
+        existingRequestIdsCount: existingRequestIds.length
+      },
       ...results,
     });
   } catch (e: any) {
