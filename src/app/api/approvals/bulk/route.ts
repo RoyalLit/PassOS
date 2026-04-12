@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { requireRole } from '@/lib/auth/rbac';
+import { bulkApprovalSchema } from '@/lib/validators/request-schema';
 import { generatePass } from '@/app/api/passes/route';
 import { checkRateLimit, getRateLimitHeaders } from '@/lib/rate-limit';
 
@@ -29,17 +30,19 @@ export async function POST(request: Request) {
     const profile = await requireRole('admin', 'warden');
     const supabase = createAdminClient();
 
-    // 3. Parse Body
+    // 3. Parse & Validate Body
     const body = await request.json();
-    const { requestIds, decision, reason } = body;
-
-    if (!Array.isArray(requestIds) || requestIds.length === 0) {
-      return NextResponse.json({ error: 'invalid_request_ids' }, { status: 400, headers: getRateLimitHeaders(rateLimit) });
+    const result = bulkApprovalSchema.safeParse(body);
+    
+    if (!result.success) {
+      console.error('[Bulk Approval] Validation failed:', result.error.format());
+      return NextResponse.json({ 
+        error: 'Validation failed', 
+        details: result.error.issues.map(e => e.message) 
+      }, { status: 400, headers: getRateLimitHeaders(rateLimit) });
     }
-
-    if (decision !== 'approved' && decision !== 'rejected') {
-      return NextResponse.json({ error: 'invalid_decision' }, { status: 400, headers: getRateLimitHeaders(rateLimit) });
-    }
+    
+    const { requestIds, decision, reason } = result.data;
 
     // 4. Fetch the requests to verify they are in pending state
     const { data: requests } = await supabase
@@ -113,6 +116,13 @@ export async function POST(request: Request) {
   } catch (error: unknown) {
     const errorMsg = error instanceof Error ? error.message : 'An unexpected server error occurred';
     console.error('Bulk approval handler error:', errorMsg);
-    return NextResponse.json({ error: 'An unexpected server error occurred' }, { status: 500 });
+    
+    const isAuthError = errorMsg.includes('Unauthorized');
+    const isForbiddenError = errorMsg.includes('Forbidden');
+
+    return NextResponse.json(
+      { error: isAuthError ? 'Unauthorized' : (isForbiddenError ? 'Forbidden' : 'An unexpected server error occurred') },
+      { status: isAuthError ? 401 : (isForbiddenError ? 403 : 500) }
+    );
   }
 }

@@ -36,7 +36,14 @@ export const scanSchema = z.object({
   geo_lng: z.number().optional(),
 });
 
+export const bulkApprovalSchema = z.object({
+  requestIds: z.array(z.string().uuid()).min(1),
+  decision: z.enum(['approved', 'rejected']),
+  reason: z.string().max(500).optional(),
+});
+
 export type CreateRequestInput = z.infer<typeof createRequestSchema>;
 export type TimeLimitInput = z.infer<typeof timeLimitSchema>;
 export type ApprovalInput = z.infer<typeof approvalSchema>;
+export type BulkApprovalInput = z.infer<typeof bulkApprovalSchema>;
 export type ScanInput = z.infer<typeof scanSchema>;

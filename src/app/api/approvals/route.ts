@@ -31,7 +31,11 @@ export async function POST(request: Request) {
     const result = approvalSchema.safeParse(body);
     
     if (!result.success) {
-      return NextResponse.json({ error: 'Validation failed' }, { status: 400 });
+      console.error('[Approval] Validation failed:', result.error.format());
+      return NextResponse.json({ 
+        error: 'Validation failed', 
+        details: result.error.issues.map(e => e.message) 
+      }, { status: 400, headers: getRateLimitHeaders(rateLimit) });
     }
 
     const { request_id, decision, reason, token } = result.data;
@@ -153,10 +157,13 @@ export async function POST(request: Request) {
   } catch (error: unknown) {
     console.error('Approval handler error:', error);
     // Mask detailed error messages for 500s
-    const isAuthError = error instanceof Error && error.message.includes('Unauthorized');
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+    const isAuthError = errorMsg.includes('Unauthorized');
+    const isForbiddenError = errorMsg.includes('Forbidden');
+    
     return NextResponse.json(
-      { error: isAuthError ? 'Unauthorized' : 'An unexpected server error occurred' },
-      { status: isAuthError ? 403 : 500 }
+      { error: isAuthError ? 'Unauthorized' : (isForbiddenError ? 'Forbidden' : 'An unexpected server error occurred') },
+      { status: isAuthError ? 401 : (isForbiddenError ? 403 : 500) }
     );
   }
 }

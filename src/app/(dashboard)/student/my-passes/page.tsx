@@ -9,14 +9,11 @@ export default async function MyPassesPage() {
   const profile = await requireRole('student');
   const supabase = await createServerSupabaseClient();
 
-  // eslint-disable-next-line react-hooks/purity
-  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-
   const { data: passes, error: passError } = await supabase
     .from('passes')
     .select('*, request:pass_requests!request_id(*)')
     .eq('student_id', profile.id)
-    .or(`status.in.(active,used_exit),and(status.eq.revoked,updated_at.gte.${twentyFourHoursAgo})`)
+    .in('status', ['active', 'used_exit'])
     .order('created_at', { ascending: false });
 
   if (passError) {
