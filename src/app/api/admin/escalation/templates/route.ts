@@ -1,13 +1,16 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { requireRole } from '@/lib/auth/rbac';
 
 export async function GET() {
   try {
+    const profile = await requireRole('admin', 'warden');
     const supabase = createAdminClient();
 
     const { data: templates, error } = await supabase
       .from('escalation_templates')
       .select('*')
+      .or(`tenant_id.eq.${profile.tenant_id},is_system.eq.true`)
       .order('is_system', { ascending: false })
       .order('name');
 

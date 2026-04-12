@@ -82,8 +82,8 @@ export async function POST(request: Request) {
     if (scan_type === 'exit') {
       // ⚠️ STRICT: No exit allowed if expired (either JWT or DB)
       if (isExpired || new Date() > new Date(pass.valid_until)) {
-        await logScan(supabase, pass.id, profile.id, scan_type, 'expired', undefined, pass.tenant_id);
-        await supabase.from('passes').update({ status: 'expired' }).eq('id', pass.id);
+        logScan(supabase, pass.id, profile.id, scan_type, 'expired', undefined, pass.tenant_id);
+        supabase.from('passes').update({ status: 'expired' }).eq('id', pass.id);
         return NextResponse.json({ 
           valid: false, result: 'expired', message: 'Pass has expired. Exit denied.', student 
         });
@@ -93,7 +93,7 @@ export async function POST(request: Request) {
       const EARLY_GRACE_MS = 15 * 60 * 1000; // 15 minutes
       const validFrom = new Date(pass.valid_from);
       if (new Date().getTime() < validFrom.getTime() - EARLY_GRACE_MS) {
-        await logScan(supabase, pass.id, profile.id, scan_type, 'error', undefined, pass.tenant_id);
+        logScan(supabase, pass.id, profile.id, scan_type, 'error', undefined, pass.tenant_id);
         return NextResponse.json({ 
           valid: false, 
           result: 'too_early', 
@@ -104,7 +104,7 @@ export async function POST(request: Request) {
 
       if (pass.status !== 'active') {
         const alreadyUsed = pass.status === 'used_exit' || pass.status === 'used_entry';
-        await logScan(supabase, pass.id, profile.id, scan_type, alreadyUsed ? 'already_used' : 'error', undefined, pass.tenant_id);
+        logScan(supabase, pass.id, profile.id, scan_type, alreadyUsed ? 'already_used' : 'error', undefined, pass.tenant_id);
         return NextResponse.json({ 
           valid: false, 
           result: alreadyUsed ? 'already_used' : 'error', 
@@ -113,32 +113,32 @@ export async function POST(request: Request) {
         });
       }
 
+      // Parallelize: RPC call + student_states fetch
+      const [rpcResult, stateResult] = await Promise.all([
+        supabase.rpc('process_scan', {
+          p_pass_id:     pass.id,
+          p_guard_id:    profile.id,
+          p_scan_type:   'exit',
+          p_scan_result: 'valid',
+          p_geo_lat:     geo_lat ?? null,
+          p_geo_lng:     geo_lng ?? null,
+        }),
+        supabase
+          .from('student_states')
+          .select('current_state')
+          .eq('student_id', pass.student_id)
+          .single(),
+      ]);
 
-      // Record successful exit — single atomic RPC (1 round-trip, locked transaction)
-      const { error: exitRpcError } = await supabase.rpc('process_scan', {
-        p_pass_id:     pass.id,
-        p_guard_id:    profile.id,
-        p_scan_type:   'exit',
-        p_scan_result: 'valid',
-        p_geo_lat:     geo_lat ?? null,
-        p_geo_lng:     geo_lng ?? null,
-      });
-      if (exitRpcError) throw exitRpcError;
+      if (rpcResult.error) throw rpcResult.error;
 
-      // Defensive: verify student_states was updated. If not (edge case where
-      // student_states row didn't exist and the RPC upsert silently failed),
-      // update it directly. This is belt-and-suspenders on top of the fixed RPC.
-      const { data: currentState } = await supabase
-        .from('student_states')
-        .select('current_state')
-        .eq('student_id', pass.student_id)
-        .single();
-      if (currentState?.current_state !== 'outside') {
-        await supabase
+      // Defensive: verify student_states was updated. If not, fix it.
+      if (stateResult.data?.current_state !== 'outside') {
+        supabase
           .from('student_states')
           .upsert({
             student_id:    pass.student_id,
-            tenant_id:    pass.tenant_id,
+            tenant_id:     pass.tenant_id,
             current_state: 'outside',
             last_exit:     new Date().toISOString(),
             updated_at:    new Date().toISOString(),
@@ -159,7 +159,7 @@ export async function POST(request: Request) {
       if (pass.status !== 'used_exit' && pass.status !== 'expired') {
         const alreadyReturned = pass.status === 'used_entry';
         const neverExited = pass.status === 'active';
-        await logScan(supabase, pass.id, profile.id, scan_type, alreadyReturned ? 'already_used' : 'error', undefined, pass.tenant_id);
+        logScan(supabase, pass.id, profile.id, scan_type, alreadyReturned ? 'already_used' : 'error', undefined, pass.tenant_id);
         return NextResponse.json({ 
           valid: false, 
           result: alreadyReturned ? 'already_used' : 'error', 
@@ -172,33 +172,35 @@ export async function POST(request: Request) {
         });
       }
 
+      // Parallelize: RPC call + student_states fetch
+      const [rpcResult, stateResult] = await Promise.all([
+        supabase.rpc('process_scan', {
+          p_pass_id:     pass.id,
+          p_guard_id:    profile.id,
+          p_scan_type:   'entry',
+          p_scan_result: lateEntry ? 'late_entry' : 'valid',
+          p_geo_lat:     geo_lat ?? null,
+          p_geo_lng:     geo_lng ?? null,
+        }),
+        supabase
+          .from('student_states')
+          .select('current_state')
+          .eq('student_id', pass.student_id)
+          .single(),
+      ]);
 
-      // Record entry — single atomic RPC (1 round-trip, locked transaction)
-      const { error: entryRpcError } = await supabase.rpc('process_scan', {
-        p_pass_id:     pass.id,
-        p_guard_id:    profile.id,
-        p_scan_type:   'entry',
-        p_scan_result: lateEntry ? 'late_entry' : 'valid',
-        p_geo_lat:     geo_lat ?? null,
-        p_geo_lng:     geo_lng ?? null,
-      });
-      if (entryRpcError) throw entryRpcError;
+      if (rpcResult.error) throw rpcResult.error;
 
       // Defensive: verify student_states was updated to 'inside'.
-      const { data: currentState } = await supabase
-        .from('student_states')
-        .select('current_state')
-        .eq('student_id', pass.student_id)
-        .single();
-      if (currentState?.current_state !== 'inside') {
-        await supabase
+      if (stateResult.data?.current_state !== 'inside') {
+        supabase
           .from('student_states')
           .upsert({
             student_id:    pass.student_id,
-            tenant_id:    pass.tenant_id,
+            tenant_id:     pass.tenant_id,
             current_state: 'inside',
             last_entry:    new Date().toISOString(),
-            updated_at:   new Date().toISOString(),
+            updated_at:    new Date().toISOString(),
           }, { onConflict: 'student_id' });
       }
 

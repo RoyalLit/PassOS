@@ -1,6 +1,19 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { requireRole } from '@/lib/auth/rbac';
+import { z } from 'zod';
+
+const timeLimitSchema = z.object({
+  pass_type: z.enum(['day_outing', 'overnight', 'emergency', 'medical', 'academic']),
+  enabled: z.boolean().default(true),
+  allowed_start: z.string().nullable().optional(),
+  allowed_end: z.string().nullable().optional(),
+  max_duration_hours: z.number().nullable().optional(),
+});
+
+const updateTimeLimitsSchema = z.object({
+  limits: z.array(timeLimitSchema),
+});
 
 export async function GET() {
   try {
@@ -10,7 +23,7 @@ export async function GET() {
     const { data: limits, error } = await supabase
       .from('pass_time_limits')
       .select('*')
-      .is('tenant_id', null) // Get global limits for now
+      .is('tenant_id', null)
       .order('pass_type');
     
     if (error) throw error;
@@ -31,32 +44,36 @@ export async function PUT(request: Request) {
     const supabase = createAdminClient();
     
     const body = await request.json();
-    const { limits } = body; // Array of { pass_type, enabled, allowed_start, allowed_end, max_duration_hours }
+    const parseResult = updateTimeLimitsSchema.safeParse(body);
     
-    if (!Array.isArray(limits)) {
+    if (!parseResult.success) {
       return NextResponse.json(
-        { error: 'Invalid request body' },
+        { error: 'Invalid request body', details: parseResult.error.flatten() },
         { status: 400 }
       );
     }
     
-    // Upsert each limit
-    for (const limit of limits) {
-      const { error } = await supabase
-        .from('pass_time_limits')
-        .upsert({
-          pass_type: limit.pass_type,
-          enabled: limit.enabled ?? true,
-          allowed_start: limit.allowed_start || null,
-          allowed_end: limit.allowed_end || null,
-          max_duration_hours: limit.max_duration_hours || null,
-          updated_at: new Date().toISOString(),
-        }, {
-          onConflict: 'tenant_id,pass_type',
-        });
-      
-      if (error) throw error;
-    }
+    const { limits } = parseResult.data;
+    
+    // Bulk upsert - prepare all rows
+    const upsertData = limits.map(limit => ({
+      tenant_id: null,
+      pass_type: limit.pass_type,
+      enabled: limit.enabled,
+      allowed_start: limit.allowed_start ?? null,
+      allowed_end: limit.allowed_end ?? null,
+      max_duration_hours: limit.max_duration_hours ?? null,
+      updated_at: new Date().toISOString(),
+    }));
+    
+    // Single bulk upsert instead of looping
+    const { error: upsertError } = await supabase
+      .from('pass_time_limits')
+      .upsert(upsertData, {
+        onConflict: 'tenant_id,pass_type',
+      });
+    
+    if (upsertError) throw upsertError;
     
     // Fetch updated limits
     const { data: updatedLimits, error: fetchError } = await supabase

@@ -14,44 +14,41 @@ export default async function StudentDashboard() {
   const profile = await requireRole('student');
   const supabase = await createServerSupabaseClient();
 
-  // Get active passes
-  const { data: activePasses, error: passError } = await supabase
-    .from('passes')
-    .select('*, request:pass_requests!request_id(*)')
-    .eq('student_id', profile.id)
-    .in('status', ['active', 'used_exit'])
-    .order('created_at', { ascending: false });
+  // Fetch all data in parallel for better performance
+  const [
+    { data: activePasses, error: passError },
+    { data: recentRequests },
+    { data: pendingRequests },
+    parentResult,
+  ] = await Promise.all([
+    supabase
+      .from('passes')
+      .select('*, request:pass_requests!request_id(*)')
+      .eq('student_id', profile.id)
+      .in('status', ['active', 'used_exit'])
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('pass_requests')
+      .select('*')
+      .eq('student_id', profile.id)
+      .order('created_at', { ascending: false })
+      .limit(5),
+    supabase
+      .from('pass_requests')
+      .select('id')
+      .eq('student_id', profile.id)
+      .in('status', ['pending', 'parent_pending', 'parent_approved', 'admin_pending'])
+      .limit(1),
+    profile.parent_id
+      ? supabase.from('profiles').select('full_name, email').eq('id', profile.parent_id).single()
+      : Promise.resolve({ data: null }),
+  ]);
 
   if (passError) {
     console.error('[StudentDashboard] Error fetching passes:', passError.message, passError.code);
   }
 
-  // Get recent requests
-  const { data: recentRequests } = await supabase
-    .from('pass_requests')
-    .select('*')
-    .eq('student_id', profile.id)
-    .order('created_at', { ascending: false })
-    .limit(5);
-
-  // Check for any PENDING or ACTIVE request specifically for the "One Pass" rule
-  const { data: pendingRequests } = await supabase
-    .from('pass_requests')
-    .select('id')
-    .eq('student_id', profile.id)
-    .in('status', ['pending', 'parent_pending', 'parent_approved', 'admin_pending'])
-    .limit(1);
-
-  // Parent Info
-  let parentInfo = null;
-  if (profile.parent_id) {
-    const { data: parent } = await supabase
-      .from('profiles')
-      .select('full_name, email')
-      .eq('id', profile.parent_id)
-      .single();
-    parentInfo = parent;
-  }
+  const parentInfo = parentResult.data;
 
   const hasActivePass = activePasses && activePasses.length > 0;
   const hasPendingRequest = pendingRequests && pendingRequests.length > 0;
