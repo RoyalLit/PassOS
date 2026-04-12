@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { uploadAvatarSchema } from '@/lib/validators/profile-schema';
+import { checkRateLimit, getRateLimitHeaders } from '@/lib/rate-limit';
 
 export async function POST(request: Request) {
   try {
@@ -9,37 +11,34 @@ export async function POST(request: Request) {
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    
+    const limit = await checkRateLimit(`avatar_upload_${user.id}`);
+    if (!limit.allowed) {
+      return NextResponse.json({ error: 'Rate limit exceeded. Please try again later.' }, { 
+        status: 429,
+        headers: getRateLimitHeaders(limit)
+      });
+    }
 
     const body = await request.json();
-    const { file_name, file_type, file_size, file_data } = body;
-
-    if (!file_name || !file_type || !file_size || !file_data) {
+    
+    // Zod Validation covers file size, types, and presence
+    const result = uploadAvatarSchema.safeParse(body);
+    if (!result.success) {
+      // Flatten the error message
+      const firstError = result.error.issues[0]?.message || 'Validation failed';
       return NextResponse.json(
-        { error: 'file_name, file_type, file_size, and file_data are required' },
-        { status: 400 }
+        { error: firstError, details: result.error.format() },
+        { status: 400, headers: getRateLimitHeaders(limit) }
       );
     }
-
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    if (file_size > maxSize) {
-      return NextResponse.json(
-        { error: 'File size must be less than 5MB' },
-        { status: 400 }
-      );
-    }
-
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    if (!allowedTypes.includes(file_type)) {
-      return NextResponse.json(
-        { error: 'Only JPEG, PNG, GIF, and WebP images are allowed' },
-        { status: 400 }
-      );
-    }
+    
+    const { file_name, file_type, file_data } = result.data;
 
     const ext = file_name.split('.').pop() || 'jpg';
     const file_path = `${user.id}/${Date.now()}.${ext}`;
 
-    // Convert base64 to buffer (more reliable in Node.js)
+    // Convert base64 to buffer
     const base64Data = file_data.includes('base64,') 
       ? file_data.split('base64,')[1] 
       : file_data;
@@ -54,10 +53,10 @@ export async function POST(request: Request) {
       });
 
     if (uploadError) {
-      console.error('Upload error:', uploadError);
+      console.error('[Avatar Upload] Storage error:', uploadError);
       return NextResponse.json(
-        { error: `Upload failed: ${uploadError.message}` },
-        { status: 500 }
+        { error: `Upload failed. File format or storage error.` },
+        { status: 500, headers: getRateLimitHeaders(limit) }
       );
     }
 
@@ -75,20 +74,20 @@ export async function POST(request: Request) {
       .eq('id', user.id);
 
     if (profileError) {
-      console.error('Profile update error:', profileError);
+      console.error('[Avatar Upload] Profile update error:', profileError);
       return NextResponse.json(
-        { error: `Profile update failed: ${profileError.message}` },
-        { status: 500 }
+        { error: `Avatar uploaded but failed to link to profile.` },
+        { status: 500, headers: getRateLimitHeaders(limit) }
       );
     }
 
     return NextResponse.json({
       success: true,
       avatar_url: publicUrl.publicUrl,
-    });
+    }, { headers: getRateLimitHeaders(limit) });
   } catch (error: unknown) {
-    console.error('Avatar upload error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    console.error('[Avatar Upload] Internal Error:', error);
+    return NextResponse.json({ error: 'An unexpected server error occurred' }, { status: 500 });
   }
 }
+

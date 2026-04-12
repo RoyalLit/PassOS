@@ -7,17 +7,16 @@ export async function GET(request: Request) {
   const CRON_SECRET = process.env.CRON_SECRET;
   
   if (!CRON_SECRET) {
-    if (process.env.NODE_ENV === 'production') {
-      return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 500 });
-    }
+    console.error('[Alerts CRON] CRON_SECRET environment variable is missing.');
+    return NextResponse.json({ error: 'System configuration error' }, { status: 500 });
+  }
+
+  const authHeader = request.headers.get('authorization');
+  if (authHeader !== `Bearer ${CRON_SECRET}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
-    const authHeader = request.headers.get('authorization');
-    if (authHeader !== `Bearer ${CRON_SECRET}` && process.env.NODE_ENV === 'production') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const supabase = createAdminClient();
 
     // 1. Find active passes where valid_until has passed and student hasn't entered

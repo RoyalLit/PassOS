@@ -102,22 +102,7 @@ export async function POST(request: Request) {
     }
 
     // Route 2: Admin or Warden Approval via Session
-    const supabaseSession = await createServerSupabaseClient();
-    const { data: { user }, error: authError } = await supabaseSession.auth.getUser();
-    if (!user || authError) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const { data: userProfile } = await supabase
-      .from('profiles')
-      .select('id, role')
-      .eq('id', user.id)
-      .single();
-
-    if (!userProfile || (userProfile.role !== 'admin' && userProfile.role !== 'warden')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
+    const userProfile = await requireRole('admin', 'warden');
     approver_id = userProfile.id;
     approver_type = userProfile.role;
 
@@ -127,7 +112,7 @@ export async function POST(request: Request) {
     }
 
     // Record admin approval
-    await supabase.from('approvals').insert({
+    const { error: approvalError } = await supabase.from('approvals').insert({
       request_id,
       tenant_id: passReq.tenant_id,
       approver_id,
@@ -136,6 +121,11 @@ export async function POST(request: Request) {
       reason,
       ip_address: getClientIp(request.headers),
     });
+
+    if (approvalError) {
+      console.error('[Approval] Insert failure:', approvalError);
+      return NextResponse.json({ error: 'Failed to record approval' }, { status: 500 });
+    }
 
     const finalStatus = decision === 'approved' ? 'approved' : 'rejected';
     await supabase.from('pass_requests').update({ status: finalStatus }).eq('id', request_id);
@@ -146,9 +136,13 @@ export async function POST(request: Request) {
       try {
         await generatePass(request_id);
       } catch (e: unknown) {
-        const errorMessage = e instanceof Error ? e.message : 'Unknown error';
         console.error('Pass Generation crashed:', e);
-        return NextResponse.json({ error: `Pass Generation crashed: ${errorMessage}` }, { status: 500 });
+        // We still return success: true because the request WAS approved, but warn about pass generation
+        return NextResponse.json({ 
+          success: true, 
+          warning: 'Pass generation failed. Please generate manually or retry.',
+          final_status: finalStatus 
+        });
       }
     } else {
       console.log('Request was rejected, no pass generated');
@@ -158,10 +152,12 @@ export async function POST(request: Request) {
 
   } catch (error: unknown) {
     console.error('Approval handler error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Internal error';
+    // Mask detailed error messages for 500s
+    const isAuthError = error instanceof Error && error.message.includes('Unauthorized');
     return NextResponse.json(
-      { error: errorMessage },
-      { status: errorMessage.includes('Unauthorized') ? 403 : 500 }
+      { error: isAuthError ? 'Unauthorized' : 'An unexpected server error occurred' },
+      { status: isAuthError ? 403 : 500 }
     );
   }
 }
+

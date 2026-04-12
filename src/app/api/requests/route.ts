@@ -6,20 +6,21 @@ import { createRequestSchema } from '@/lib/validators/request-schema';
 import { MAX_REQUESTS_PER_DAY } from '@/lib/constants';
 import { isWithinCampus } from '@/lib/geo/campus-boundary';
 import type { ParentApprovalMode } from '@/lib/actions/settings';
-
-function sanitizeError(error: unknown): string {
-  if (error instanceof Error) {
-    return error.message;
-  }
-  if (typeof error === 'string') {
-    return error;
-  }
-  return 'Internal server error';
-}
+import { checkRateLimit, getRateLimitHeaders } from '@/lib/rate-limit';
 
 export async function POST(request: Request) {
   try {
     const profile = await requireRole('student');
+    
+    // HTTP Rate Limit check
+    const limit = await checkRateLimit(`request_create_${profile.id}`);
+    if (!limit.allowed) {
+      return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { 
+        status: 429,
+        headers: getRateLimitHeaders(limit)
+      });
+    }
+
     const supabase = await createServerSupabaseClient();
     
     // Parse and validate input
@@ -27,7 +28,10 @@ export async function POST(request: Request) {
     const result = createRequestSchema.safeParse(body);
     
     if (!result.success) {
-      return NextResponse.json({ error: 'Validation failed', details: result.error.format() }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Validation failed', details: result.error.format() }, 
+        { status: 400, headers: getRateLimitHeaders(limit) }
+      );
     }
 
     const data = result.data;
@@ -36,10 +40,12 @@ export async function POST(request: Request) {
     // 2. One Active Request Rule
     if (!isExtension) {
       if (new Date(data.departure_at) < new Date()) {
-        return NextResponse.json({ error: 'Validation failed', details: { departure_at: ['Departure must be in the future'] } }, { status: 400 });
+        return NextResponse.json({ 
+          error: 'Validation failed', 
+          details: { departure_at: ['Departure must be in the future'] } 
+        }, { status: 400, headers: getRateLimitHeaders(limit) });
       }
 
-      // Run both checks in parallel — cuts 2 sequential round-trips down to 1
       const [
         { data: pendingRequests, error: pendingError },
         { data: activePasses,   error: passError },
@@ -58,13 +64,15 @@ export async function POST(request: Request) {
           .limit(1),
       ]);
 
-      if (pendingError) throw new Error('Pending Check Failed: ' + JSON.stringify(pendingError));
-      if (passError)    throw new Error('Pass Check Failed: '    + JSON.stringify(passError));
+      if (pendingError || passError) {
+        console.error('[Pass Request] Check failed:', pendingError || passError);
+        return NextResponse.json({ error: 'Failed to verify existing pass status' }, { status: 500 });
+      }
 
       if ((pendingRequests && pendingRequests.length > 0) || (activePasses && activePasses.length > 0)) {
         return NextResponse.json({ 
-          error: "You already have an active pass or a pending request. Please complete or cancel it before requesting a new one." 
-        }, { status: 429 });
+          error: "You already have an active pass or a pending request." 
+        }, { status: 429, headers: getRateLimitHeaders(limit) });
       }
     }
 
@@ -73,11 +81,13 @@ export async function POST(request: Request) {
       const depDate = new Date(data.departure_at).toLocaleDateString('en-GB');
       const retDate = new Date(data.return_by).toLocaleDateString('en-GB');
       if (depDate !== retDate) {
-        return NextResponse.json({ error: 'Day outings must be completed within the same day. Please use "Overnight" for multi-day stays.' }, { status: 400 });
+        return NextResponse.json({ 
+          error: 'Day outings must be completed within the same day.' 
+        }, { status: 400, headers: getRateLimitHeaders(limit) });
       }
     }
 
-    // 3. Rate Limiting — enforce MAX_REQUESTS_PER_DAY (defined in constants.ts)
+    // 3. Rate Limiting — enforce MAX_REQUESTS_PER_DAY
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const { count: dailyCount, error: rateError } = await supabase
       .from('pass_requests')
@@ -85,15 +95,18 @@ export async function POST(request: Request) {
       .eq('student_id', profile.id)
       .gte('created_at', oneDayAgo);
 
-    if (rateError) throw new Error('Rate limit check failed: ' + JSON.stringify(rateError));
+    if (rateError) {
+      console.error('[Pass Request] Daily count error:', rateError);
+      return NextResponse.json({ error: 'Failed to verify daily request limit' }, { status: 500 });
+    }
 
     if ((dailyCount ?? 0) >= MAX_REQUESTS_PER_DAY) {
       return NextResponse.json({
-        error: `You have reached the daily limit of ${MAX_REQUESTS_PER_DAY} requests. Please try again tomorrow.`,
-      }, { status: 429 });
+        error: `You have reached the daily limit of ${MAX_REQUESTS_PER_DAY} requests.`,
+      }, { status: 429, headers: getRateLimitHeaders(limit) });
     }
 
-    // 4. Pass Time Limit Enforcement (admin-configured restrictions)
+    // 4. Pass Time Limit Enforcement
     if (!isExtension) {
       const admin = createAdminClient();
       const { data: limits } = await admin
@@ -109,35 +122,30 @@ export async function POST(request: Request) {
         const departureDate = new Date(data.departure_at);
         const returnDate = new Date(data.return_by);
 
-        // Check allowed time window
         if (limits.allowed_start && limits.allowed_end) {
           const depHHMM = departureDate.toTimeString().slice(0, 5);
           if (depHHMM < limits.allowed_start || depHHMM > limits.allowed_end) {
             return NextResponse.json({
-              error: `${data.request_type === 'day_outing' ? 'Day outings' : 'Overnight passes'} can only start between ${limits.allowed_start} and ${limits.allowed_end}.`,
-            }, { status: 400 });
+              error: `Departure must be between ${limits.allowed_start} and ${limits.allowed_end}.`,
+            }, { status: 400, headers: getRateLimitHeaders(limit) });
           }
         }
 
-        // Check max duration
         if (limits.max_duration_hours) {
           const durationHours = (returnDate.getTime() - departureDate.getTime()) / (1000 * 60 * 60);
           if (durationHours > limits.max_duration_hours) {
             return NextResponse.json({
-              error: `Maximum allowed duration for this pass type is ${limits.max_duration_hours} hours.`,
-            }, { status: 400 });
+              error: `Maximum allowed duration for this pass is ${limits.max_duration_hours} hours.`,
+            }, { status: 400, headers: getRateLimitHeaders(limit) });
           }
         }
       }
     }
 
-    // Calculate geo_valid server-side to prevent client spoofing
     const geo_valid = data.geo_lat !== undefined && data.geo_lng !== undefined
       ? isWithinCampus(data.geo_lat, data.geo_lng)
       : false;
 
-
-    // Fetch parent_approval_mode to determine initial routing
     let initialStatus: string;
     const adminClient = createAdminClient();
     const { data: settings } = await adminClient
@@ -147,13 +155,10 @@ export async function POST(request: Request) {
     const mode: ParentApprovalMode = settings?.parent_approval_mode ?? 'smart';
 
     if (mode === 'none') {
-      // Skip parent entirely — go directly to admin
       initialStatus = 'admin_pending';
     } else if (mode === 'all') {
-      // Every request needs parent first
       initialStatus = 'parent_pending';
     } else {
-      // Smart mode: parent only for overnight/emergency; day_outing goes direct to admin
       const requiresParent = ['overnight', 'emergency', 'medical'].includes(data.request_type);
       initialStatus = requiresParent ? 'parent_pending' : 'admin_pending';
     }
@@ -171,25 +176,27 @@ export async function POST(request: Request) {
         proof_urls: data.proof_urls,
         geo_lat: data.geo_lat,
         geo_lng: data.geo_lng,
-        geo_valid, // Use server-side calculated value
+        geo_valid,
         status: initialStatus,
       })
       .select()
       .single();
 
-    if (insertError) throw new Error('Insert Failed: ' + JSON.stringify(insertError));
+    if (insertError) {
+      console.error('[Pass Request] Insert error:', insertError);
+      return NextResponse.json({ error: 'Failed to create pass request' }, { status: 500 });
+    }
 
-
-    return NextResponse.json({ data: insertedRequest }, { status: 201 });
+    return NextResponse.json({ data: insertedRequest }, { 
+      status: 201, 
+      headers: getRateLimitHeaders(limit) 
+    });
   } catch (error: unknown) {
-    console.error('Request creation error:', error);
-    const status = error instanceof Error && 
-      (error.message.includes('Unauthorized') || error.message.includes('Forbidden')) 
-      ? 403 
-      : 500;
+    console.error('[Pass Request] Internal critical error:', error);
     return NextResponse.json(
-      { error: sanitizeError(error) },
-      { status }
+      { error: 'An unexpected server error occurred' },
+      { status: 500 }
     );
   }
 }
+

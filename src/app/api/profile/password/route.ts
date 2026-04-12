@@ -45,7 +45,7 @@ export async function POST(request: Request) {
 
     if (updateError) {
       return NextResponse.json(
-        { error: updateError.message },
+        { error: 'Failed to update password. Please try again.' },
         { status: 400 }
       );
     }
@@ -53,7 +53,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
     console.error('Change password error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return NextResponse.json({ error: 'An unexpected server error occurred' }, { status: 500 });
   }
 }

@@ -93,7 +93,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true, next_status: nextStatus });
   } catch (error: unknown) {
     console.error('Parent decide error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Internal error';
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return NextResponse.json({ error: 'An unexpected server error occurred' }, { status: 500 });
   }
 }

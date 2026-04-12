@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireRole } from '@/lib/auth/rbac';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { checkRateLimit, getRateLimitHeaders } from '@/lib/rate-limit';
 
 export async function PATCH(
   request: Request,
@@ -9,6 +10,16 @@ export async function PATCH(
   try {
     const profile = await requireRole('student');
     const { id } = await params;
+    
+    // Rate limit
+    const limit = await checkRateLimit(`request_cancel_${profile.id}`);
+    if (!limit.allowed) {
+      return NextResponse.json({ error: 'Rate limit exceeded' }, { 
+        status: 429,
+        headers: getRateLimitHeaders(limit)
+      });
+    }
+
     const supabase = await createServerSupabaseClient();
 
     // Verify the request exists, belongs to the student, and is in a cancellable state
@@ -19,18 +30,25 @@ export async function PATCH(
       .single();
 
     if (fetchError || !passReq) {
-      return NextResponse.json({ error: 'Request not found' }, { status: 404 });
+      console.error('[Cancel Request] Fetch error:', fetchError);
+      return NextResponse.json(
+        { error: 'Request not found' }, 
+        { status: 404, headers: getRateLimitHeaders(limit) }
+      );
     }
 
     if (passReq.student_id !== profile.id) {
-      return NextResponse.json({ error: 'Unauthorized to cancel this request' }, { status: 403 });
+      return NextResponse.json(
+        { error: 'Forbidden' }, 
+        { status: 403, headers: getRateLimitHeaders(limit) }
+      );
     }
 
     // Only pending states can be cancelled
     if (!['pending', 'parent_pending', 'admin_pending'].includes(passReq.status)) {
       return NextResponse.json(
-        { error: 'This request can no longer be cancelled because it has already been processed.' },
-        { status: 400 }
+        { error: 'This request can no longer be cancelled.' },
+        { status: 400, headers: getRateLimitHeaders(limit) }
       );
     }
 
@@ -43,14 +61,19 @@ export async function PATCH(
       .single();
 
     if (updateError) {
-      throw updateError;
+      console.error('[Cancel Request] Update error:', updateError);
+      return NextResponse.json(
+        { error: 'Failed to cancel request' }, 
+        { status: 500, headers: getRateLimitHeaders(limit) }
+      );
     }
 
-    return NextResponse.json({ success: true, data: updatedReq });
+    return NextResponse.json({ 
+      success: true, 
+      data: updatedReq 
+    }, { headers: getRateLimitHeaders(limit) });
   } catch (error: unknown) {
-    console.error('Cancel request error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
-    const status = errorMessage.includes('Unauthorized') || errorMessage.includes('Forbidden') ? 403 : 500;
-    return NextResponse.json({ error: errorMessage }, { status });
+    console.error('[Cancel Request] Internal error:', error);
+    return NextResponse.json({ error: 'An unexpected server error occurred' }, { status: 500 });
   }
 }

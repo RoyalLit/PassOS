@@ -1,16 +1,38 @@
 import { NextResponse } from 'next/server';
 import { requireRole } from '@/lib/auth/rbac';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { z } from 'zod';
+import { checkRateLimit, getRateLimitHeaders } from '@/lib/rate-limit';
+
+const revokeSchema = z.object({
+  pass_id: z.string().uuid("Invalid pass ID format"),
+});
 
 export async function POST(request: Request) {
   try {
     const adminUser = await requireRole('admin', 'warden', 'superadmin');
-    const supabase = createAdminClient();
-
-    const { pass_id } = await request.json();
-    if (!pass_id) {
-      return NextResponse.json({ error: 'Pass ID is required' }, { status: 400 });
+    
+    // Rate limit
+    const limit = await checkRateLimit(`admin_revoke_${adminUser.id}`);
+    if (!limit.allowed) {
+      return NextResponse.json({ error: 'Rate limit exceeded' }, { 
+        status: 429,
+        headers: getRateLimitHeaders(limit)
+      });
     }
+
+    const supabase = createAdminClient();
+    const body = await request.json();
+    const result = revokeSchema.safeParse(body);
+
+    if (!result.success) {
+      return NextResponse.json(
+        { error: 'Invalid pass ID format', details: result.error.format() },
+        { status: 400, headers: getRateLimitHeaders(limit) }
+      );
+    }
+
+    const { pass_id } = result.data;
 
     // Update the pass to 'revoked' if it's active or used_exit
     const { data: pass, error: passError } = await supabase
@@ -22,22 +44,20 @@ export async function POST(request: Request) {
       .single();
 
     if (passError || !pass) {
-      console.error('[Admin] Failed to revoke pass:', passError);
+      console.error('[Admin Revoke] Failed to revoke pass:', passError);
       return NextResponse.json({ 
         error: 'Pass not found or not in a revokable state' 
-      }, { status: 404 });
+      }, { status: 404, headers: getRateLimitHeaders(limit) });
     }
 
     // Reset student state if they are currently outside
-    // If they were outside, they are marked overdue now to raise an alarm, or we just leave them 'outside' so the guard knows they need to enter.
-    // However, if we revoke an 'active' pass before they leave, they are currently 'inside'. So nothing to update there. Let's just clear active_pass_id.
     const { error: stateError } = await supabase
       .from('student_states')
       .update({ active_pass_id: null })
       .eq('student_id', pass.student_id);
       
     if (stateError) {
-      console.error('[Admin] Failed to update student state after revocation:', stateError);
+      console.error('[Admin Revoke] Failed to update student state:', stateError);
     }
 
     // Create audit log
@@ -50,11 +70,11 @@ export async function POST(request: Request) {
       new_data: { status: 'revoked' }
     });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true }, { headers: getRateLimitHeaders(limit) });
   } catch (error) {
-    console.error('[Admin] Revoke pass error:', error);
+    console.error('[Admin Revoke] Internal error:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Internal error' }, 
+      { error: 'An unexpected server error occurred' }, 
       { status: 500 }
     );
   }

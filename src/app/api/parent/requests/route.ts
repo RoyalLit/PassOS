@@ -1,35 +1,38 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { requireRole } from '@/lib/auth/rbac';
+import { checkRateLimit, getRateLimitHeaders } from '@/lib/rate-limit';
 
 export async function GET() {
   try {
-    const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const parentProfile = await requireRole('parent');
+    
+    // Rate limit for basic data scraping protection
+    const limit = await checkRateLimit(`parent_requests_get_${parentProfile.id}`);
+    if (!limit.allowed) {
+      return NextResponse.json({ error: 'Rate limit exceeded' }, { 
+        status: 429,
+        headers: getRateLimitHeaders(limit)
+      });
+    }
 
     const admin = createAdminClient();
-
-    // Get the parent's profile to confirm role
-    const { data: parentProfile } = await admin
-      .from('profiles')
-      .select('id, role, full_name, email')
-      .eq('id', user.id)
-      .single();
-
-    if (!parentProfile || parentProfile.role !== 'parent') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
 
     // Find the student whose parent_id points to this parent
     const { data: student } = await admin
       .from('profiles')
       .select('id, full_name, email, hostel, room_number, avatar_url')
-      .eq('parent_id', user.id)
+      .eq('parent_id', parentProfile.id)
       .single();
 
     if (!student) {
-      return NextResponse.json({ student: null, requests: [], studentState: null, activePass: null, recentPasses: [] });
+      return NextResponse.json({ 
+        student: null, 
+        requests: [], 
+        studentState: null, 
+        activePass: null, 
+        recentPasses: [] 
+      }, { headers: getRateLimitHeaders(limit) });
     }
 
     // Fetch all data in parallel
@@ -67,10 +70,9 @@ export async function GET() {
       studentState: studentStateRes.data ?? null,
       activePass,
       recentPasses: recentPassesRes.data || [],
-    });
+    }, { headers: getRateLimitHeaders(limit) });
   } catch (error) {
-    console.error('Parent requests error:', error);
-    const message = error instanceof Error ? error.message : 'Internal error';
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error('[Parent Requests] Internal error:', error);
+    return NextResponse.json({ error: 'An unexpected server error occurred' }, { status: 500 });
   }
 }

@@ -26,36 +26,19 @@ export async function POST(request: Request) {
     }
 
     // 2. Auth & Role Verification
-    // Both admins and wardens can bulk approve, assuming they pass the RLS checks or custom logic
-    const supabaseSession = await createServerSupabaseClient();
-    const { data: { user }, error: authError } = await supabaseSession.auth.getUser();
-    
-    // Check if the user is authorized as admin or warden (we'll fetch profile directly to be safe)
-    if (!user || authError) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    const profile = await requireRole('admin', 'warden');
     const supabase = createAdminClient();
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id, role')
-      .eq('id', user.id)
-      .single();
-
-    if (!profile || (profile.role !== 'admin' && profile.role !== 'warden')) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
 
     // 3. Parse Body
     const body = await request.json();
     const { requestIds, decision, reason } = body;
 
     if (!Array.isArray(requestIds) || requestIds.length === 0) {
-      return NextResponse.json({ error: 'invalid_request_ids' }, { status: 400 });
+      return NextResponse.json({ error: 'invalid_request_ids' }, { status: 400, headers: getRateLimitHeaders(rateLimit) });
     }
 
     if (decision !== 'approved' && decision !== 'rejected') {
-      return NextResponse.json({ error: 'invalid_decision' }, { status: 400 });
+      return NextResponse.json({ error: 'invalid_decision' }, { status: 400, headers: getRateLimitHeaders(rateLimit) });
     }
 
     // 4. Fetch the requests to verify they are in pending state
@@ -66,11 +49,10 @@ export async function POST(request: Request) {
       .in('status', ['pending', 'admin_pending', 'parent_pending', 'parent_approved']);
 
     if (!requests || requests.length === 0) {
-      return NextResponse.json({ error: 'No valid pending requests found in selection.' }, { status: 400 });
+      return NextResponse.json({ error: 'No valid pending requests found in selection.' }, { status: 400, headers: getRateLimitHeaders(rateLimit) });
     }
 
     const validRequestIds = requests.map(r => r.id);
-    const tenantId = requests[0]?.tenant_id; // Assuming all requests belong to the same tenant
 
     // 5. Create Approval Audit Records
     const approvalsToInsert = requests.map(req => ({
@@ -83,18 +65,27 @@ export async function POST(request: Request) {
       ip_address: clientIp,
     }));
 
-    await supabase.from('approvals').insert(approvalsToInsert);
+    const { error: approvalError } = await supabase.from('approvals').insert(approvalsToInsert);
+    if (approvalError) {
+      console.error('[Bulk Approval] Registration failure:', approvalError);
+      return NextResponse.json({ error: 'Failed to register approvals' }, { status: 500, headers: getRateLimitHeaders(rateLimit) });
+    }
 
     // 6. Update Pass Requests
     const finalStatus = decision === 'approved' ? 'approved' : 'rejected';
     
-    await supabase
+    const { error: updateError } = await supabase
       .from('pass_requests')
       .update({ status: finalStatus })
       .in('id', validRequestIds);
 
+    if (updateError) {
+      console.error('[Bulk Approval] Status update failure:', updateError);
+      return NextResponse.json({ error: 'Failed to update request statuses' }, { status: 500, headers: getRateLimitHeaders(rateLimit) });
+    }
+
     // 7. Generate Passes if Approved (Synchronous/Sequential to avoid DB hammering)
-    const results = { successful: 0, failed: 0, errors: [] as string[] };
+    const results = { successful: 0, failed: 0 };
     
     if (finalStatus === 'approved') {
       console.log(`Spawning passes for ${validRequestIds.length} bulk approved requests...`);
@@ -105,7 +96,6 @@ export async function POST(request: Request) {
         } catch (e: any) {
           console.error(`Failed to generate pass for request ${reqId}:`, e);
           results.failed++;
-          results.errors.push(`Req ${reqId}: ${e.message}`);
         }
       }
     } else {
@@ -117,10 +107,10 @@ export async function POST(request: Request) {
       processed: validRequestIds.length,
       final_status: finalStatus,
       pass_generation: finalStatus === 'approved' ? results : undefined
-    });
+    }, { headers: getRateLimitHeaders(rateLimit) });
 
   } catch (error: any) {
     console.error('Bulk approval handler error:', error);
-    return NextResponse.json({ error: error.message || 'Internal error' }, { status: 500 });
+    return NextResponse.json({ error: 'An unexpected server error occurred' }, { status: 500 });
   }
 }

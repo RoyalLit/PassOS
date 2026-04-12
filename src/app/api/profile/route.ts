@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { updateProfileSchema } from '@/lib/validators/profile-schema';
+import { checkRateLimit, getRateLimitHeaders } from '@/lib/rate-limit';
 
 export async function GET() {
   try {
@@ -16,13 +18,15 @@ export async function GET() {
       .eq('id', user.id)
       .single();
 
-    if (error) throw error;
+    if (error) {
+       console.error('[Profile GET] Database error:', error);
+       return NextResponse.json({ error: 'Failed to retrieve profile' }, { status: 500 });
+    }
 
     return NextResponse.json({ data: profile });
   } catch (error: unknown) {
-    console.error('Get profile error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    console.error('[Profile GET] Internal Server Error:', error);
+    return NextResponse.json({ error: 'An unexpected server error occurred' }, { status: 500 });
   }
 }
 
@@ -34,9 +38,27 @@ export async function PATCH(request: Request) {
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    
+    // Rate limit
+    const limit = await checkRateLimit(`profile_patch_${user.id}`);
+    if (!limit.allowed) {
+      return NextResponse.json({ error: 'Rate limit exceeded. Please try again later.' }, { 
+        status: 429,
+        headers: getRateLimitHeaders(limit)
+      });
+    }
 
     const body = await request.json();
-    const { full_name, phone, hostel, room_number, avatar_url, metadata } = body;
+    
+    const result = updateProfileSchema.safeParse(body);
+    if (!result.success) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: result.error.format() },
+        { status: 400, headers: getRateLimitHeaders(limit) }
+      );
+    }
+    
+    const { full_name, phone, hostel, room_number, avatar_url, metadata } = result.data;
 
     const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
 
@@ -46,7 +68,7 @@ export async function PATCH(request: Request) {
     if (room_number !== undefined) updates.room_number = room_number;
     if (avatar_url !== undefined) updates.avatar_url = avatar_url;
     
-    if (metadata !== undefined && typeof metadata === 'object') {
+    if (metadata !== undefined) {
       const { data: currentProfile } = await supabase
         .from('profiles')
         .select('metadata')
@@ -66,12 +88,14 @@ export async function PATCH(request: Request) {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+       console.error('[Profile PATCH] Database update error:', error);
+       return NextResponse.json({ error: 'Failed to update profile' }, { status: 500, headers: getRateLimitHeaders(limit) });
+    }
 
-    return NextResponse.json({ data: profile });
+    return NextResponse.json({ data: profile }, { headers: getRateLimitHeaders(limit) });
   } catch (error: unknown) {
-    console.error('Update profile error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    console.error('[Profile PATCH] Internal Server Error:', error);
+    return NextResponse.json({ error: 'An unexpected server error occurred' }, { status: 500 });
   }
 }
