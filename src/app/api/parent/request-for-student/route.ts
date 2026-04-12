@@ -154,7 +154,7 @@ export async function POST(request: Request) {
     if (insertError) throw new Error('Insert Failed: ' + JSON.stringify(insertError));
 
     // Create audit log entry
-    await admin.from('audit_log').insert({
+    await admin.from('audit_logs').insert({
       actor_id: user.id,
       tenant_id: linkedStudent.tenant_id,
       action: 'parent_request_for_student',

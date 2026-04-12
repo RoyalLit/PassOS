@@ -89,6 +89,19 @@ export async function POST(request: Request) {
         });
       }
 
+      // ⚠️ STRICT: No exit allowed before the pass window opens (with 15min grace period)
+      const EARLY_GRACE_MS = 15 * 60 * 1000; // 15 minutes
+      const validFrom = new Date(pass.valid_from);
+      if (new Date().getTime() < validFrom.getTime() - EARLY_GRACE_MS) {
+        await logScan(supabase, pass.id, profile.id, scan_type, 'error', undefined, pass.tenant_id);
+        return NextResponse.json({ 
+          valid: false, 
+          result: 'too_early', 
+          message: `Pass is not valid until ${validFrom.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}. Exit denied.`,
+          student 
+        });
+      }
+
       if (pass.status !== 'active') {
         const alreadyUsed = pass.status === 'used_exit' || pass.status === 'used_entry';
         await logScan(supabase, pass.id, profile.id, scan_type, alreadyUsed ? 'already_used' : 'error', undefined, pass.tenant_id);
@@ -99,6 +112,7 @@ export async function POST(request: Request) {
           student 
         });
       }
+
 
       // Record successful exit — single atomic RPC (1 round-trip, locked transaction)
       const { error: exitRpcError } = await supabase.rpc('process_scan', {
@@ -139,18 +153,25 @@ export async function POST(request: Request) {
       const dbExpired = new Date() > new Date(pass.valid_until);
       const lateEntry = isExpired || dbExpired || pass.status === 'expired';
 
-      if (pass.status !== 'used_exit' && pass.status !== 'expired' && pass.status !== 'active') {
-        // Note: We allow entry from 'active' if they never scanned out but are coming back (failsafe)
-        // or from 'used_exit' (normal) or 'expired' (since they are returning late)
-        const alreadyUsed = pass.status === 'used_entry';
-        await logScan(supabase, pass.id, profile.id, scan_type, alreadyUsed ? 'already_used' : 'error', undefined, pass.tenant_id);
+      // Only allow entry if the student has actually exited first.
+      // We no longer accept 'active' status here — if they somehow haven't exited,
+      // the guard should scan them out first. Allows 'expired' for late returns.
+      if (pass.status !== 'used_exit' && pass.status !== 'expired') {
+        const alreadyReturned = pass.status === 'used_entry';
+        const neverExited = pass.status === 'active';
+        await logScan(supabase, pass.id, profile.id, scan_type, alreadyReturned ? 'already_used' : 'error', undefined, pass.tenant_id);
         return NextResponse.json({ 
           valid: false, 
-          result: alreadyUsed ? 'already_used' : 'error', 
-          message: alreadyUsed ? 'Pass already used for entry' : 'Pass not in valid return state',
+          result: alreadyReturned ? 'already_used' : 'error', 
+          message: alreadyReturned 
+            ? 'Student has already returned to campus' 
+            : neverExited
+            ? 'Student has not exited yet — please scan as EXIT first'
+            : 'Pass is not in a valid state for entry',
           student 
         });
       }
+
 
       // Record entry — single atomic RPC (1 round-trip, locked transaction)
       const { error: entryRpcError } = await supabase.rpc('process_scan', {

@@ -93,10 +93,49 @@ export async function POST(request: Request) {
       }, { status: 429 });
     }
 
+    // 4. Pass Time Limit Enforcement (admin-configured restrictions)
+    if (!isExtension) {
+      const admin = createAdminClient();
+      const { data: limits } = await admin
+        .from('pass_time_limits')
+        .select('*')
+        .eq('pass_type', data.request_type)
+        .eq('enabled', true)
+        .or('tenant_id.is.null,tenant_id.eq.' + (profile.tenant_id || 'null'))
+        .limit(1)
+        .maybeSingle();
+
+      if (limits) {
+        const departureDate = new Date(data.departure_at);
+        const returnDate = new Date(data.return_by);
+
+        // Check allowed time window
+        if (limits.allowed_start && limits.allowed_end) {
+          const depHHMM = departureDate.toTimeString().slice(0, 5);
+          if (depHHMM < limits.allowed_start || depHHMM > limits.allowed_end) {
+            return NextResponse.json({
+              error: `${data.request_type === 'day_outing' ? 'Day outings' : 'Overnight passes'} can only start between ${limits.allowed_start} and ${limits.allowed_end}.`,
+            }, { status: 400 });
+          }
+        }
+
+        // Check max duration
+        if (limits.max_duration_hours) {
+          const durationHours = (returnDate.getTime() - departureDate.getTime()) / (1000 * 60 * 60);
+          if (durationHours > limits.max_duration_hours) {
+            return NextResponse.json({
+              error: `Maximum allowed duration for this pass type is ${limits.max_duration_hours} hours.`,
+            }, { status: 400 });
+          }
+        }
+      }
+    }
+
     // Calculate geo_valid server-side to prevent client spoofing
     const geo_valid = data.geo_lat !== undefined && data.geo_lng !== undefined
       ? isWithinCampus(data.geo_lat, data.geo_lng)
       : false;
+
 
     // Fetch parent_approval_mode to determine initial routing
     let initialStatus: string;
