@@ -37,11 +37,11 @@ export function Toggle({
     >
       <span
         className={clsx(
-          'absolute top-0.5 rounded-full bg-white shadow-sm transition-all',
+          'absolute top-1 rounded-full bg-white shadow-md transition-all duration-300',
           size === 'sm' ? 'h-4 w-4' : 'h-5 w-5',
           enabled
             ? size === 'sm' ? 'translate-x-5' : 'translate-x-6'
-            : 'translate-x-0.5'
+            : 'translate-x-1'
         )}
       />
     </button>
