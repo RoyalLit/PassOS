@@ -16,7 +16,7 @@ import { Loader2, Plus, Pencil, Trash2, AlertTriangle, Check, Clock, X } from 'l
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { ClientEditProfileButton } from '@/components/common/client-edit-profile-button';
-import type { EscalationRule, EscalationTemplate, EscalationLog, EscalationEventType, EscalationPriority } from '@/types';
+import type { EscalationRule, EscalationTemplate, EscalationLog, EscalationEventType, EscalationPriority, Profile } from '@/types';
 
 const EVENT_TYPES: { value: EscalationEventType; label: string }[] = [
   { value: 'pass_overdue', label: 'Pass Overdue' },
@@ -423,7 +423,7 @@ export function EscalationManagement() {
                       <TableCell className="font-medium flex items-center gap-2">
                         {(log.student as unknown as { full_name: string })?.full_name || 'Unknown'}
                         {log.student && (
-                          <ClientEditProfileButton user={log.student as any} variant="icon" />
+                          <ClientEditProfileButton user={log.student as unknown as Profile} variant="icon" />
                         )}
                       </TableCell>
                       <TableCell>

@@ -18,7 +18,7 @@ interface WardenManagementProps {
   }[];
   availableUsers: (Profile & { role: string })[];
   hostels: string[];
-  wardensByHostel: Record<string, any[]>;
+  wardensByHostel: Record<string, unknown[]>;
 }
 
 export function WardenManagement({

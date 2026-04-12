@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import Link from 'next/link';
 import { Building2, Plus, Search, MoreHorizontal, Trash2, Edit2, Eye } from 'lucide-react';
 import type { Tenant, TenantStatus, TenantPlan } from '@/types';
 
@@ -12,19 +13,19 @@ export default function TenantsPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [editing, setEditing] = useState<Tenant | null>(null);
 
-  async function fetchTenants() {
-    setLoading(true);
+  async function loadData() {
     const supabase = createClient();
     const { data } = await supabase
       .from('tenants')
       .select('*')
       .order('created_at', { ascending: false });
+    
     setTenants(data || []);
     setLoading(false);
   }
 
   useEffect(() => {
-    fetchTenants();
+    loadData();
   }, []);
 
   const filtered = tenants.filter(
@@ -161,13 +162,13 @@ export default function TenantsPage() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        onClick={() => window.location.href = `/superadmin/tenants/${tenant.id}`}
+                      <Link
+                        href={`/superadmin/tenants/${tenant.id}`}
                         className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
                         title="View details"
                       >
                         <Eye size={14} />
-                      </button>
+                      </Link>
                       <button
                         onClick={() => setEditing(tenant)}
                         className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
@@ -180,7 +181,7 @@ export default function TenantsPage() {
                           onClick={async () => {
                             if (!confirm(`Delete ${tenant.name}?`)) return;
                             const res = await fetch(`/api/tenants/${tenant.id}`, { method: 'DELETE' });
-                            if (res.ok) fetchTenants();
+                            if (res.ok) loadData();
                             else {
                               const { error } = await res.json();
                               alert(error || 'Delete failed');
@@ -205,7 +206,7 @@ export default function TenantsPage() {
         <TenantModal
           tenant={editing}
           onClose={() => { setShowCreate(false); setEditing(null); }}
-          onSaved={() => { setShowCreate(false); setEditing(null); fetchTenants(); }}
+          onSaved={() => { setShowCreate(false); setEditing(null); loadData(); }}
         />
       )}
     </div>

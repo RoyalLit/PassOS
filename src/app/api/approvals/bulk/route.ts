@@ -93,8 +93,9 @@ export async function POST(request: Request) {
         try {
           await generatePass(reqId);
           results.successful++;
-        } catch (e: any) {
-          console.error(`Failed to generate pass for request ${reqId}:`, e);
+        } catch (e: unknown) {
+          const errorMsg = e instanceof Error ? e.message : String(e);
+          console.error(`Failed to generate pass for request ${reqId}:`, errorMsg);
           results.failed++;
         }
       }
@@ -109,8 +110,9 @@ export async function POST(request: Request) {
       pass_generation: finalStatus === 'approved' ? results : undefined
     }, { headers: getRateLimitHeaders(rateLimit) });
 
-  } catch (error: any) {
-    console.error('Bulk approval handler error:', error);
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : 'An unexpected server error occurred';
+    console.error('Bulk approval handler error:', errorMsg);
     return NextResponse.json({ error: 'An unexpected server error occurred' }, { status: 500 });
   }
 }

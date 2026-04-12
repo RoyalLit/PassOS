@@ -88,7 +88,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                 <ShieldIcon />
               </div>
               <h1 className="text-2xl font-bold text-foreground">Sign in to PassOS</h1>
-              <p className="text-muted-foreground mt-2">Enter your credentials to access the system</p>
+              <p className="text-muted-foreground text-sm">Please enter your credentials to access your dashboard. We&apos;ve missed you!</p>
             </div>
 
             {error && (
@@ -141,7 +141,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                   }}
                   className="w-full text-center text-sm font-medium text-muted-foreground hover:text-blue-600 transition-colors"
                 >
-                  Don't have an account? Sign up
+                  Don&apos;t have an account? Sign up
                 </Link>
               </div>
             </form>

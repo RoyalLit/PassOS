@@ -375,9 +375,11 @@ function AvatarForm({ profile, onUpload, saving, fileInputRef }: {
   const avatarUrl = profile?.avatar_url || null;
 
   // Clear preview when profile updates (successful upload)
-  useEffect(() => {
+  const prevAvatarUrl = useRef(avatarUrl);
+  if (avatarUrl !== prevAvatarUrl.current) {
+    prevAvatarUrl.current = avatarUrl;
     setPreview(null);
-  }, [avatarUrl]);
+  }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

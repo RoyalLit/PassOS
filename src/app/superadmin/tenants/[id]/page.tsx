@@ -2,6 +2,7 @@
 
 import { useState, useEffect, use } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import Link from 'next/link';
 import { Building2, Users, AlertTriangle, ArrowLeft, Edit2, X } from 'lucide-react';
 import type { Tenant, Profile, TenantStatus, TenantPlan } from '@/types';
 
@@ -42,7 +43,7 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
     return (
       <div className="p-6 max-w-5xl mx-auto text-center py-20">
         <p className="text-muted-foreground">University not found</p>
-        <a href="/superadmin/tenants" className="text-sm text-purple-600 mt-2 inline-block">← Back to list</a>
+        <Link href="/superadmin/tenants" className="text-sm text-purple-600 mt-2 inline-block">← Back to list</Link>
       </div>
     );
   }
@@ -55,9 +56,9 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
       <div className="flex items-center gap-3">
-        <a href="/superadmin/tenants" className="p-2 rounded-lg border border-border hover:bg-muted transition-colors">
+        <Link href="/superadmin/tenants" className="p-2 rounded-lg border border-border hover:bg-muted transition-colors">
           <ArrowLeft size={16} />
-        </a>
+        </Link>
         <div className="flex-1">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">{tenant.name}</h1>
           <p className="text-muted-foreground font-mono">/{tenant.slug}</p>

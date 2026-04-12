@@ -1,0 +1,197 @@
+
+> passos@0.1.0 lint
+> eslint
+
+
+/Users/pahul/CLAUDE/passos/src/app/(auth)/login/page.tsx
+  22:39  warning  'profileError' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  95:14  warning  'err' is defined but never used                    @typescript-eslint/no-unused-vars
+
+/Users/pahul/CLAUDE/passos/src/app/(auth)/signup/page.tsx
+  6:41  warning  'GraduationCap' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/pahul/CLAUDE/passos/src/app/(dashboard)/admin/page.tsx
+  10:10  warning  'Filter' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/pahul/CLAUDE/passos/src/app/(dashboard)/admin/requests/page.tsx
+  3:10  warning  'RequestCard' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/pahul/CLAUDE/passos/src/app/(dashboard)/admin/settings/pass-limits/page.tsx
+  3:36  warning  'Clock' is defined but never used  @typescript-eslint/no-unused-vars
+  3:43  warning  'Sun' is defined but never used    @typescript-eslint/no-unused-vars
+  3:48  warning  'Moon' is defined but never used   @typescript-eslint/no-unused-vars
+
+/Users/pahul/CLAUDE/passos/src/app/(dashboard)/admin/students/[id]/page.tsx
+    6:48  warning  'UserCog' is defined but never used                                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+  117:13  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/pahul/CLAUDE/passos/src/app/(dashboard)/admin/students/page.tsx
+  69:29  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/pahul/CLAUDE/passos/src/app/(dashboard)/admin/users/page.tsx
+    7:40  warning  'AlertCircle' is defined but never used                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+   68:9   warning  'router' is assigned a value but never used                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+  309:31  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/pahul/CLAUDE/passos/src/app/(dashboard)/admin/wardens/page.tsx
+   3:10  warning  'Badge' is defined but never used             @typescript-eslint/no-unused-vars
+   5:20  warning  'Plus' is defined but never used              @typescript-eslint/no-unused-vars
+   5:26  warning  'Trash2' is defined but never used            @typescript-eslint/no-unused-vars
+   5:34  warning  'Users' is defined but never used             @typescript-eslint/no-unused-vars
+   5:41  warning  'X' is defined but never used                 @typescript-eslint/no-unused-vars
+  10:15  warning  'Warden' is defined but never used            @typescript-eslint/no-unused-vars
+  13:9   warning  'profile' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/pahul/CLAUDE/passos/src/app/(dashboard)/guard/page.tsx
+  74:29  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/pahul/CLAUDE/passos/src/app/(dashboard)/parent/page.tsx
+  136:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/pahul/CLAUDE/passos/src/app/(dashboard)/student/my-passes/page.tsx
+  5:21  warning  'ShieldAlert' is defined but never used  @typescript-eslint/no-unused-vars
+  5:34  warning  'ShieldX' is defined but never used      @typescript-eslint/no-unused-vars
+
+/Users/pahul/CLAUDE/passos/src/app/(dashboard)/student/new-request/page.tsx
+  106:6  warning  React Hook useEffect has missing dependencies: 'extensionOf' and 'setValue'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/pahul/CLAUDE/passos/src/app/(dashboard)/suspended/page.tsx
+  1:31  warning  'Phone' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/pahul/CLAUDE/passos/src/app/(dashboard)/warden/layout.tsx
+  1:25  warning  'getWardenHostels' is defined but never used  @typescript-eslint/no-unused-vars
+  2:10  warning  'Sidebar' is defined but never used           @typescript-eslint/no-unused-vars
+  3:10  warning  'redirect' is defined but never used          @typescript-eslint/no-unused-vars
+
+/Users/pahul/CLAUDE/passos/src/app/(dashboard)/warden/parents/page.tsx
+    5:40  warning  'Search' is defined but never used                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+    6:3   warning  'CheckCircle2' is defined but never used                                                                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
+    6:17  warning  'UserCog' is defined but never used                                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+   95:25  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  147:31  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/pahul/CLAUDE/passos/src/app/(dashboard)/warden/requests/page.tsx
+   3:10  warning  'Badge' is defined but never used                  @typescript-eslint/no-unused-vars
+   5:14  warning  'User' is defined but never used                   @typescript-eslint/no-unused-vars
+   5:20  warning  'Clock' is defined but never used                  @typescript-eslint/no-unused-vars
+   5:27  warning  'MapPin' is defined but never used                 @typescript-eslint/no-unused-vars
+   5:35  warning  'Calendar' is defined but never used               @typescript-eslint/no-unused-vars
+   6:3   warning  'CheckCircle2' is defined but never used           @typescript-eslint/no-unused-vars
+   6:17  warning  'XCircle' is defined but never used                @typescript-eslint/no-unused-vars
+   6:26  warning  'AlertTriangle' is defined but never used          @typescript-eslint/no-unused-vars
+   6:41  warning  'Loader2' is defined but never used                @typescript-eslint/no-unused-vars
+   8:10  warning  'clsx' is defined but never used                   @typescript-eslint/no-unused-vars
+   9:10  warning  'format' is defined but never used                 @typescript-eslint/no-unused-vars
+  10:10  warning  'RequestActions' is defined but never used         @typescript-eslint/no-unused-vars
+  12:15  warning  'WardenPendingRequest' is defined but never used   @typescript-eslint/no-unused-vars
+  50:9   warning  'statusConfig' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  57:9   warning  'typeConfig' is assigned a value but never used    @typescript-eslint/no-unused-vars
+
+/Users/pahul/CLAUDE/passos/src/app/(dashboard)/warden/students/page.tsx
+  136:27  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/pahul/CLAUDE/passos/src/app/api/approvals/bulk/route.ts
+  3:10  warning  'createServerSupabaseClient' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/pahul/CLAUDE/passos/src/app/api/approvals/route.ts
+  3:10  warning  'createServerSupabaseClient' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/pahul/CLAUDE/passos/src/app/superadmin/analytics/page.tsx
+  59:9  warning  'recentRequests' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/pahul/CLAUDE/passos/src/app/superadmin/layout.tsx
+  42:6  warning  React Hook useEffect has missing dependencies: 'router' and 'supabase'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/pahul/CLAUDE/passos/src/app/superadmin/tenants/[id]/page.tsx
+  6:10  warning  'Building2' is defined but never used      @typescript-eslint/no-unused-vars
+  6:28  warning  'AlertTriangle' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/pahul/CLAUDE/passos/src/app/superadmin/tenants/page.tsx
+  6:35  warning  'MoreHorizontal' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/pahul/CLAUDE/passos/src/app/superadmin/users/page.tsx
+  5:25  warning  'ShieldCheck' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/pahul/CLAUDE/passos/src/components/admin/activity-charts.tsx
+  14:3   warning  'LineChart' is defined but never used     @typescript-eslint/no-unused-vars
+  15:3   warning  'Line' is defined but never used          @typescript-eslint/no-unused-vars
+  16:3   warning  'Legend' is defined but never used        @typescript-eslint/no-unused-vars
+  29:52  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  35:32  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/pahul/CLAUDE/passos/src/components/admin/approval-panel.tsx
+  66:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/pahul/CLAUDE/passos/src/components/admin/edit-user-modal.tsx
+   10:10  warning  'clsx' is defined but never used               @typescript-eslint/no-unused-vars
+   23:9   warning  'supabase' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   67:21  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  128:21  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+
+/Users/pahul/CLAUDE/passos/src/components/admin/escalation-management.tsx
+   11:93  warning  'DialogTrigger' is defined but never used  @typescript-eslint/no-unused-vars
+   15:63  warning  'Clock' is defined but never used          @typescript-eslint/no-unused-vars
+  128:14  warning  'error' is defined but never used          @typescript-eslint/no-unused-vars
+  149:14  warning  'error' is defined but never used          @typescript-eslint/no-unused-vars
+  168:14  warning  'error' is defined but never used          @typescript-eslint/no-unused-vars
+  426:73  error    Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+
+/Users/pahul/CLAUDE/passos/src/components/admin/mobility-pulse.tsx
+  5:49  warning  'User' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/pahul/CLAUDE/passos/src/components/admin/quick-actions.tsx
+  4:16  warning  'Users' is defined but never used     @typescript-eslint/no-unused-vars
+  4:23  warning  'FileText' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/pahul/CLAUDE/passos/src/components/admin/warden-management.tsx
+    6:33  warning  'Trash2' is defined but never used                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+   11:15  warning  'Warden' is defined but never used                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+   21:35  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+   28:3   warning  'wardensByHostel' is defined but never used                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+   36:10  warning  'deletingId' is assigned a value but never used                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+  239:23  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/pahul/CLAUDE/passos/src/components/layout/sidebar.tsx
+   10:50  warning  'UserCog' is defined but never used                                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+   11:3   warning  'Bell' is defined but never used                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+   16:10  warning  'ClientEditProfileButton' is defined but never used                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+   27:63  warning  'id' is defined but never used                                                                                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+   27:67  warning  'email' is defined but never used                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+  190:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/pahul/CLAUDE/passos/src/components/layout/superadmin-sidebar.tsx
+  115:19  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/pahul/CLAUDE/passos/src/components/pwa/pwa-provider.tsx
+  7:33  warning  'update' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/pahul/CLAUDE/passos/src/components/requests/request-actions.tsx
+  20:3  warning  'studentId' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/pahul/CLAUDE/passos/src/components/requests/request-card.tsx
+  57:19  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/Users/pahul/CLAUDE/passos/src/components/ui/popover.tsx
+  57:57  warning  'ref' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/pahul/CLAUDE/passos/src/components/warden/warden-analytics-charts.tsx
+  6:10  warning  'format' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/pahul/CLAUDE/passos/src/hooks/use-service-worker.ts
+  46:6  warning  React Hook useEffect has a missing dependency: 'isSupported'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/pahul/CLAUDE/passos/src/lib/escalation/engine.ts
+    3:31  warning  'EscalationLog' is defined but never used       @typescript-eslint/no-unused-vars
+    3:67  warning  'EscalationPriority' is defined but never used  @typescript-eslint/no-unused-vars
+   22:22  warning  'passId' is assigned a value but never used     @typescript-eslint/no-unused-vars
+   22:51  warning  'details' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  200:9   warning  'passType' is assigned a value but never used   @typescript-eslint/no-unused-vars
+
+/Users/pahul/CLAUDE/passos/src/lib/push/notifications.ts
+  4:7  warning  'VAPID_PUBLIC_KEY' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/pahul/CLAUDE/passos/src/lib/rate-limit.ts
+  58:36  warning  '_identifier' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 104 problems (6 errors, 98 warnings)
+

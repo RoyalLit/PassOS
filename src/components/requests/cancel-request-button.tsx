@@ -32,8 +32,9 @@ export function CancelRequestButton({ requestId }: CancelRequestButtonProps) {
 
       toast.success('Request cancelled successfully');
       router.refresh();
-    } catch (error: any) {
-      toast.error(error.message || 'An error occurred while cancelling');
+    } catch (e: unknown) {
+      const errorMsg = e instanceof Error ? e.message : 'An error occurred while cancelling';
+      toast.error(errorMsg);
       setIsLoading(false);
     }
   };

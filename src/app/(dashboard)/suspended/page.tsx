@@ -11,9 +11,9 @@ export default function SuspendedPage() {
         
         <div className="space-y-2">
           <h1 className="text-3xl font-black text-foreground tracking-tight">Access Suspended</h1>
-          <p className="text-muted-foreground font-medium">
-            Your university's access to PassOS has been temporarily suspended by the platform administrator.
-          </p>
+          <p className="text-muted-foreground mb-8 text-lg leading-relaxed">
+          Your student account has been temporarily flagged for administrative review. You won&apos;t be able to request or use passes until a warden resolves this.
+        </p>
         </div>
 
         <div className="p-4 bg-muted/30 rounded-2xl border border-border text-left space-y-4">

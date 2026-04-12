@@ -150,7 +150,7 @@ export default async function WardenStudentsPage({
                       </div>
                     </div>
                      <div className="flex items-center gap-2">
-                      <ClientEditProfileButton user={student as any} />
+                      <ClientEditProfileButton user={student as unknown as Profile} />
                       <Badge 
                         variant="outline"
                         className={clsx(

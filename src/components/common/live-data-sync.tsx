@@ -49,7 +49,7 @@ export function LiveDataSync({ tenantId, role, userId }: LiveDataSyncProps) {
             });
           }
           if (payload.eventType === 'UPDATE' && role === 'student') {
-            const newRecord = payload.new as any;
+            const newRecord = payload.new as Record<string, unknown>;
             if (newRecord.status === 'approved') {
               toast.success('Pass Request Approved!', {
                 description: 'Your request was just approved.',
@@ -74,8 +74,9 @@ export function LiveDataSync({ tenantId, role, userId }: LiveDataSyncProps) {
           router.refresh();
           
           if (payload.eventType === 'UPDATE' && (role === 'admin' || role === 'warden')) {
-            const newRecord = payload.new as any;
-            if (newRecord.entry_at && !payload.old.entry_at) {
+            const newRecord = payload.new as Record<string, unknown>;
+            const oldRecord = payload.old as Record<string, unknown>;
+            if (newRecord.entry_at && !oldRecord.entry_at) {
               toast.success('Student Returned', {
                 description: 'A student just entered campus.',
               });

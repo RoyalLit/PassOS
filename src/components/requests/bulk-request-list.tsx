@@ -68,8 +68,9 @@ export function BulkRequestList({ requests, isAdminView = false }: BulkRequestLi
       setSelectedIds(new Set()); // Clear selection
       router.refresh();
       
-    } catch (error: any) {
-      toast.error(error.message || 'An error occurred during bulk processing');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'An error occurred during bulk processing';
+      toast.error(message);
     } finally {
       setIsProcessing(false);
     }

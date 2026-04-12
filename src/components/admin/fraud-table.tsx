@@ -5,7 +5,7 @@ import { format } from 'date-fns';
 import { User, ShieldAlert, X, ChevronRight, CheckCircle, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
-import type { FraudFlag } from '@/types';
+import type { FraudFlag, Profile } from '@/types';
 import { clsx } from 'clsx';
 import { ClientEditProfileButton } from '@/components/common/client-edit-profile-button';
 
@@ -249,7 +249,7 @@ export function FraudTable({ flags }: FraudTableProps) {
                     <div>
                       <h3 className="font-bold text-lg text-foreground flex items-center gap-2">
                         {selectedFlag.student?.full_name}
-                        <ClientEditProfileButton user={selectedFlag.student as any} variant="icon" />
+                        <ClientEditProfileButton user={selectedFlag.student as unknown as Profile} variant="icon" />
                       </h3>
                       <p className="text-sm text-muted-foreground">{selectedFlag.student?.email}</p>
                     </div>

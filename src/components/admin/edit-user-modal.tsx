@@ -64,9 +64,10 @@ export function EditUserModal({ user, isOpen, onClose, onUpdate, disableRoleChan
       onUpdate?.();
       onClose();
       router.refresh();
-    } catch (error: any) {
-      console.error('Update error:', error);
-      toast.error(error.message || 'Failed to update profile');
+    } catch (e: unknown) {
+      const errorMsg = e instanceof Error ? e.message : 'Failed to update profile';
+      console.error('Update error:', e);
+      toast.error(errorMsg);
     } finally {
       setUpdating(false);
     }
@@ -125,8 +126,9 @@ export function EditUserModal({ user, isOpen, onClose, onUpdate, disableRoleChan
       toast.success('Password changed successfully');
       setShowPasswordChange(false);
       setPasswordForm({ current: '', new: '', confirm: '' });
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to change password');
+    } catch (e: unknown) {
+      const errorMsg = e instanceof Error ? e.message : 'Failed to change password';
+      toast.error(errorMsg);
     } finally {
       setUpdating(false);
     }

@@ -5,7 +5,7 @@ import { SearchInput } from '@/components/ui/search-input';
 import { RealtimeRefresh } from '@/components/common/realtime-refresh';
 import { ActivityCharts } from '@/components/admin/activity-charts';
 import { QuickActions } from '@/components/admin/quick-actions';
-import { MobilityPulse } from '@/components/admin/mobility-pulse';
+import { MobilityPulse, type ScanWithPass } from '@/components/admin/mobility-pulse';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Filter, TrendingUp, TrendingDown, Users, Clock, AlertTriangle, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
@@ -157,7 +157,7 @@ export default async function AdminDashboard(props: { searchParams: Promise<{ q?
       {/* Charts and Activity */}
       <div className="grid md:grid-cols-2 gap-6">
         <ActivityCharts activityData={weekActivity || []} />
-        <MobilityPulse scans={(recentScans as any) || []} />
+        <MobilityPulse scans={(recentScans as unknown as ScanWithPass[]) || []} />
       </div>
 
       {/* Action Center */}

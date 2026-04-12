@@ -104,7 +104,7 @@ export default async function WardenParentsPage() {
                     <div className="flex-1 min-w-0">
                       <h3 className="font-bold text-lg text-foreground flex items-center gap-2">
                         {parent.full_name}
-                        <ClientEditProfileButton user={parent as any} variant="icon" />
+                        <ClientEditProfileButton user={parent as unknown as Profile} variant="icon" />
                       </h3>
                       <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                         {parent.email && (

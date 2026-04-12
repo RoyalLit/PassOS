@@ -82,8 +82,8 @@ export async function POST(request: Request) {
     if (scan_type === 'exit') {
       // ⚠️ STRICT: No exit allowed if expired (either JWT or DB)
       if (isExpired || new Date() > new Date(pass.valid_until)) {
-        logScan(supabase, pass.id, profile.id, scan_type, 'expired', undefined, pass.tenant_id);
-        supabase.from('passes').update({ status: 'expired' }).eq('id', pass.id);
+        await logScan(supabase, pass.id, profile.id, scan_type, 'expired', undefined, pass.tenant_id);
+        await supabase.from('passes').update({ status: 'expired' }).eq('id', pass.id);
         return NextResponse.json({ 
           valid: false, result: 'expired', message: 'Pass has expired. Exit denied.', student 
         });
@@ -93,7 +93,7 @@ export async function POST(request: Request) {
       const EARLY_GRACE_MS = 15 * 60 * 1000; // 15 minutes
       const validFrom = new Date(pass.valid_from);
       if (new Date().getTime() < validFrom.getTime() - EARLY_GRACE_MS) {
-        logScan(supabase, pass.id, profile.id, scan_type, 'error', undefined, pass.tenant_id);
+        await logScan(supabase, pass.id, profile.id, scan_type, 'error', undefined, pass.tenant_id);
         return NextResponse.json({ 
           valid: false, 
           result: 'too_early', 
@@ -104,7 +104,7 @@ export async function POST(request: Request) {
 
       if (pass.status !== 'active') {
         const alreadyUsed = pass.status === 'used_exit' || pass.status === 'used_entry';
-        logScan(supabase, pass.id, profile.id, scan_type, alreadyUsed ? 'already_used' : 'error', undefined, pass.tenant_id);
+        await logScan(supabase, pass.id, profile.id, scan_type, alreadyUsed ? 'already_used' : 'error', undefined, pass.tenant_id);
         return NextResponse.json({ 
           valid: false, 
           result: alreadyUsed ? 'already_used' : 'error', 
@@ -134,7 +134,7 @@ export async function POST(request: Request) {
 
       // Defensive: verify student_states was updated. If not, fix it.
       if (stateResult.data?.current_state !== 'outside') {
-        supabase
+        await supabase
           .from('student_states')
           .upsert({
             student_id:    pass.student_id,
@@ -159,7 +159,7 @@ export async function POST(request: Request) {
       if (pass.status !== 'used_exit' && pass.status !== 'expired') {
         const alreadyReturned = pass.status === 'used_entry';
         const neverExited = pass.status === 'active';
-        logScan(supabase, pass.id, profile.id, scan_type, alreadyReturned ? 'already_used' : 'error', undefined, pass.tenant_id);
+        await logScan(supabase, pass.id, profile.id, scan_type, alreadyReturned ? 'already_used' : 'error', undefined, pass.tenant_id);
         return NextResponse.json({ 
           valid: false, 
           result: alreadyReturned ? 'already_used' : 'error', 
@@ -193,7 +193,7 @@ export async function POST(request: Request) {
 
       // Defensive: verify student_states was updated to 'inside'.
       if (stateResult.data?.current_state !== 'inside') {
-        supabase
+        await supabase
           .from('student_states')
           .upsert({
             student_id:    pass.student_id,

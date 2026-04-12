@@ -2,13 +2,14 @@ import { requireRole } from '@/lib/auth/rbac';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { QRDisplay } from '@/components/passes/qr-display';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ShieldAlert, ShieldX } from 'lucide-react';
 import type { Pass } from '@/types';
 
 export default async function MyPassesPage() {
   const profile = await requireRole('student');
   const supabase = await createServerSupabaseClient();
 
+  // eslint-disable-next-line react-hooks/purity
   const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
   const { data: passes, error: passError } = await supabase

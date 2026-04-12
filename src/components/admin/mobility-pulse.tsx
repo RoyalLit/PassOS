@@ -7,7 +7,7 @@ import { formatDistanceToNow, parseISO, isValid } from 'date-fns';
 import { clsx } from 'clsx';
 import type { PassScan, Pass, Profile } from '@/types';
 
-interface ScanWithPass extends PassScan {
+export interface ScanWithPass extends PassScan {
   pass: Pass & {
     student: Profile;
   };

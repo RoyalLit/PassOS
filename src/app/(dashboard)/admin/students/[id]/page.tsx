@@ -6,6 +6,7 @@ import {
   Unlink, ExternalLink, Activity, AlertCircle, UserCog
 } from 'lucide-react';
 import { ClientEditProfileButton } from '@/components/common/client-edit-profile-button';
+import { type Profile } from '@/types';
 import { RevokePassButton } from '@/components/admin/revoke-pass-button';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -94,7 +95,7 @@ export default async function StudentDetailPage({
           {activePassId && (
             <RevokePassButton passId={activePassId} studentName={student.full_name} />
           )}
-          <ClientEditProfileButton user={student as any} variant="button" className="!bg-card !border-border !text-foreground/80 hover:!bg-muted" />
+          <ClientEditProfileButton user={student as unknown as Profile} variant="button" className="!bg-card !border-border !text-foreground/80 hover:!bg-muted" />
           <button className={clsx(
             "px-4 py-2 rounded-xl text-sm font-bold shadow-sm transition-all",
             student.is_flagged 

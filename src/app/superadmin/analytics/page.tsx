@@ -4,9 +4,21 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { BarChart3, TrendingUp, Users, Building2, Loader2 } from 'lucide-react';
 
+interface SimpleRecord {
+  id: string;
+  status?: string;
+  plan?: string;
+  role?: string;
+  created_at: string;
+}
+
 export default function SuperadminAnalytics() {
   const [stats, setStats] = useState<{
-    tenants: any[]; profiles: any[]; passes: any[]; requests: any[]; fraudFlags: any[];
+    tenants: SimpleRecord[];
+    profiles: SimpleRecord[];
+    passes: SimpleRecord[];
+    requests: SimpleRecord[];
+    fraudFlags: SimpleRecord[];
   } | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -18,13 +30,13 @@ export default function SuperadminAnalytics() {
       supabase.from('passes').select('id, status, created_at'),
       supabase.from('pass_requests').select('id, status, created_at'),
       supabase.from('fraud_flags').select('id, created_at'),
-    ]).then(([tenants, profiles, passes, requests, fraudFlags]) => {
+    ]).then(([tenantsRes, profilesRes, passesRes, requestsRes, fraudFlagsRes]) => {
       setStats({
-        tenants: tenants.data || [],
-        profiles: profiles.data || [],
-        passes: passes.data || [],
-        requests: requests.data || [],
-        fraudFlags: fraudFlags.data || [],
+        tenants: (tenantsRes.data as SimpleRecord[]) || [],
+        profiles: (profilesRes.data as SimpleRecord[]) || [],
+        passes: (passesRes.data as SimpleRecord[]) || [],
+        requests: (requestsRes.data as SimpleRecord[]) || [],
+        fraudFlags: (fraudFlagsRes.data as SimpleRecord[]) || [],
       });
       setLoading(false);
     });
@@ -49,17 +61,20 @@ export default function SuperadminAnalytics() {
   const activePasses = passes.filter(p => p.status === 'active' || p.status === 'used_exit');
 
   const planDistribution: Record<string, number> = tenants.reduce((acc, t) => {
-    acc[t.plan] = (acc[t.plan] || 0) + 1;
+    const plan = t.plan || 'unknown';
+    acc[plan] = (acc[plan] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
   const roleDistribution: Record<string, number> = profiles.reduce((acc, p) => {
-    acc[p.role] = (acc[p.role] || 0) + 1;
+    const role = p.role || 'unknown';
+    acc[role] = (acc[role] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
   const requestStatusDistribution: Record<string, number> = requests.reduce((acc, r) => {
-    acc[r.status] = (acc[r.status] || 0) + 1;
+    const status = r.status || 'unknown';
+    acc[status] = (acc[status] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 

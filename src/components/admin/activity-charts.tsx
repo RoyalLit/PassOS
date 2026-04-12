@@ -26,13 +26,23 @@ interface ActivityChartsProps {
   activityData: ActivityData[];
 }
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+interface TooltipProps {
+  active?: boolean;
+  payload?: Array<{
+    name: string;
+    value: number;
+    fill: string;
+  }>;
+  label?: string;
+}
+
+const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-card border border-border p-3 rounded-xl shadow-xl backdrop-blur-md">
         <p className="text-sm font-bold mb-2 text-foreground">{label}</p>
         <div className="space-y-1.5">
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry, index: number) => (
             <div key={index} className="flex items-center justify-between gap-4">
               <span className="text-xs font-medium" style={{ color: entry.fill }}>
                 {entry.name}

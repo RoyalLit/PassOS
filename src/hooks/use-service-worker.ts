@@ -4,12 +4,16 @@ import { useEffect, useState } from 'react';
 
 export function useServiceWorker() {
   const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null);
-  const [isSupported, setIsSupported] = useState(false);
+  const [isSupported] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return 'serviceWorker' in navigator;
+    }
+    return false;
+  });
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-      setIsSupported(true);
+    if (isSupported && typeof window !== 'undefined') {
 
       navigator.serviceWorker
         .register('/sw.js')

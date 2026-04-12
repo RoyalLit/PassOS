@@ -237,7 +237,7 @@ export default async function WardenDashboardPage() {
                 <CheckCircle2 className="w-5 h-5 text-green-500" />
               </div>
               <div>
-                <h2 className="font-bold text-foreground">Today's Activity</h2>
+                <h2 className="font-bold text-foreground">Today&apos;s Activity</h2>
                 <p className="text-sm text-muted-foreground">{format(new Date(), 'EEEE, MMMM d')}</p>
               </div>
             </div>

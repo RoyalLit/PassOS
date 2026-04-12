@@ -299,7 +299,7 @@ export default function UsersPage() {
                 </tr>
               ) : (
                 filteredUsers.map((user) => {
-                  const RoleIcon = (ROLE_CONFIG as any)[user.role]?.icon || User;
+                  const RoleIcon = (ROLE_CONFIG as Record<string, { icon: typeof User }>)[user.role]?.icon || User;
                   return (
                     <tr key={user.id} className="hover:bg-muted/5 transition-colors">
                       <td className="px-6 py-4">

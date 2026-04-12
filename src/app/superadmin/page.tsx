@@ -2,11 +2,29 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import Link from 'next/link';
 import { Building2, Users, AlertTriangle, TrendingUp, Clock, Loader2 } from 'lucide-react';
+
+interface Tenant {
+  id: string;
+  name: string;
+  slug: string;
+  status: string;
+  plan: string;
+  created_at: string;
+}
+
+interface ProfileSummary {
+  id: string;
+  role: string;
+  tenant_id: string;
+}
 
 export default function SuperadminDashboard() {
   const [data, setData] = useState<{
-    tenants: any[]; profiles: any[]; recentTenants: any[];
+    tenants: Partial<Tenant>[];
+    profiles: ProfileSummary[];
+    recentTenants: Tenant[];
   } | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -166,12 +184,12 @@ export default function SuperadminDashboard() {
           )}
         </div>
         <div className="mt-4 flex justify-end">
-          <a
+          <Link
             href="/superadmin/tenants"
             className="text-sm font-medium text-purple-600 hover:text-purple-500 dark:text-purple-400"
           >
             View all universities →
-          </a>
+          </Link>
         </div>
       </div>
     </div>

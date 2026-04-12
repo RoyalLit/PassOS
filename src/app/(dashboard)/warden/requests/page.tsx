@@ -9,7 +9,7 @@ import { clsx } from 'clsx';
 import { format } from 'date-fns';
 import { RequestActions } from '@/components/requests/request-actions';
 import { BulkRequestList } from '@/components/requests/bulk-request-list';
-import type { WardenPendingRequest } from '@/types';
+import type { WardenPendingRequest, PassRequest } from '@/types';
 
 export default async function WardenRequestsPage() {
   const profile = await requireWarden();
@@ -89,7 +89,7 @@ export default async function WardenRequestsPage() {
 
       {/* Request List */}
       <div className="mt-6">
-        <BulkRequestList requests={requests as any || []} isAdminView={true} />
+        <BulkRequestList requests={(requests as unknown as PassRequest[]) || []} isAdminView={true} />
       </div>
 
     </div>

@@ -55,7 +55,7 @@ function NewRequestForm() {
             .single();
             
           if (passData?.request) {
-            const req = passData.request as any;
+            const req = passData.request as unknown as Record<string, any>;
             setValue('request_type', req.request_type);
             setValue('destination', req.destination || 'Extension');
             setValue('reason', 'Other');

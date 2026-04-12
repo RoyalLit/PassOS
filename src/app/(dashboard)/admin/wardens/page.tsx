@@ -41,7 +41,7 @@ export default async function AdminWardensPage() {
     return acc;
   }, {});
 
-  const wardensByHostel = (assignments || []).reduce((acc: Record<string, any[]>, curr) => {
+  const wardensByHostel = (assignments || []).reduce((acc: Record<string, (Warden & { profile?: Profile })[]>, curr) => {
     if (!acc[curr.hostel]) acc[curr.hostel] = [];
     const profile = wardenProfiles?.find(p => p.id === curr.profile_id);
     acc[curr.hostel].push({ ...curr, profile });
