@@ -6,6 +6,7 @@ import {
   Unlink, ExternalLink, Activity, AlertCircle, UserCog
 } from 'lucide-react';
 import { ClientEditProfileButton } from '@/components/common/client-edit-profile-button';
+import { RevokePassButton } from '@/components/admin/revoke-pass-button';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { format } from 'date-fns';
@@ -76,6 +77,7 @@ export default async function StudentDetailPage({
   // Handle state being either an array or an object (Supabase behavior varies)
   const stateData = Array.isArray(student.state) ? student.state[0] : student.state;
   const currentStatus = stateData?.current_state || 'inside';
+  const activePassId = stateData?.active_pass_id;
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-8 animate-in fade-in duration-500">
@@ -89,6 +91,9 @@ export default async function StudentDetailPage({
           Back to Directory
         </Link>
         <div className="flex gap-3">
+          {activePassId && (
+            <RevokePassButton passId={activePassId} studentName={student.full_name} />
+          )}
           <ClientEditProfileButton user={student as any} variant="button" className="!bg-card !border-border !text-foreground/80 hover:!bg-muted" />
           <button className={clsx(
             "px-4 py-2 rounded-xl text-sm font-bold shadow-sm transition-all",

@@ -22,23 +22,33 @@ export function QRDisplay({ pass }: { pass: Pass }) {
     }
   }, [pass.qr_payload]);
 
-  const isValid = pass.status === 'active' && new Date() < new Date(pass.valid_until);
+  const isRevoked = pass.status === 'revoked';
+  const isValid = !isRevoked && pass.status === 'active' && new Date() < new Date(pass.valid_until);
 
   return (
     <div className="bg-card rounded-3xl shadow-xl border border-border overflow-hidden max-w-sm mx-auto transition-all animate-in zoom-in-95 duration-300">
-      <div className={`p-8 text-center text-white ${isValid ? 'bg-blue-600' : 'bg-slate-600'} relative overflow-hidden`}>
+      <div className={`p-8 text-center text-white ${isRevoked ? 'bg-red-600' : isValid ? 'bg-blue-600' : 'bg-slate-600'} relative overflow-hidden`}>
         <div className="absolute inset-0 opacity-10 pointer-events-none">
           <QrCode className="w-48 h-48 -rotate-12 translate-x-12 -translate-y-6" />
         </div>
         <Shield className="w-14 h-14 mx-auto mb-4 relative z-10" />
-        <h2 className="text-2xl font-black tracking-tight relative z-10">Active Gate Pass</h2>
+        <h2 className="text-2xl font-black tracking-tight relative z-10">
+          {isRevoked ? 'Pass Revoked' : 'Active Gate Pass'}
+        </h2>
         <p className="mt-2 font-black bg-black/20 backdrop-blur-sm inline-block px-4 py-1.5 rounded-full text-xs tracking-widest uppercase relative z-10 border border-white/10">
           ID: {pass.id.slice(0, 8).toUpperCase()}
         </p>
       </div>
 
       <div className="p-8 pb-10 flex flex-col items-center">
-        <div className="bg-white p-3 rounded-2xl shadow-2xl border-4 border-card">
+        <div className="bg-white p-3 rounded-2xl shadow-2xl border-4 border-card relative">
+          {isRevoked ? (
+            <div className="w-[220px] h-[220px] absolute inset-0 bg-white/80 backdrop-blur-sm rounded-xl flex items-center justify-center z-20">
+              <span className="bg-red-600 text-white font-black text-2xl tracking-widest px-6 py-2 -rotate-12 rounded-xl shadow-2xl border-4 border-red-500">
+                REVOKED
+              </span>
+            </div>
+          ) : null}
           {qrSrc ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={qrSrc} alt="Pass QR Code" className="w-[220px] h-[220px]" />
@@ -48,6 +58,7 @@ export function QRDisplay({ pass }: { pass: Pass }) {
             </div>
           )}
         </div>
+
 
         <div className="mt-10 w-full space-y-4">
           <div className="flex items-start gap-3 bg-muted/30 p-5 rounded-2xl border border-border shadow-sm">

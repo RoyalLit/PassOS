@@ -91,11 +91,14 @@ export default async function StudentHistoryPage() {
                     <td className="px-6 py-4">
                       {pass ? (
                         <div className="flex flex-col text-xs text-slate-500">
+                          {pass.status === 'revoked' && (
+                            <span className="text-red-600 font-black mb-1 p-1 bg-red-50 inline-block rounded text-center border border-red-100">Pass Revoked</span>
+                          )}
                           {pass.exit_at ? (
                             <span className="text-slate-700">Exited: {format(new Date(pass.exit_at), 'HH:mm')}</span>
-                          ) : (
+                          ) : pass.status !== 'revoked' ? (
                             <span>Never exited</span>
-                          )}
+                          ) : null}
                           {pass.entry_at && (
                             <span className="text-green-600">Returned: {format(new Date(pass.entry_at), 'HH:mm')}</span>
                           )}
