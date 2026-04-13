@@ -46,6 +46,35 @@ This guide will help you get PassOS running on your local machine.
 | `N8N_WEBHOOK_BASE_URL` | URL of your n8n instance for webhooks. |
 | `NEXT_PUBLIC_APP_URL` | Base URL of the app (e.g., `http://localhost:3000`). |
 
+## 🏢 SaaS & Multi-Tenancy Setup
+
+PassOS is a multi-tenant platform. To initialize a new environment, you must bootstrap the first Superadmin.
+
+### 1. Bootstrap the Superadmin
+After creating your first account via the UI (as a regular student or admin), you must manually promote it to `superadmin` in the Supabase SQL Editor:
+```sql
+-- Replace with the ID of your first user
+UPDATE profiles 
+SET role = 'superadmin' 
+WHERE id = 'your-user-id';
+```
+
+### 2. Initialize the System Tenant
+Superadmins must belong to the `__system__` tenant. You can create this and assign your user via SQL:
+```sql
+-- 1. Create the system tenant
+INSERT INTO tenants (name, slug, status)
+VALUES ('PassOS System', '__system__', 'active');
+
+-- 2. Assign your user to this tenant
+UPDATE profiles
+SET tenant_id = (SELECT id FROM tenants WHERE slug = '__system__')
+WHERE role = 'superadmin';
+```
+
+### 3. Create Your First University
+Once you are logged in as a Superadmin, navigate to the **Superadmin Dashboard** (`/superadmin`) to create your first University/Campus tenant and its primary Admin account.
+
 ## 🗄️ Database Setup
 
 PassOS uses Supabase Migrations. To set up your schema:
@@ -54,10 +83,12 @@ PassOS uses Supabase Migrations. To set up your schema:
 2. Link your project: `supabase link --project-ref <your-ref>`.
 3. Apply migrations: `supabase db push`.
 
-### Important Migrations
+### Critical Migrations
 - `001_initial_schema`: Core tables and RLS.
 - `011_tenants_schema`: Multi-tenancy support (adds `tenant_id`).
-- `016_disable_tenants`: **Current State** - makes `tenant_id` optional for single-campus use.
+- `022_warden_escalation`: Adds the Warden role and escalation logic.
+- `029_superadmin_rls`: Hardens security for the Superadmin layer.
+- `042_allow_warden_approver`: Updates database constraints for Warden approvals.
 
 ## 🧪 Testing QR Scanning
 

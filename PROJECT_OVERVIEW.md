@@ -12,8 +12,8 @@ PassOS is a production-grade campus mobility and gate pass management system des
 
 ## 🚦 Project Status
 
-> [!NOTE]
-> **Multi-Tenancy**: Currently **Disabled**. The system is configured for a single university/campus environment. `tenant_id` columns are kept for future scalability but are nullable.
+> [!IMPORTANT]
+> **Multi-Tenancy**: **Enabled**. PassOS is a native Multi-Tenant SaaS platform. It supports multiple isolated university/campus tenants within a single deployment, managed by a dedicated Superadmin layer.
 
 ## 🚀 Technology Stack
 
@@ -23,10 +23,10 @@ PassOS is a production-grade campus mobility and gate pass management system des
 - **TypeScript**: Full-stack type safety.
 
 ### Backend & Infrastructure (Supabase)
-- **PostgreSQL**: Robust relational database.
-- **Supabase Auth**: Secure identity management and RBAC.
+- **PostgreSQL**: Robust relational database with multi-tenant partitioning.
+- **Supabase Auth**: Secure identity management and hierarchical RBAC.
 - **Supabase Storage**: Managed buckets for avatars and proof documents.
-- **Row Level Security (RLS)**: Fine-grained data access control.
+- **Row Level Security (RLS)**: Enforced isolation between university tenants.
 
 ### UI & Styling
 - **Tailwind CSS 4**: Modern utility-first CSS for styling and performance.
@@ -39,41 +39,57 @@ PassOS is a production-grade campus mobility and gate pass management system des
 - **Recharts**: Data visualization and analytics charts.
 - **html5-qrcode & qrcode**: QR generation and camera scanning logic.
 - **Jose**: Cryptographic JWT signing for secure, tamper-proof passes.
-- **Zod & React Hook Form**: Strict validation and efficient form management.
+- **Zod**: Standardized schema validation for all API inputs and internal data.
 - **Date-fns**: Precise time manipulation for pass expiry and logs.
 
 ---
 
 ## 🛠️ Core Functions & Features
 
-### 1. Multi-Platform Role Based Access Control (RBAC)
-Dedicated portals for four distinct user roles, each with unique workflows and security levels.
+### 1. Hierarchical Role Based Access Control (RBAC)
+Dedicated portals for six distinct user roles, enabling secure operations from platform management to campus security.
 
-### 2. Student Portal
+| Role | Responsibility | Portal Access |
+| :--- | :--- | :--- |
+| **Superadmin** | Global platform config, tenant management, and system logs. | `/superadmin` |
+| **Admin** | University-level management, analytics, and global approvals. | `/admin` |
+| **Warden** | Hostel-level supervision, student tracking, and local approvals. | `/warden` |
+| **Guard** | Gate security, QR scanning, and identity verification. | `/guard` |
+| **Student** | Pass requests, digital identity, and profile management. | `/student` |
+| **Parent** | Ward monitoring, linkage, and preliminary approvals. | `/parent` |
+
+### 2. Warden Portal (Hostel Management)
+- **Hostel Dashboard**: Real-time status of students assigned to specific hostel blocks.
+- **Approvals**: Integrated approval queue for students under their jurisdiction.
+- **Escalations**: Automated flags for overdue students or suspicious behavior.
+- **Group Management**: Efficient bulk actions for hostel-wide announcements or status checks.
+
+### 3. Student Portal
 - **Dashboard**: Real-time campus status (Inside/Outside/Overdue).
 - **Pass Requests**: Integrated request system for Day Outings, Overnights, and Emergencies.
-- **Digital Pass**: Dynamic QR-code pass with live countdown and security signature.
+- **Digital Pass**: Dynamic QR-code pass with live countdown and cryptographic security signature.
 - **Profile Settings**: Personal details management and profile photo (Avatar) uploads.
 
-### 3. Admin Dashboard
-- **Action Center**: Centralized pending request approval system.
-- **User Management**: Creating, deleting, and managing profiles for students, parents, and guards.
-- **Student Directory**: Campus-wide directory with live location tracking and filtering.
-- **System Analytics**: Visual charts showing pass issuance trends and system health.
-- **Security Flags**: Automated fraud detection (e.g., rapid requests, late returns) with severity levels.
+### 4. Admin Dashboard
+- **Action Center**: Centralized approval system with multi-level delegation.
+- **User Management**: Creating and managing profiles for all campus roles.
+- **Student Directory**: Live location tracking and advanced filtering (by hostel, status, or year).
+- **System Analytics**: Visual charts showing pass issuance trends and compliance metrics.
 
-### 4. Guard Terminal (Security)
+### 5. Guard Terminal (Security)
 - **QR Scanner**: Optimized camera interface for scanning student passes.
-- **Identity Verification**: Real-time student photo and profile display upon scan to prevent pass sharing.
-- **Scan Logs**: Transparent history of all gate entries and exits indexed by guard and location.
+- **Identity Verification**: Real-time student photo and profile display upon scan.
+- **Scan Logs**: Detailed history of all gate entries and exits.
 
-### 5. Parent Portal
+### 6. Parent Portal
 - **Ward Linking**: Securely link child's account using a unique Student ID.
-- **Decision Engine**: Approve or reject outing requests from their dashboard with optional feedback notes.
-- **Activity History**: Complete log of previous permissions and child's campus status.
+- **Decision Engine**: Approve or reject outing requests with optional feedback.
+- **Activity History**: Complete log of previous permissions and child's current status.
 
-### 6. Security Architecture
-See the full [**Architecture Guide**](./docs/architecture.md) for technical details.
-- **Tamper-Proof Passes**: QR codes are cryptographically signed using JWT (HS256) to prevent students from falsifying passes.
-- **State Machine**: Prevents multiple active passes; tracks atomic transitions (Exited, Returned).
-- **Geolocation Verification**: Optional GPS tagging for request validation.
+---
+
+## 🛡️ Security Architecture
+- **Tenant Isolation**: Strict RLS policies ensure data from one university is never visible to another.
+- **API Hardening**: All endpoints are protected by Zod schemas and standardized error handling.
+- **Tamper-Proof Passses**: QR codes are cryptographically signed using JWT (HS256).
+- **Audit Logs**: Immutable history of all critical actions indexed by tenant and user.

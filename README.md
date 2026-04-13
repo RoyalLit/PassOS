@@ -1,6 +1,6 @@
-# PassOS | Campus Mobility System
+# PassOS | Multi-Tenant Campus Mobility SaaS
 
-PassOS is a modern, production-grade gatepass management system designed for universities and campuses. It features cryptographic pass verification, multi-platform role-based access control, and automated behavioral analytics.
+PassOS is a modern, production-grade gatepass management system designed for multi-university deployments. It features cryptographic pass verification, hierarchical role-based access control, and automated behavioral analytics across multiple isolated tenants.
 
 ---
 
@@ -43,7 +43,7 @@ PassOS is a modern, production-grade gatepass management system designed for uni
 
 - **Frontend**: Next.js 16 (App Router), React 19, Tailwind CSS 4, Framer Motion.
 - **Backend**: Supabase (PostgreSQL, Auth, Storage, Edge Functions).
-- **Security**: jose (JWT), HMAC-SHA256, RLS.
+- **Security**: jose (JWT), Zod (Validation), HMAC-SHA256, RLS.
 - **Automation**: n8n, Claude AI.
 
 ---

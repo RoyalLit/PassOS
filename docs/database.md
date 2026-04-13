@@ -17,32 +17,41 @@ This document details the Supabase/PostgreSQL schema, Row Level Security (RLS) p
 ## 🏢 Multi-Tenancy Status
 
 > [!IMPORTANT]
-> **Current Configuration: Single-Tenant (Disabled Multi-Tenancy)**
-> As of Migration `016_disable_tenants.sql`, multi-tenancy is partially disabled to simplify single-campus deployments.
+> **Current Configuration: Enabled Multi-Tenant SaaS**
+> PassOS is fully configured for multi-university deployments. Isolation is enforced at the database level using `tenant_id` and Row Level Security (RLS).
 
-- **Status**: The `tenant_id` columns exist on all tables but have been modified to `DROP NOT NULL`.
-- **Logic**: The application code and RLS policies currently ignore `tenant_id` checks to allow global access for admins and guards within the single deployed instance.
-- **Rollback/Re-enable**: To re-enable strict multi-tenancy, re-apply the `NOT NULL` constraints and update RLS policies to enforce `tenant_id` matching (see Migration `011` for reference).
+- **Status**: The `tenant_id` column is **Required** and enforced on all core tables.
+- **System Tenant**: The `__system__` tenant slug is reserved for Superadmins. Users belonging to this tenant can manage platform settings and view cross-tenant analytics.
+- **RLS Enforcement**: Every query includes an implicit or explicit filter on `tenant_id` based on the authenticated user's profile.
 
 ## 🛡️ Row Level Security (RLS) Policies
 
-PassOS uses fine-grained RLS to ensure data privacy without complex backend middleware.
+PassOS uses fine-grained RLS to ensure data privacy and tenant isolation.
 
 ### 👤 Profiles
 - **Users**: Can read and update their own profile.
-- **Admins/Guards**: Can read all profiles for identity verification.
+- **Wardens**: Can read profiles of students in their assigned hostels.
+- **Admins**: Can read/create/update all profiles within their own tenant.
+- **Superadmins**: Can access all profiles across the entire platform.
 
 ### 🎫 Passes & Requests
 - **Students**: Can only see their own requests and active passes.
-- **Admins**: Have full read/write access to all requests (for approval/rejection).
-- **Guards**: Can read all passes to verify QR scans but cannot modify them.
+- **Parents**: Can only see requests linked to their specific ward's ID.
+- **Wardens/Admins**: Can manage requests based on their geographical or organizational boundaries.
 
 ### 📍 Student States
-- **Public (Authenticated)**: All logged-in users can currently read student states (for the "Student Directory" feature).
-- **Update**: Only the `service_role` (via the `process_scan` RPC) or Admins can modify states.
+- **Authenticated**: Logged-in users can read student states for their own university directory.
+- **Update**: Restricted to `service_role` (via the `process_scan` RPC) or Admins of that specific tenant.
 
 ## ⚡ Atomic Transactions (RPCs)
 
 ### `process_scan(...)`
-To prevent "double-scan" exploits where a student might try to exit twice before the first update completes, the system uses a PostgreSQL RPC.
-- **Action**: It locks the `passes` row using `FOR UPDATE`, updates the status, records the scan event, and updates the student's location state (`inside`/`outside`) in a single atomic transaction.
+To prevent "double-scan" exploits, the system uses a PostgreSQL RPC that handles validation, logging, and state updates in a single atomic transaction within the correct tenant context.
+
+## 📋 Warden Schema Extension
+
+| Table | Description | Primary Key | Key Relationships |
+| :--- | :--- | :--- | :--- |
+| `wardens` | Links a profile to a specific geographical area (Hostel) | `id` (UUID) | `profile_id` -> `profiles.id` |
+
+This table allows a single user to be a Warden for multiple hostels/blocks if required.
