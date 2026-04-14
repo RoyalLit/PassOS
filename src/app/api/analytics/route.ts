@@ -8,46 +8,50 @@ export async function GET() {
   const supabase = createAdminClient();
 
   try {
-    // Basic stats via parallel aggregation queries for the dashboard MVP
-    
-    // 1. Total Active Passes
-    const { count: activePasses } = await supabase
-      .from('passes')
-      .select('*', { count: 'exact', head: true })
-      .in('status', ['active']);
-
-    // 2. Students Outside (Pass used for exit but not entry)
-    const { count: outsideCount } = await supabase
-      .from('student_states')
-      .select('*', { count: 'exact', head: true })
-      .eq('current_state', 'outside');
-
-    // 3. Students Overdue
-    const { count: overdueCount } = await supabase
-      .from('student_states')
-      .select('*', { count: 'exact', head: true })
-      .eq('current_state', 'overdue');
-
-    // 4. Pending Requests
-    const { count: pendingRequests } = await supabase
-      .from('pass_requests')
-      .select('*', { count: 'exact', head: true })
-      .in('status', ['pending', 'parent_pending', 'admin_pending']);
-
-    // 5. Active Fraud Flags
-    const { count: activeFlags } = await supabase
-      .from('fraud_flags')
-      .select('*', { count: 'exact', head: true })
-      .eq('resolved', false);
-
-    // 6. Time series data for charing (last 7 days of passes)
+    // Fetch all stats in parallel for better performance
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     
-    const { data: recentPasses } = await supabase
-      .from('passes')
-      .select('created_at, status')
-      .gte('created_at', sevenDaysAgo.toISOString());
+    const [
+      activePassesRes,
+      outsideRes,
+      overdueRes,
+      pendingRes,
+      flagsRes,
+      recentPassesRes,
+    ] = await Promise.all([
+      supabase
+        .from('passes')
+        .select('*', { count: 'exact', head: true })
+        .in('status', ['active']),
+      supabase
+        .from('student_states')
+        .select('*', { count: 'exact', head: true })
+        .eq('current_state', 'outside'),
+      supabase
+        .from('student_states')
+        .select('*', { count: 'exact', head: true })
+        .eq('current_state', 'overdue'),
+      supabase
+        .from('pass_requests')
+        .select('*', { count: 'exact', head: true })
+        .in('status', ['pending', 'parent_pending', 'admin_pending']),
+      supabase
+        .from('fraud_flags')
+        .select('*', { count: 'exact', head: true })
+        .eq('resolved', false),
+      supabase
+        .from('passes')
+        .select('created_at, status')
+        .gte('created_at', sevenDaysAgo.toISOString()),
+    ]);
+
+    const activePasses = activePassesRes.count;
+    const outsideCount = outsideRes.count;
+    const overdueCount = overdueRes.count;
+    const pendingRequests = pendingRes.count;
+    const activeFlags = flagsRes.count;
+    const recentPasses = recentPassesRes.data;
 
     // Aggregate passes by day for a simple chart
     const dailyVolume: Record<string, number> = {};

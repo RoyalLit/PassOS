@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Loader2, CheckSquare, Square, Check, X } from 'lucide-react';
@@ -18,28 +18,32 @@ export function BulkRequestList({ requests, isAdminView = false }: BulkRequestLi
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const router = useRouter();
 
-  // Only allow selection of pending requests
-  const selectableRequests = requests.filter(r => 
-    ['pending', 'admin_pending', 'parent_pending', 'parent_approved'].includes(r.status)
+  // Only allow selection of pending requests - memoized
+  const selectableRequests = useMemo(() => 
+    requests.filter(r => 
+      ['pending', 'admin_pending', 'parent_pending', 'parent_approved'].includes(r.status)
+    ), [requests]
   );
 
-  const toggleSelection = (id: string) => {
-    const newSet = new Set(selectedIds);
-    if (newSet.has(id)) {
-      newSet.delete(id);
-    } else {
-      newSet.add(id);
-    }
-    setSelectedIds(newSet);
-  };
+  const toggleSelection = useCallback((id: string) => {
+    setSelectedIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  }, []);
 
-  const selectAll = () => {
+  const selectAll = useCallback(() => {
     if (selectedIds.size === selectableRequests.length) {
       setSelectedIds(new Set());
     } else {
       setSelectedIds(new Set(selectableRequests.map(r => r.id)));
     }
-  };
+  }, [selectedIds.size, selectableRequests]);
 
   const handleBulkAction = async (decision: 'approved' | 'rejected') => {
     if (selectedIds.size === 0) return;

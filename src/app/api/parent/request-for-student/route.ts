@@ -75,8 +75,8 @@ export async function POST(request: Request) {
         .limit(1),
     ]);
 
-    if (pendingError) throw new Error('Pending Check Failed: ' + JSON.stringify(pendingError));
-    if (passError) throw new Error('Pass Check Failed: ' + JSON.stringify(passError));
+    if (pendingError) throw new Error('Failed to check pending requests');
+    if (passError) throw new Error('Failed to check active passes');
 
     if (
       (pendingRequests && pendingRequests.length > 0) ||
@@ -110,7 +110,7 @@ export async function POST(request: Request) {
       .eq('student_id', linkedStudent.id)
       .gte('created_at', oneDayAgo);
 
-    if (rateError) throw new Error('Rate limit check failed: ' + JSON.stringify(rateError));
+    if (rateError) throw new Error('Failed to check request limits');
 
     if ((dailyCount ?? 0) >= MAX_REQUESTS_PER_DAY) {
       return NextResponse.json(
@@ -151,7 +151,7 @@ export async function POST(request: Request) {
       .select()
       .single();
 
-    if (insertError) throw new Error('Insert Failed: ' + JSON.stringify(insertError));
+    if (insertError) throw new Error('Failed to create request');
 
     // Create audit log entry
     await admin.from('audit_logs').insert({

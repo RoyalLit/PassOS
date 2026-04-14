@@ -110,7 +110,7 @@ export default async function WardenDashboardPage() {
   ];
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -163,8 +163,8 @@ export default async function WardenDashboardPage() {
                 </div>
                 <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
               </div>
-              <p className="text-3xl font-bold text-foreground mb-1">{stat.value}</p>
-              <p className="text-sm text-muted-foreground">{stat.label}</p>
+              <p className="text-4xl font-black text-foreground tracking-tighter mb-1">{stat.value}</p>
+              <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/60">{stat.label}</p>
             </Link>
           );
         })}
@@ -202,18 +202,21 @@ export default async function WardenDashboardPage() {
                       {request.student?.hostel}
                     </span>
                   </div>
-                  <p className="text-sm text-muted-foreground mb-2 line-clamp-1">
-                    {request.reason}
-                  </p>
+                  <div className="flex items-start gap-2 mb-2">
+                    <p className="text-sm font-black text-muted-foreground leading-none">Reason:</p>
+                    <p className="text-sm text-foreground/80 font-medium line-clamp-2 leading-tight">
+                      {request.reason}
+                    </p>
+                  </div>
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-muted-foreground">
                       {format(new Date(request.departure_at), 'MMM d, h:mm a')}
                     </span>
                     <span className={clsx(
-                      "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase",
-                      request.status === 'pending' ? 'bg-muted/50 text-muted-foreground' :
-                      request.status === 'parent_pending' ? 'bg-amber-500/10 text-amber-500' :
-                      'bg-violet-500/10 text-violet-500'
+                      "px-2 py-0.5 rounded border-2 text-[10px] font-black uppercase tracking-widest",
+                      request.status === 'pending' ? 'bg-muted/50 text-muted-foreground border-border' :
+                      request.status === 'parent_pending' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
+                      'bg-violet-500/10 text-violet-500 border-violet-500/20'
                     )}>
                       {request.status.replace('_', ' ')}
                     </span>

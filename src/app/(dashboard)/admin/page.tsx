@@ -82,7 +82,7 @@ export default async function AdminDashboard(props: { searchParams: Promise<{ q?
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="space-y-8">
       <RealtimeRefresh tables={['pass_requests', 'passes', 'pass_scans', 'student_states', 'fraud_flags', 'escalation_logs']} />
       
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -228,7 +228,7 @@ function StatCard({
   const content = (
     <div className="bg-card/60 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-border group hover:border-border/80 hover:shadow-md transition-all">
       <div className="flex items-center justify-between mb-3">
-        <p className="text-xs font-black uppercase tracking-widest text-muted-foreground/60">{title}</p>
+        <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/60">{title}</p>
         <div className={`p-2 rounded-lg ${colorClasses[color]}`}>
           <Icon className="w-4 h-4" />
         </div>

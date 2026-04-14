@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { format } from 'date-fns';
 import { Calendar, MapPin, Clock, Loader2 } from 'lucide-react';
 import Link from 'next/link';
@@ -13,7 +13,7 @@ interface RequestCardProps {
   isAdminView?: boolean;
 }
 
-export function RequestCard({ request, isAdminView = false }: RequestCardProps) {
+const RequestCardComponent = memo(function RequestCard({ request, isAdminView = false }: RequestCardProps) {
   const router = useRouter();
   const [loading, setLoading] = useState<'approved' | 'rejected' | null>(null);
   
@@ -130,4 +130,6 @@ export function RequestCard({ request, isAdminView = false }: RequestCardProps) 
       </div>
     </div>
   );
-}
+});
+
+export const RequestCard = RequestCardComponent;

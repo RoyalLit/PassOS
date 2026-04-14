@@ -25,7 +25,19 @@ export default function TenantsPage() {
   }
 
   useEffect(() => {
-    loadData();
+    let mounted = true;
+    
+    async function init() {
+      if (mounted) {
+        await loadData();
+      }
+    }
+    
+    init();
+    
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const filtered = tenants.filter(

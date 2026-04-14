@@ -32,16 +32,27 @@ export default async function StudentDetailPage({
 
   const supabase = createAdminClient();
 
-  // 1. Fetch student profile with their parent and current state
-  const { data: student, error: studentError } = await supabase
-    .from('profiles')
-    .select(`
-      *,
-      parent:profiles!parent_id(*),
-      state:student_states(*)
-    `)
-    .eq('id', id)
-    .single();
+  // Fetch student profile and request history in parallel
+  const [studentRes, requestsRes] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select(`
+        *,
+        parent:profiles!parent_id(*),
+        state:student_states(*)
+      `)
+      .eq('id', id)
+      .single(),
+    supabase
+      .from('pass_requests')
+      .select('*')
+      .eq('student_id', id)
+      .order('created_at', { ascending: false })
+      .limit(10),
+  ]);
+
+  const { data: student, error: studentError } = studentRes;
+  const { data: requests, error: requestsError } = requestsRes;
 
   if (studentError) {
     console.error(`[Admin] Error fetching student ${id}:`, studentError);
@@ -62,14 +73,6 @@ export default async function StudentDetailPage({
       </div>
     );
   }
-
-  // 2. Fetch student's request history
-  const { data: requests, error: requestsError } = await supabase
-    .from('pass_requests')
-    .select('*')
-    .eq('student_id', id)
-    .order('created_at', { ascending: false })
-    .limit(10);
 
   if (requestsError) {
     console.error(`[Admin] Error fetching requests for ${id}:`, requestsError);

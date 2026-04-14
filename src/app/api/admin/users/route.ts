@@ -108,27 +108,29 @@ export async function POST(request: Request) {
       }
     }
 
-    const { error: profileError } = await supabaseAdmin.from('profiles').insert({
-      id: authUser.user.id,
-      full_name,
-      email,
-      phone: phone || null,
-      hostel: hostel || null,
-      room_number: room_number || null,
-      role,
-      parent_id: parentId,
-      tenant_id: adminProfile.tenant_id,
-    });
-
-    if (profileError) {
-      console.error('[Admin Users POST] Profile Error:', profileError);
-    }
-
-    if (role === 'student') {
-      await supabaseAdmin.from('student_states').insert({
-        student_id: authUser.user.id,
+    // Insert profile and student_state in parallel
+    const [profileRes, ...rest] = await Promise.all([
+      supabaseAdmin.from('profiles').insert({
+        id: authUser.user.id,
+        full_name,
+        email,
+        phone: phone || null,
+        hostel: hostel || null,
+        room_number: room_number || null,
+        role,
+        parent_id: parentId,
         tenant_id: adminProfile.tenant_id,
-      });
+      }),
+      ...(role === 'student' ? [
+        supabaseAdmin.from('student_states').insert({
+          student_id: authUser.user.id,
+          tenant_id: adminProfile.tenant_id,
+        })
+      ] : []),
+    ]);
+
+    if (profileRes.error) {
+      console.error('[Admin Users POST] Profile Error:', profileRes.error);
     }
 
     return NextResponse.json({

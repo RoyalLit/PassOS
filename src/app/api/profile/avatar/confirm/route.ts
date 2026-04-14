@@ -2,6 +2,13 @@ import { NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 
+function isValidStoragePath(path: string): boolean {
+  if (!path || typeof path !== 'string') return false;
+  if (path.length > 512) return false;
+  if (/^[a-zA-Z0-9_\-\/.]+$/.test(path)) return true;
+  return false;
+}
+
 export async function PUT(request: Request) {
   try {
     const supabase = await createServerSupabaseClient();
@@ -17,6 +24,13 @@ export async function PUT(request: Request) {
     if (!avatar_url) {
       return NextResponse.json(
         { error: 'avatar_url is required' },
+        { status: 400 }
+      );
+    }
+
+    if (!isValidStoragePath(avatar_url)) {
+      return NextResponse.json(
+        { error: 'Invalid avatar path' },
         { status: 400 }
       );
     }
@@ -37,7 +51,7 @@ export async function PUT(request: Request) {
 
     if (updateError) {
       return NextResponse.json(
-        { error: updateError.message },
+        { error: 'Failed to update avatar' },
         { status: 500 }
       );
     }
@@ -45,7 +59,6 @@ export async function PUT(request: Request) {
     return NextResponse.json({ success: true, avatar_url: publicUrl.publicUrl });
   } catch (error: unknown) {
     console.error('Avatar confirm error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

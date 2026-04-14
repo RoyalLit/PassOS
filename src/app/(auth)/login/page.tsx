@@ -29,9 +29,10 @@ export default function LoginPage() {
         // Otherwise, stay on login page so user can see they are technically signed in but "broken".
         const role = profile?.role || session.user.user_metadata?.role;
         
-        if (role) {
+        if (role === 'superadmin') {
+          router.replace('/');
+        } else if (role) {
           const targetPath =
-            role === 'superadmin' ? '/superadmin' :
             role === 'admin' ? '/admin' :
             role === 'guard' ? '/guard/scan' :
             role === 'warden' ? '/warden' :
@@ -39,8 +40,7 @@ export default function LoginPage() {
           router.replace(targetPath);
         } else {
            console.warn('Authenticated session found but no profile role. Staying on login page to avoid loops.');
-           // We might want to clear session if it's truly broken, but for now let dashboard handle it.
-           router.replace('/student'); // Dashboard will show the Sync Error screen.
+           router.replace('/student');
         }
       }
     };
@@ -83,8 +83,16 @@ export default function LoginPage() {
       }
 
       const role = profileData?.role || data.user?.user_metadata?.role || 'student';
+
+      if (role === 'superadmin') {
+        await supabase.auth.signOut();
+        clearTimeout(timeoutId);
+        setError('Invalid email or password');
+        setLoading(false);
+        return;
+      }
+
       const targetPath =
-        role === 'superadmin' ? '/superadmin' :
         role === 'admin' ? '/admin' :
         role === 'guard' ? '/guard/scan' :
         role === 'warden' ? '/warden' :

@@ -2,6 +2,15 @@ import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { signQRPayload, generateNonce } from '@/lib/crypto/qr-signer';
 import { requireRole } from '@/lib/auth/rbac';
+import { checkRateLimit, getRateLimitHeaders } from '@/lib/rate-limit';
+
+function getClientIp(headers: Headers): string | null {
+  const forwarded = headers.get('x-forwarded-for');
+  if (forwarded) {
+    return forwarded.split(',')[0].trim();
+  }
+  return headers.get('x-real-ip');
+}
 
 // Internal Pass Generator logic that avoids loopback fetches
 export async function generatePass(request_id: string) {
@@ -121,6 +130,16 @@ export async function generatePass(request_id: string) {
 
 export async function POST(request: Request) {
   try {
+    // Apply rate limiting
+    const clientIp = getClientIp(request.headers) || 'unknown';
+    const rateLimit = await checkRateLimit(`passes_post:${clientIp}`);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429, headers: getRateLimitHeaders(rateLimit) }
+      );
+    }
+
     // Require admin role for direct pass generation API calls
     await requireRole('admin');
     

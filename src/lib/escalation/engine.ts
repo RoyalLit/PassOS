@@ -1,6 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin';
 import { notifyUser } from '@/lib/push/notifications';
-import type { EscalationRule, EscalationLog, EscalationEventType, EscalationPriority } from '@/types';
+import type { EscalationRule, EscalationLog, EscalationEventType } from '@/types';
 
 interface EscalationContext {
   studentId: string;
@@ -197,7 +197,6 @@ async function sendEscalationNotification(
     .single();
 
   const studentName = student?.full_name || 'Student';
-  const passType = (context.details?.pass_type as string) || 'pass';
   const overdueMinutes = context.details?.overdue_minutes as number;
 
   let title: string;

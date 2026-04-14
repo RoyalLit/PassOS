@@ -10,15 +10,23 @@ export async function GET() {
     const { data: templates, error } = await supabase
       .from('escalation_templates')
       .select('*')
-      .or(`tenant_id.eq.${profile.tenant_id},is_system.eq.true`)
+      .eq('tenant_id', profile.tenant_id)
       .order('is_system', { ascending: false })
       .order('name');
 
-    if (error) {
+    const { data: systemTemplates, error: systemError } = await supabase
+      .from('escalation_templates')
+      .select('*')
+      .eq('is_system', true)
+      .order('name');
+
+    const allTemplates = [...(templates || []), ...(systemTemplates || [])];
+
+    if (error && systemError) {
       return NextResponse.json({ error: 'Failed to fetch templates' }, { status: 500 });
     }
 
-    return NextResponse.json({ templates: templates || [] });
+    return NextResponse.json({ templates: allTemplates || [] });
   } catch (error) {
     console.error('Escalation templates fetch error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

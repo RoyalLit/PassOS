@@ -1,7 +1,9 @@
 import { EscalationManagement } from '@/components/admin/escalation-management';
 import { ShieldAlert } from 'lucide-react';
+import { requireRole } from '@/lib/auth/rbac';
 
-export default function EscalationPage() {
+export default async function EscalationPage() {
+  await requireRole('admin');
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       <div>

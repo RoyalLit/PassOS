@@ -49,8 +49,8 @@ export default async function DashboardLayout({
         userId={profile.id} 
       />
       
-      <main className="flex-1 min-w-0 md:pl-64 focus:outline-none">
-        <div className="h-full">
+      <main className="flex-1 md:pl-64 min-h-screen bg-muted/30 transition-all duration-300">
+        <div className="max-w-[1600px] mx-auto p-4 md:p-8 lg:p-10 xl:p-12">
           {children}
         </div>
       </main>
