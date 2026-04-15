@@ -58,27 +58,38 @@ export async function PATCH(request: Request) {
       );
     }
     
-    const { full_name, phone, hostel, room_number, avatar_url, metadata } = result.data;
+    const { phone, hostel, room_number, avatar_url, metadata } = result.data;
 
     const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
 
-    if (full_name !== undefined) updates.full_name = full_name;
     if (phone !== undefined) updates.phone = phone;
     if (hostel !== undefined) updates.hostel = hostel;
     if (room_number !== undefined) updates.room_number = room_number;
     if (avatar_url !== undefined) updates.avatar_url = avatar_url;
     
     if (metadata !== undefined) {
-      const { data: currentProfile } = await supabase
-        .from('profiles')
-        .select('metadata')
-        .eq('id', user.id)
-        .single();
-      
-      updates.metadata = {
-        ...(currentProfile?.metadata || {}),
-        ...metadata,
-      };
+      // Only permit known metadata keys — deny arbitrary writes to the JSONB field
+      const ALLOWED_METADATA_KEYS = ['push_notifications_enabled', 'theme_preference', 'notification_sound'] as const;
+      type AllowedKey = typeof ALLOWED_METADATA_KEYS[number];
+      const sanitizedMetadata: Partial<Record<AllowedKey, unknown>> = {};
+      for (const key of ALLOWED_METADATA_KEYS) {
+        if (key in metadata) {
+          sanitizedMetadata[key] = metadata[key];
+        }
+      }
+
+      if (Object.keys(sanitizedMetadata).length > 0) {
+        const { data: currentProfile } = await supabase
+          .from('profiles')
+          .select('metadata')
+          .eq('id', user.id)
+          .single();
+        
+        updates.metadata = {
+          ...(currentProfile?.metadata || {}),
+          ...sanitizedMetadata,
+        };
+      }
     }
 
     const { data: profile, error } = await supabase

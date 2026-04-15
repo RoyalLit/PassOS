@@ -81,17 +81,26 @@ export function QRScanner({ onScan, isProcessing }: QRScannerProps) {
       )}
 
       {/* Overlay UI */}
-      <div className="absolute inset-0 pointer-events-none border-[40px] border-black/40">
+      <div className="absolute inset-0 pointer-events-none border-[50px] border-black/50 transition-all duration-300">
         {/* Scanning Box Reticle */}
-        <div className="w-full h-full relative">
-          <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-blue-500 rounded-tl-xl animate-pulse"></div>
-          <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-blue-500 rounded-tr-xl animate-pulse"></div>
-          <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-blue-500 rounded-bl-xl animate-pulse"></div>
-          <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-blue-500 rounded-br-xl animate-pulse"></div>
+        <div className="w-full h-full relative shadow-[0_0_40px_rgba(59,130,246,0.2)] rounded-xl overflow-hidden">
           
+          {/* Corner Brackets */}
+          <div className="absolute top-0 left-0 w-12 h-12 border-t-[5px] border-l-[5px] border-blue-500 rounded-tl-xl drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]"></div>
+          <div className="absolute top-0 right-0 w-12 h-12 border-t-[5px] border-r-[5px] border-blue-500 rounded-tr-xl drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]"></div>
+          <div className="absolute bottom-0 left-0 w-12 h-12 border-b-[5px] border-l-[5px] border-blue-500 rounded-bl-xl drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]"></div>
+          <div className="absolute bottom-0 right-0 w-12 h-12 border-b-[5px] border-r-[5px] border-blue-500 rounded-br-xl drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]"></div>
+          
+          {/* Animated Laser Line */}
+          {!isProcessing && (
+            <div className="absolute left-0 right-0 h-1.5 bg-blue-500 animate-scan-laser shadow-[0_0_20px_rgba(59,130,246,1)] z-10 w-[90%] mx-auto rounded-full"></div>
+          )}
+
+          {/* Processing State */}
           {isProcessing && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-lg">
-              <Loader2 className="w-10 h-10 animate-spin text-white" />
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-md z-20">
+              <Loader2 className="w-12 h-12 animate-spin text-blue-500 mb-3" />
+              <p className="text-white font-bold text-sm tracking-widest uppercase animate-pulse">Decrypting</p>
             </div>
           )}
         </div>

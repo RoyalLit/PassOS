@@ -6,7 +6,8 @@ export const createRequestSchema = z.object({
   destination: z.string().min(2, 'Destination is required').max(200),
   departure_at: z.string(),
   return_by: z.string(),
-  proof_urls: z.array(z.string().url()).optional(),
+  // Cap at 10 proof URLs to prevent storage abuse
+  proof_urls: z.array(z.string().url()).max(10, 'Maximum 10 proof files allowed').optional(),
   geo_lat: z.number().optional(),
   geo_lng: z.number().optional(),
 }).refine((data) => new Date(data.return_by) > new Date(data.departure_at), {
@@ -30,7 +31,8 @@ export const approvalSchema = z.object({
 });
 
 export const scanSchema = z.object({
-  qr_payload: z.string().min(1, 'QR payload is required'),
+  // JWTs are typically ~300-500 chars; 2048 is a safe upper bound
+  qr_payload: z.string().min(1, 'QR payload is required').max(2048, 'QR payload too large'),
   scan_type: z.enum(['exit', 'entry']),
   geo_lat: z.number().optional(),
   geo_lng: z.number().optional(),

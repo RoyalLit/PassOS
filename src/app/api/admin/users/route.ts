@@ -7,23 +7,34 @@ import { checkRateLimit, getRateLimitHeaders } from '@/lib/rate-limit';
 
 function generateTempPassword(length = 16): string {
   const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%';
-  const randomValues = crypto.getRandomValues(new Uint8Array(length));
-  return Array.from(randomValues)
-    .map(x => charset[x % charset.length])
-    .join('');
+  const charsetLength = charset.length;
+  // Use bias-rejection to eliminate modulo bias (256 is not evenly divisible by charset.length)
+  const maxValid = Math.floor(256 / charsetLength) * charsetLength;
+  const result: string[] = [];
+  while (result.length < length) {
+    const randomValues = crypto.getRandomValues(new Uint8Array(length * 2));
+    for (const byte of randomValues) {
+      if (byte < maxValid && result.length < length) {
+        result.push(charset[byte % charsetLength]);
+      }
+    }
+  }
+  return result.join('');
 }
 
 export async function GET(request: Request) {
   try {
-    await requireRole('admin');
+    const adminProfile = await requireRole('admin');
     const supabase = await createServerSupabaseClient();
 
     const { searchParams } = new URL(request.url);
     const role = searchParams.get('role');
 
+    // Scope to the admin's tenant to prevent cross-tenant data access
     let query = supabase
       .from('profiles')
       .select('*')
+      .eq('tenant_id', adminProfile.tenant_id)
       .order('created_at', { ascending: false });
 
     if (role && ['student', 'parent', 'guard', 'admin', 'warden', 'superadmin'].includes(role)) {
@@ -66,7 +77,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { full_name, email, role, phone, hostel, room_number, parent_email } = result.data;
+    const { full_name, enrollment_number, email, role, phone, hostel, room_number, parent_email } = result.data;
     const tempPassword = generateTempPassword();
 
     const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
@@ -113,6 +124,7 @@ export async function POST(request: Request) {
       supabaseAdmin.from('profiles').insert({
         id: authUser.user.id,
         full_name,
+        enrollment_number: enrollment_number || null,
         email,
         phone: phone || null,
         hostel: hostel || null,
@@ -174,7 +186,7 @@ export async function PATCH(request: Request) {
       );
     }
     
-    const { role, full_name, phone, hostel, room_number, new_password, is_active } = result.data;
+    const { role, full_name, enrollment_number, phone, hostel, room_number, new_password, is_active } = result.data;
 
     // Update Auth User Metadata or Password
     if (role || full_name || new_password) {
@@ -199,6 +211,7 @@ export async function PATCH(request: Request) {
       .update({
         ...(role ? { role } : {}),
         ...(full_name ? { full_name } : {}),
+        ...(enrollment_number !== undefined ? { enrollment_number: enrollment_number || null } : {}),
         ...(phone !== undefined ? { phone: phone || null } : {}),
         ...(hostel !== undefined ? { hostel: hostel || null } : {}),
         ...(room_number !== undefined ? { room_number: room_number || null } : {}),

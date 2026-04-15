@@ -2,15 +2,15 @@
 
 import { useTheme } from 'next-themes';
 import { Sun, Moon } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-  if (typeof window !== 'undefined' && !mounted) {
+  useEffect(() => {
     setMounted(true);
-  }
+  }, []);
 
   if (!mounted) return <div className="p-2 w-9 h-9" />;
 

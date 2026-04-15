@@ -3,8 +3,9 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { requireRole } from '@/lib/auth/rbac';
 
 export async function GET() {
-  // Guard: only signed-in admins can read aggregate analytics
-  await requireRole('admin');
+  // Guard: only signed-in admins can read aggregate analytics — scoped to their tenant
+  const profile = await requireRole('admin');
+  const tenantId = profile.tenant_id;
   const supabase = createAdminClient();
 
   try {
@@ -23,26 +24,32 @@ export async function GET() {
       supabase
         .from('passes')
         .select('*', { count: 'exact', head: true })
+        .eq('tenant_id', tenantId)
         .in('status', ['active']),
       supabase
         .from('student_states')
         .select('*', { count: 'exact', head: true })
+        .eq('tenant_id', tenantId)
         .eq('current_state', 'outside'),
       supabase
         .from('student_states')
         .select('*', { count: 'exact', head: true })
+        .eq('tenant_id', tenantId)
         .eq('current_state', 'overdue'),
       supabase
         .from('pass_requests')
         .select('*', { count: 'exact', head: true })
+        .eq('tenant_id', tenantId)
         .in('status', ['pending', 'parent_pending', 'admin_pending']),
       supabase
         .from('fraud_flags')
         .select('*', { count: 'exact', head: true })
+        .eq('tenant_id', tenantId)
         .eq('resolved', false),
       supabase
         .from('passes')
         .select('created_at, status')
+        .eq('tenant_id', tenantId)
         .gte('created_at', sevenDaysAgo.toISOString()),
     ]);
 

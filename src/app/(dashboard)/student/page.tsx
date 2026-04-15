@@ -59,7 +59,14 @@ export default async function StudentDashboard() {
     <div className="p-6 max-w-6xl mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Welcome, {profile.full_name.split(' ')[0]}</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+            Welcome, {profile.full_name.split(' ')[0]}
+            {profile.enrollment_number && (
+              <span className="text-xs font-black px-2 py-0.5 bg-blue-500/10 text-blue-600 border border-blue-500/20 rounded-full uppercase tracking-tighter">
+                {profile.enrollment_number}
+              </span>
+            )}
+          </h1>
           <p className="text-muted-foreground">Manage your passes and requests</p>
         </div>
         {canRequestNew ? (
@@ -217,12 +224,14 @@ export default async function StudentDashboard() {
                 </div>
                 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Your Student ID</label>
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                    {profile.enrollment_number ? 'Enrollment Number' : 'Internal Student ID'}
+                  </label>
                   <div className="flex gap-2">
                     <div className="flex-1 bg-muted/30 rounded-xl px-3 py-2 text-xs font-mono text-muted-foreground border border-border truncate flex items-center">
-                      {profile.id}
+                      {profile.enrollment_number || profile.id}
                     </div>
-                    <CopyButton value={profile.id} />
+                    <CopyButton value={profile.enrollment_number || profile.id} />
                   </div>
                 </div>
                 

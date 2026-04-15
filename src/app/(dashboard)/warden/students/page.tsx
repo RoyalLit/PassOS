@@ -43,7 +43,7 @@ export default async function WardenStudentsPage({
   }
   
   if (search) {
-    query = query.or(`full_name.ilike.%${search}%,email.ilike.%${search}%,room_number.ilike.%${search}%`);
+    query = query.or(`full_name.ilike.%${search}%,email.ilike.%${search}%,room_number.ilike.%${search}%,enrollment_number.ilike.%${search}%`);
   }
   
   const { data: students } = await query;
@@ -143,8 +143,13 @@ export default async function WardenStudentsPage({
                         )}
                       </div>
                       <div>
-                        <h3 className="font-bold text-foreground group-hover:text-blue-600 transition-colors">
+                        <h3 className="font-bold text-foreground group-hover:text-blue-600 transition-colors flex items-center gap-2">
                           {student.full_name}
+                          {student.enrollment_number && (
+                            <span className="text-[10px] font-black px-1.5 py-0.5 bg-blue-500/10 text-blue-600 border border-blue-500/20 rounded uppercase tracking-tighter">
+                              {student.enrollment_number}
+                            </span>
+                          )}
                         </h3>
                         <p className="text-sm text-muted-foreground">{student.email}</p>
                       </div>

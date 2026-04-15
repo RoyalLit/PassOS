@@ -39,6 +39,7 @@ export async function POST(request: Request) {
     }
 
     const { request_id, decision, reason, token } = result.data;
+    // Single admin client for the entire handler
     const supabase = createAdminClient();
 
     // Verify request exists
@@ -52,37 +53,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Request not found' }, { status: 404 });
     }
 
-    let approver_id = null;
-    let approver_type = 'admin';
-
-    // Route 1: Parent Approval via Token
+    // Route 1: Parent Approval via Token (unauthenticated — token IS the credential)
     if (token) {
       const payload = await verifyApprovalToken(token);
       if (!payload || payload.request_id !== request_id) {
         return NextResponse.json({ error: 'Invalid or expired approval token' }, { status: 403 });
       }
       
-      // Verify token hasn't been used
-      const { data: existingApproval } = await supabase
-        .from('approvals')
-        .select('decision')
-        .eq('token', token)
-        .single();
-        
-      if (existingApproval && existingApproval.decision !== 'escalated') {
-        return NextResponse.json({ error: 'Link already used' }, { status: 400 });
-      }
-
-      approver_id = payload.parent_id;
-      approver_type = 'parent';
-      
-      // Use atomic UPDATE with row count check to prevent race conditions
+      // Use atomic UPDATE with row count check to prevent race conditions on double-click
       const { data: updateResult, error: updateError } = await supabase
         .from('approvals')
         .update({ 
           decision, 
           reason, 
-          ip_address: getClientIp(request.headers) 
+          ip_address: clientIp 
         })
         .eq('token', token)
         .eq('decision', 'escalated') // Only update if still in escalated state
@@ -90,7 +74,7 @@ export async function POST(request: Request) {
       
       if (updateError) throw updateError;
       
-      // Check if the update actually affected a row
+      // If no row was updated, the link was already used
       if (!updateResult || updateResult.length === 0) {
         return NextResponse.json({ error: 'Link already used' }, { status: 400 });
       }
@@ -103,60 +87,55 @@ export async function POST(request: Request) {
         .eq('id', request_id);
 
       return NextResponse.json({ success: true, next_status: nextStatus });
-    }
-
-    // Route 2: Admin or Warden Approval via Session
-    const userProfile = await requireRole('admin', 'warden');
-    approver_id = userProfile.id;
-    approver_type = userProfile.role;
-
-    // Must be in a pending state
-    if (!['pending', 'admin_pending', 'parent_pending', 'parent_approved'].includes(passReq.status)) {
-      return NextResponse.json({ error: 'Request not in approvable state' }, { status: 400 });
-    }
-
-    // Record admin approval
-    const { error: approvalError } = await supabase.from('approvals').insert({
-      request_id,
-      tenant_id: passReq.tenant_id,
-      approver_id,
-      approver_type,
-      decision,
-      reason,
-      ip_address: getClientIp(request.headers),
-    });
-
-    if (approvalError) {
-      console.error('[Approval] Insert failure:', approvalError);
-      return NextResponse.json({ error: 'Failed to record approval' }, { status: 500 });
-    }
-
-    const finalStatus = decision === 'approved' ? 'approved' : 'rejected';
-    await supabase.from('pass_requests').update({ status: finalStatus }).eq('id', request_id);
-
-    // If approved, trigger pass generation synchronously
-    if (finalStatus === 'approved') {
-      console.log('Spawning pass internally for request:', request_id);
-      try {
-        await generatePass(request_id);
-      } catch (e: unknown) {
-        console.error('Pass Generation crashed:', e);
-        // We still return success: true because the request WAS approved, but warn about pass generation
-        return NextResponse.json({ 
-          success: true, 
-          warning: 'Pass generation failed. Please generate manually or retry.',
-          final_status: finalStatus 
-        });
-      }
     } else {
-      console.log('Request was rejected, no pass generated');
+      // Route 2: Admin or Warden Approval via Session (explicitly in else block)
+      const userProfile = await requireRole('admin', 'warden');
+      const approver_id = userProfile.id;
+      const approver_type = userProfile.role;
+
+      // Must be in a pending state
+      if (!['pending', 'admin_pending', 'parent_pending', 'parent_approved'].includes(passReq.status)) {
+        return NextResponse.json({ error: 'Request not in approvable state' }, { status: 400 });
+      }
+
+      // Record admin approval
+      const { error: approvalError } = await supabase.from('approvals').insert({
+        request_id,
+        tenant_id: passReq.tenant_id,
+        approver_id,
+        approver_type,
+        decision,
+        reason,
+        ip_address: clientIp,
+      });
+
+      if (approvalError) {
+        console.error('[Approval] Insert failure:', approvalError);
+        return NextResponse.json({ error: 'Failed to record approval' }, { status: 500 });
+      }
+
+      const finalStatus = decision === 'approved' ? 'approved' : 'rejected';
+      await supabase.from('pass_requests').update({ status: finalStatus }).eq('id', request_id);
+
+      // If approved, trigger pass generation synchronously
+      if (finalStatus === 'approved') {
+        try {
+          await generatePass(request_id);
+        } catch (e: unknown) {
+          console.error('Pass Generation crashed:', e);
+          // Request WAS approved, but warn about pass generation failure
+          return NextResponse.json({ 
+            success: true, 
+            warning: 'Pass generation failed. Please generate manually or retry.',
+            final_status: finalStatus 
+          });
+        }
+      }
+
+      return NextResponse.json({ success: true, final_status: finalStatus });
     }
-
-    return NextResponse.json({ success: true, final_status: finalStatus });
-
   } catch (error: unknown) {
     console.error('Approval handler error:', error);
-    // Mask detailed error messages for 500s
     const errorMsg = error instanceof Error ? error.message : 'Unknown error';
     const isAuthError = errorMsg.includes('Unauthorized');
     const isForbiddenError = errorMsg.includes('Forbidden');
@@ -167,4 +146,3 @@ export async function POST(request: Request) {
     );
   }
 }
-

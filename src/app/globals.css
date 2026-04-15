@@ -60,11 +60,25 @@
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
   * {
     @apply border-border;
   }
   body {
     @apply bg-background text-foreground transition-colors duration-300;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer utilities {
+  @keyframes scan-laser {
+    0% { top: 0%; }
+    100% { top: calc(100% - 6px); }
+  }
+
+  .animate-scan-laser {
+    animation: scan-laser 2s ease-in-out infinite alternate;
   }
 }

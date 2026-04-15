@@ -43,10 +43,11 @@ export async function POST(request: Request) {
         message: 'QR code contains malformed data' 
       }, { status: 400 });
     }
-    // We fetch the student profile even if the token is expired to provide a better UX for the guard
+    // We fetch the student profile even if the token is expired to provide a better UX for the guard.
+    // Intentionally select only the fields a guard needs — never expose phone, parent_id, metadata etc.
     const { data: pass } = await supabase
       .from('passes')
-      .select('*, student:profiles(*)')
+      .select('*, student:profiles(id, full_name, enrollment_number, avatar_url, hostel, room_number)')
       .eq('id', pass_id)
       .single();
 

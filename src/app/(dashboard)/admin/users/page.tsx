@@ -17,6 +17,7 @@ interface NewUserForm {
   full_name: string;
   email: string;
   role: 'student' | 'parent' | 'guard' | 'warden';
+  enrollment_number: string;
   phone: string;
   hostel: string;
   room_number: string;
@@ -58,6 +59,7 @@ export default function UsersPage() {
     full_name: '',
     email: '',
     role: 'student',
+    enrollment_number: '',
     phone: '',
     hostel: '',
     room_number: '',
@@ -142,6 +144,7 @@ export default function UsersPage() {
         full_name: '',
         email: '',
         role: 'student',
+        enrollment_number: '',
         phone: '',
         hostel: '',
         room_number: '',
@@ -312,7 +315,14 @@ export default function UsersPage() {
                             )}
                           </div>
                           <div>
-                            <p className="font-medium text-foreground">{user.full_name}</p>
+                            <p className="font-medium text-foreground flex items-center gap-2">
+                              {user.full_name}
+                              {user.enrollment_number && (
+                                <span className="text-[10px] font-bold px-1.5 py-0.5 bg-muted border border-border rounded uppercase text-muted-foreground">
+                                  {user.enrollment_number}
+                                </span>
+                              )}
+                            </p>
                             <p className="text-xs text-muted-foreground">{user.email}</p>
                           </div>
                         </div>
@@ -457,7 +467,7 @@ export default function UsersPage() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="col-span-2">
+                    <div className="col-span-1">
                       <label className="block text-sm font-medium text-foreground mb-1">Full Name</label>
                       <input
                         type="text"
@@ -465,6 +475,17 @@ export default function UsersPage() {
                         value={form.full_name}
                         onChange={(e) => setForm({ ...form, full_name: e.target.value })}
                         placeholder="John Doe"
+                        className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
+
+                    <div className="col-span-1">
+                      <label className="block text-sm font-medium text-foreground mb-1">Enrollment No.</label>
+                      <input
+                        type="text"
+                        value={form.enrollment_number}
+                        onChange={(e) => setForm({ ...form, enrollment_number: e.target.value })}
+                        placeholder="21BCE001"
                         className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                       />
                     </div>

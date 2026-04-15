@@ -44,6 +44,7 @@ interface ParentData {
   student: {
     id: string;
     full_name: string;
+    enrollment_number: string | null;
     email: string;
     hostel: string | null;
     room_number: string | null;
@@ -140,7 +141,14 @@ function CampusStatusCard({ student, studentState, activePass }: {
             </div>
             <div>
               <p className="text-white/60 text-xs font-bold uppercase tracking-widest mb-0.5">Your Ward</p>
-              <h2 className="text-xl font-black text-white">{student?.full_name}</h2>
+              <h2 className="text-xl font-black text-white flex items-center gap-2">
+                {student?.full_name}
+                {student?.enrollment_number && (
+                  <span className="text-[10px] font-black px-1.5 py-0.5 bg-white/20 text-white border border-white/20 rounded uppercase tracking-tighter">
+                    {student.enrollment_number}
+                  </span>
+                )}
+              </h2>
               <p className="text-white/60 text-xs mt-0.5">{[student?.hostel, student?.room_number ? `Room ${student.room_number}` : null].filter(Boolean).join(' • ')}</p>
             </div>
           </div>

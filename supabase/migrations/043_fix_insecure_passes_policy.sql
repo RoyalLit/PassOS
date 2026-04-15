@@ -17,9 +17,9 @@ CREATE POLICY "passes_select_secure" ON public.passes FOR SELECT USING (
   OR tenant_id = public.current_user_tenant_id()
 );
 
--- Apply tenant isolation to scans table as well
-DROP POLICY IF EXISTS "scans_select_secure" ON public.scans;
-CREATE POLICY "scans_select_secure" ON public.scans FOR SELECT USING (
+-- Apply tenant isolation to pass_scans table as well
+DROP POLICY IF EXISTS "scans_select_secure" ON public.pass_scans;
+CREATE POLICY "scans_select_secure" ON public.pass_scans FOR SELECT USING (
   auth.role() = 'service_role'
   OR public.is_superadmin()
   OR tenant_id = public.current_user_tenant_id()

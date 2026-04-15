@@ -197,8 +197,15 @@ export default async function WardenDashboardPage() {
               {(pendingRequests as WardenPendingRequest[]).slice(0, 4).map((request) => (
                 <div key={request.id} className="p-4 hover:bg-muted/5 transition-colors">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="font-medium text-foreground">{request.student?.full_name}</p>
-                    <span className="text-xs text-muted-foreground">
+                    <div>
+                      <p className="font-medium text-foreground leading-none">{request.student?.full_name}</p>
+                      {request.student?.enrollment_number && (
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mt-1">
+                          {request.student.enrollment_number}
+                        </p>
+                      )}
+                    </div>
+                    <span className="text-xs text-muted-foreground font-medium px-2 py-0.5 bg-muted rounded">
                       {request.student?.hostel}
                     </span>
                   </div>

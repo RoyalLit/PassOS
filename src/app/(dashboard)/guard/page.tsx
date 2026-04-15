@@ -22,6 +22,7 @@ export default async function GuardDashboardPage() {
         student_id,
         profiles!passes_student_id_fkey (
           full_name,
+          enrollment_number,
           hostel,
           room_number,
           avatar_url
@@ -77,7 +78,14 @@ export default async function GuardDashboardPage() {
                           )}
                         </div>
                         <div className="flex flex-col">
-                          <span className="font-semibold text-foreground">{student?.full_name || 'Unknown Student'}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-foreground">{student?.full_name || 'Unknown Student'}</span>
+                            {student?.enrollment_number && (
+                              <span className="text-[10px] font-bold px-1.5 py-0.5 bg-blue-500/10 text-blue-600 border border-blue-500/20 rounded uppercase">
+                                {student.enrollment_number}
+                              </span>
+                            )}
+                          </div>
                           <span className="text-xs text-muted-foreground">{student?.hostel} - Room {student?.room_number}</span>
                         </div>
                       </div>

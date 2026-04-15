@@ -97,28 +97,12 @@ export async function requireWarden(): Promise<Profile & { wardens?: Warden[] }>
   const profile = await requireRole('warden') as Profile & { wardens?: Warden[] };
   const supabase = await createServerSupabaseClient();
 
-  // Self-Healing Logic: If tenant_id is missing (test environment issue),
-  // automatically assign the user to the first available non-system tenant.
+  // In production a warden must always have a tenant_id. A missing tenant_id means
+  // the account was misconfigured — surface it clearly rather than auto-assigning
+  // to an arbitrary tenant (which could expose the wrong institution's data).
   if (!profile.tenant_id) {
-    console.log('Self-healing: Warden missing tenant_id, searching for default...');
-    const { data: tenants } = await supabase
-      .from('tenants')
-      .select('id')
-      .neq('slug', '__system__')
-      .order('created_at', { ascending: true })
-      .limit(1);
-
-    if (tenants && tenants.length > 0) {
-      const defaultTenantId = tenants[0].id;
-      profile.tenant_id = defaultTenantId;
-      console.log(`Self-healing: Assigning warden to tenant ${defaultTenantId}`);
-      
-      // Update database in background to prevent future misses
-      await supabase
-        .from('profiles')
-        .update({ tenant_id: defaultTenantId })
-        .eq('id', profile.id);
-    }
+    console.error(`[requireWarden] Warden ${profile.id} has no tenant_id — account is misconfigured.`);
+    throw new Error('Warden account is not assigned to a university. Please contact your administrator.');
   }
   
   // Fetch wardens data for this user

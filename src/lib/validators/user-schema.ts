@@ -5,6 +5,7 @@ export const UserRoleEnum = z.enum(['student', 'parent', 'guard', 'warden', 'adm
 
 export const createUserSchema = z.object({
   full_name: z.string().min(2, "Full name must be at least 2 characters").max(100, "Full name too long"),
+  enrollment_number: z.string().max(100).optional().nullable().or(z.literal('')),
   email: z.string().email("Invalid email format").max(255),
   role: UserRoleEnum,
   phone: z.string().max(20).optional().nullable(),
@@ -15,6 +16,7 @@ export const createUserSchema = z.object({
 
 export const updateUserSchema = z.object({
   full_name: z.string().min(2).max(100).optional(),
+  enrollment_number: z.string().max(100).optional().nullable().or(z.literal('')),
   phone: z.string().max(20).optional().nullable(),
   hostel: z.string().max(100).optional().nullable(),
   room_number: z.string().max(50).optional().nullable(),

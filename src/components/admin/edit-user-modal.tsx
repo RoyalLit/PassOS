@@ -34,6 +34,7 @@ export function EditUserModal({ user, isOpen, onClose, onUpdate, disableRoleChan
   const [editForm, setEditForm] = useState({
     role: user.role,
     full_name: user.full_name,
+    enrollment_number: user.enrollment_number || '',
     phone: user.phone || '',
     hostel: user.hostel || '',
     room_number: user.room_number || '',
@@ -51,6 +52,7 @@ export function EditUserModal({ user, isOpen, onClose, onUpdate, disableRoleChan
           user_id: user.id,
           role: editForm.role,
           full_name: editForm.full_name,
+          enrollment_number: editForm.enrollment_number,
           phone: editForm.phone,
           hostel: editForm.role === 'student' ? editForm.hostel : null,
           room_number: editForm.role === 'student' ? editForm.room_number : null,
@@ -175,16 +177,28 @@ export function EditUserModal({ user, isOpen, onClose, onUpdate, disableRoleChan
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1">Full Name</label>
-            <input
-              type="text"
-              required
-              value={editForm.full_name}
-              onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
-              placeholder="John Doe"
-              className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Full Name</label>
+              <input
+                type="text"
+                required
+                value={editForm.full_name}
+                onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
+                placeholder="John Doe"
+                className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Enrollment No.</label>
+              <input
+                type="text"
+                value={editForm.enrollment_number}
+                onChange={(e) => setEditForm({ ...editForm, enrollment_number: e.target.value })}
+                placeholder="e.g. 21BCE042"
+                className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+            </div>
           </div>
 
           <div>

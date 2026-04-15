@@ -30,7 +30,7 @@ export async function checkRateLimit(identifier: string): Promise<{ allowed: boo
     return { allowed: false, remaining: 0, resetAt };
   }
 
-  // Increment atomically to handle concurrent requests
+  // Increment atomically via RPC to avoid check-then-act race condition
   const { error: updateError } = await supabase.rpc('increment_rate_limit', {
     p_identifier: identifier,
     p_now: new Date(now).toISOString(),
@@ -39,8 +39,9 @@ export async function checkRateLimit(identifier: string): Promise<{ allowed: boo
   });
 
   if (updateError) {
-    // Fallback: increment in-memory if RPC fails
-    console.error('Rate limit RPC failed, using fallback:', updateError.message);
+    // RPC failed — deny the request to be safe rather than allowing unlimited through
+    console.error('Rate limit RPC failed, denying request conservatively:', updateError.message);
+    return { allowed: false, remaining: 0, resetAt };
   }
 
   return { allowed: true, remaining: Math.max(0, MAX_REQUESTS - data.count - 1), resetAt };
@@ -52,10 +53,4 @@ export function getRateLimitHeaders(result: { allowed: boolean; remaining: numbe
     'X-RateLimit-Remaining': String(result.remaining),
     'X-RateLimit-Reset': String(Math.floor(result.resetAt / 1000)),
   };
-}
-
-// Backwards-compatible sync wrapper for APIs that still call sync version
-export function checkRateLimitSync(_identifier: string): { allowed: boolean; remaining: number; resetAt: number } {
-  const now = Date.now();
-  return { allowed: true, remaining: MAX_REQUESTS - 1, resetAt: now + WINDOW_MS };
 }

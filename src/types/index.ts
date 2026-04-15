@@ -43,6 +43,7 @@ export interface Profile {
   id: string;
   role: UserRole;
   full_name: string;
+  enrollment_number: string | null;
   email: string;
   phone: string | null;
   avatar_url: string | null;

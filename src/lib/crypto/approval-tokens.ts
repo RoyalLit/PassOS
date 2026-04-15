@@ -1,6 +1,9 @@
 import * as jose from 'jose';
 
-const SECRET = process.env.APPROVAL_TOKEN_SECRET || '';
+const SECRET = process.env.APPROVAL_TOKEN_SECRET;
+if (!SECRET) {
+  throw new Error('[approval-tokens] APPROVAL_TOKEN_SECRET env var is required but not set.');
+}
 
 function getKey() {
   return new TextEncoder().encode(SECRET);

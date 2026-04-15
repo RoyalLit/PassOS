@@ -62,6 +62,11 @@ const RequestCardComponent = memo(function RequestCard({ request, isAdminView = 
               <div>
                 <h3 className="font-bold text-foreground group-hover:text-blue-600 transition-colors flex items-center gap-2">
                   {request.student.full_name} 
+                  {request.student.enrollment_number && (
+                    <span className="text-[10px] font-black px-1.5 py-0.5 bg-blue-500/10 text-blue-600 border border-blue-500/20 rounded-md uppercase tracking-tighter">
+                      {request.student.enrollment_number}
+                    </span>
+                  )}
                   <ClientEditProfileButton user={request.student} variant="icon" />
                 </h3>
                 <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest bg-muted px-2 py-0.5 rounded">

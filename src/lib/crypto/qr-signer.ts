@@ -3,7 +3,10 @@ import { JOSEError, JWTExpired } from 'jose/errors';
 import { createHmac, randomBytes } from 'crypto';
 import type { QRPayload } from '@/types';
 
-const SIGNING_SECRET = process.env.PASS_SIGNING_SECRET || '';
+const SIGNING_SECRET = process.env.PASS_SIGNING_SECRET;
+if (!SIGNING_SECRET) {
+  throw new Error('[qr-signer] PASS_SIGNING_SECRET env var is required but not set.');
+}
 
 function getKey() {
   return new TextEncoder().encode(SIGNING_SECRET);
@@ -64,7 +67,7 @@ export async function verifyQRPayload(token: string): Promise<QRVerifyResult> {
       }
     };
     } catch (err) {
-      // If expired, we still want to decode it to show the student's name/ID for better UX
+      // If expired, we still want to decode it to show the student's name/ID for better UX for the guard
     if (err instanceof JWTExpired) {
       try {
         const decoded = jose.decodeJwt(token);
@@ -95,7 +98,7 @@ export async function verifyQRPayload(token: string): Promise<QRVerifyResult> {
  * Generate an HMAC signature for data integrity
  */
 export function hmacSign(data: string): string {
-  return createHmac('sha256', SIGNING_SECRET).update(data).digest('hex');
+  return createHmac('sha256', SIGNING_SECRET!).update(data).digest('hex');
 }
 
 /**
