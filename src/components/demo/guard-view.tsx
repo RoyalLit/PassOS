@@ -11,7 +11,8 @@ import {
   Maximize2,
   Scan,
   RefreshCcw,
-  CheckCircle2
+  CheckCircle2,
+  User
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -129,7 +130,7 @@ export function GuardDemoView() {
             <div className="p-8">
               <div className="flex items-center gap-4 mb-8">
                 <div className="h-16 w-16 rounded-2xl bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200">
-                  <User size={32} className="text-slate-400" />
+                  <User width={32} height={32} className="text-slate-400" />
                 </div>
                 <div>
                   <h5 className="font-bold text-slate-800 text-lg">Vikram Singh</h5>
@@ -182,22 +183,4 @@ export function GuardDemoView() {
   );
 }
 
-function User(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
-    </svg>
-  );
-}
+
