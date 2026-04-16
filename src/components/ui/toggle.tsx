@@ -25,12 +25,12 @@ export function Toggle({
       disabled={disabled}
       onClick={() => !disabled && onChange(!enabled)}
       className={clsx(
-        'relative inline-flex shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2',
+        'relative inline-flex shrink-0 cursor-pointer items-center rounded-full border-2 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2',
         size === 'sm' ? 'h-6 w-10' : 'h-7 w-12',
         disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
         enabled
-          ? isBlue ? 'bg-blue-600' : 'bg-purple-600'
-          : 'bg-muted',
+          ? isBlue ? 'bg-blue-600 border-transparent' : 'bg-purple-600 border-transparent'
+          : 'bg-slate-100 border-slate-300',
         enabled ? 'focus:ring-blue-500' : 'focus:ring-slate-400'
       )}
     >
