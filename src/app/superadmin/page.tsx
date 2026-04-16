@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { Building2, Users, AlertTriangle, TrendingUp, Clock, Loader2 } from 'lucide-react';
 
@@ -29,15 +28,19 @@ export default function SuperadminDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const supabase = createClient();
-    Promise.all([
-      supabase.from('tenants').select('id, status, plan'),
-      supabase.from('profiles').select('id, role, tenant_id'),
-      supabase.from('tenants').select('id, name, slug, status, plan, created_at').order('created_at', { ascending: false }).limit(5),
-    ]).then(([tenants, profiles, recentTenants]) => {
-      setData({ tenants: tenants.data || [], profiles: profiles.data || [], recentTenants: recentTenants.data || [] });
-      setLoading(false);
-    });
+    async function load() {
+      try {
+        const res = await fetch('/api/superadmin/dashboard');
+        if (!res.ok) throw new Error('Failed to fetch dashboard data');
+        const json = await res.json();
+        setData(json);
+      } catch (e) {
+        console.error('Failed to load dashboard:', e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
   }, []);
 
   if (loading) {

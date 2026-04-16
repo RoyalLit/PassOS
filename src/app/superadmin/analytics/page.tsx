@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
 import { BarChart3, TrendingUp, Users, Building2, Loader2 } from 'lucide-react';
 
 interface SimpleRecord {
@@ -23,23 +22,22 @@ export default function SuperadminAnalytics() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const supabase = createClient();
-    Promise.all([
-      supabase.from('tenants').select('id, status, plan, created_at'),
-      supabase.from('profiles').select('id, role, created_at'),
-      supabase.from('passes').select('id, status, created_at'),
-      supabase.from('pass_requests').select('id, status, created_at'),
-      supabase.from('fraud_flags').select('id, created_at'),
-    ]).then(([tenantsRes, profilesRes, passesRes, requestsRes, fraudFlagsRes]) => {
-      setStats({
-        tenants: (tenantsRes.data as SimpleRecord[]) || [],
-        profiles: (profilesRes.data as SimpleRecord[]) || [],
-        passes: (passesRes.data as SimpleRecord[]) || [],
-        requests: (requestsRes.data as SimpleRecord[]) || [],
-        fraudFlags: (fraudFlagsRes.data as SimpleRecord[]) || [],
+    fetch('/api/superadmin/analytics')
+      .then(r => r.json())
+      .then(data => {
+        setStats({
+          tenants: data.tenants || [],
+          profiles: data.profiles || [],
+          passes: data.passes || [],
+          requests: data.requests || [],
+          fraudFlags: data.fraudFlags || [],
+        });
+        setLoading(false);
+      })
+      .catch(e => {
+        console.error('Failed to load analytics:', e);
+        setLoading(false);
       });
-      setLoading(false);
-    });
   }, []);
 
   if (loading || !stats) {

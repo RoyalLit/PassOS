@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
 import { Search, Users, ShieldCheck } from 'lucide-react';
 import type { Profile, Tenant } from '@/types';
 
@@ -18,13 +17,16 @@ export default function SuperadminUsersPage() {
 
   useEffect(() => {
     async function load() {
-      const supabase = createClient();
-      const { data } = await supabase
-        .from('profiles')
-        .select('*, tenant:tenants(id, name, slug)')
-        .order('created_at', { ascending: false });
-      setUsers((data as ProfileWithTenant[]) || []);
-      setLoading(false);
+      try {
+        const res = await fetch('/api/superadmin/users');
+        if (!res.ok) throw new Error('Failed to fetch');
+        const { profiles } = await res.json();
+        setUsers((profiles as ProfileWithTenant[]) || []);
+      } catch (e) {
+        console.error('Failed to load users:', e);
+      } finally {
+        setLoading(false);
+      }
     }
     load();
   }, []);

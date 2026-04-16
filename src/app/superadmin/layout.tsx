@@ -14,12 +14,13 @@ export default function SuperadminLayout({
   const router = useRouter();
   const supabase = createClient();
   const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<{ full_name: string; avatar_url: string | null } | null>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        router.replace('/admin-login');
+        router.replace('/cipher-access');
         return;
       }
 
@@ -30,18 +31,20 @@ export default function SuperadminLayout({
         .single();
 
       if (!profile || profile.role !== 'superadmin') {
+        // If they are not a superadmin, sign them out and send back to secret gate
         await supabase.auth.signOut();
-        router.replace('/admin-login');
+        router.replace('/cipher-access');
         return;
       }
 
+      setProfile(profile);
       setLoading(false);
     };
 
     checkAuth();
-  }, []);
+  }, [router, supabase]);
 
-  if (loading) {
+  if (loading || !profile) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
@@ -52,8 +55,8 @@ export default function SuperadminLayout({
   return (
     <div className="min-h-screen bg-background flex">
       <SuperadminSidebar
-        userName=""
-        avatarUrl=""
+        userName={profile.full_name}
+        avatarUrl={profile.avatar_url || ""}
       />
       <main className="flex-1 min-w-0 md:pl-64 focus:outline-none">
         <div className="h-full">

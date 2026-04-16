@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, use } from 'react';
-import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { Building2, Users, AlertTriangle, ArrowLeft, Edit2, X } from 'lucide-react';
 import type { Tenant, Profile, TenantStatus, TenantPlan } from '@/types';
@@ -15,14 +14,17 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
 
   useEffect(() => {
     async function load() {
-      const supabase = createClient();
-      const [{ data: tenant }, { data: users }] = await Promise.all([
-        supabase.from('tenants').select('*').eq('id', id).single(),
-        supabase.from('profiles').select('*').eq('tenant_id', id).order('created_at', { ascending: false }),
-      ]);
-      setTenant(tenant);
-      setUsers(users || []);
-      setLoading(false);
+      try {
+        const res = await fetch(`/api/superadmin/tenants/${id}`);
+        if (!res.ok) throw new Error('Failed to fetch university details');
+        const { tenant, users } = await res.json();
+        setTenant(tenant);
+        setUsers(users || []);
+      } catch (e) {
+        console.error('Failed to load university details:', e);
+      } finally {
+        setLoading(false);
+      }
     }
     load();
   }, [id]);

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { Building2, Plus, Search, MoreHorizontal, Trash2, Edit2, Eye } from 'lucide-react';
 import type { Tenant, TenantStatus, TenantPlan } from '@/types';
@@ -14,14 +13,16 @@ export default function TenantsPage() {
   const [editing, setEditing] = useState<Tenant | null>(null);
 
   async function loadData() {
-    const supabase = createClient();
-    const { data } = await supabase
-      .from('tenants')
-      .select('*')
-      .order('created_at', { ascending: false });
-    
-    setTenants(data || []);
-    setLoading(false);
+    try {
+      const res = await fetch('/api/superadmin/tenants');
+      if (!res.ok) throw new Error('Failed to fetch universities');
+      const { tenants } = await res.json();
+      setTenants(tenants || []);
+    } catch (e) {
+      console.error('Failed to load universities:', e);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
