@@ -29,7 +29,7 @@ export function Switch({ id, checked, onCheckedChange, disabled, className }: Sw
       <span
         className={clsx(
           "pointer-events-none block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition-transform duration-200",
-          checked ? "translate-x-5" : "translate-x-1"
+          checked ? "translate-x-5" : "translate-x-0"
         )}
       />
     </button>
