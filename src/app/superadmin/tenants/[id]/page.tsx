@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use } from 'react';
 import Link from 'next/link';
-import { Building2, Users, AlertTriangle, ArrowLeft, Edit2, X } from 'lucide-react';
+import { Building2, Users, AlertTriangle, ArrowLeft, Edit2, X, UserPlus } from 'lucide-react';
 import type { Tenant, Profile, TenantStatus, TenantPlan } from '@/types';
 
 import { SuperadminUserModal } from '@/components/superadmin/user-modal';
