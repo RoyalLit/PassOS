@@ -5,28 +5,33 @@ import Link from 'next/link';
 import { Building2, Users, AlertTriangle, ArrowLeft, Edit2, X } from 'lucide-react';
 import type { Tenant, Profile, TenantStatus, TenantPlan } from '@/types';
 
+import { SuperadminUserModal } from '@/components/superadmin/user-modal';
+
 export default function TenantDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [users, setUsers] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
+  const [showCreateUser, setShowCreateUser] = useState(false);
+  const [editingUser, setEditingUser] = useState<Profile | null>(null);
+
+  const loadData = async () => {
+    try {
+      const res = await fetch(`/api/superadmin/tenants/${id}`);
+      if (!res.ok) throw new Error('Failed to fetch university details');
+      const data = await res.json();
+      setTenant(data.tenant);
+      setUsers(data.users || []);
+    } catch (e) {
+      console.error('Failed to load university details:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    async function load() {
-      try {
-        const res = await fetch(`/api/superadmin/tenants/${id}`);
-        if (!res.ok) throw new Error('Failed to fetch university details');
-        const { tenant, users } = await res.json();
-        setTenant(tenant);
-        setUsers(users || []);
-      } catch (e) {
-        console.error('Failed to load university details:', e);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
+    loadData();
   }, [id]);
 
   if (loading) {
@@ -70,7 +75,7 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
           className="flex items-center gap-2 px-4 py-2 border border-border rounded-xl text-sm font-medium text-foreground hover:bg-muted transition-colors"
         >
           <Edit2 size={14} />
-          Edit
+          Edit University
         </button>
       </div>
 
@@ -81,7 +86,7 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
           { label: 'Students', value: roleCounts['student'] || 0, color: 'text-green-500' },
           { label: 'Guards', value: roleCounts['guard'] || 0, color: 'text-orange-500' },
         ].map((s) => (
-          <div key={s.label} className="bg-card/60 backdrop-blur-md p-4 rounded-xl border border-border">
+          <div key={s.label} className="bg-card/60 backdrop-blur-md p-4 rounded-xl border border-border transition-all hover:bg-muted/10">
             <p className="text-xs font-black uppercase tracking-widest text-muted-foreground/60 mb-1">{s.label}</p>
             <p className={`text-3xl font-black tracking-tighter ${s.color}`}>{s.value}</p>
           </div>
@@ -111,7 +116,7 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
                   <span className="text-sm text-muted-foreground">None</span>
                 ) : (
                   tenant.domains.map((d) => (
-                    <span key={d} className="inline-block text-xs bg-muted px-2 py-0.5 rounded-full font-mono ml-1 first:ml-0">
+                    <span key={d} className="inline-block text-xs bg-muted px-2 py-0.5 rounded-full font-mono ml-1 first:ml-0 border border-border">
                       {d}
                     </span>
                   ))
@@ -146,39 +151,62 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
         </div>
       </div>
 
-      <div className="bg-card/60 backdrop-blur-md rounded-2xl border border-border overflow-hidden">
-        <div className="px-6 py-4 border-b border-border">
+      <div className="bg-card/60 backdrop-blur-md rounded-2xl border border-border overflow-hidden shadow-sm">
+        <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-muted/20">
           <h3 className="font-bold text-foreground flex items-center gap-2">
             <Users size={16} />
-            Users ({users.length})
+            University Roster ({users.length})
           </h3>
+          <button
+            onClick={() => setShowCreateUser(true)}
+            className="flex items-center gap-2 px-3 py-1.5 bg-purple-600 text-white rounded-xl text-xs font-bold hover:bg-purple-500 transition-all shadow-lg shadow-purple-500/20"
+          >
+            <UserPlus size={14} />
+            Add User
+          </button>
         </div>
         {users.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
-            <Users size={32} className="mx-auto mb-2 opacity-20" />
-            <p>No users in this university yet</p>
+            <Users size={32} className="mx-auto mb-2 opacity-10" />
+            <p className="text-sm">No users yet. Bootstrapped universities need admins first!</p>
           </div>
         ) : (
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border bg-muted/20">
-                <th className="text-left text-xs font-black uppercase tracking-widest text-muted-foreground/60 px-6 py-3">Name</th>
-                <th className="text-left text-xs font-black uppercase tracking-widest text-muted-foreground/60 px-6 py-3">Email</th>
-                <th className="text-left text-xs font-black uppercase tracking-widest text-muted-foreground/60 px-6 py-3">Role</th>
-                <th className="text-left text-xs font-black uppercase tracking-widest text-muted-foreground/60 px-6 py-3">Joined</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {users.map((user) => (
-                <tr key={user.id} className="hover:bg-muted/20 transition-colors">
-                  <td className="px-6 py-3 font-medium text-foreground">{user.full_name}</td>
-                  <td className="px-6 py-3 text-muted-foreground text-sm">{user.email}</td>
-                  <td className="px-6 py-3"><RoleBadge role={user.role} /></td>
-                  <td className="px-6 py-3 text-muted-foreground text-sm">{new Date(user.created_at).toLocaleDateString()}</td>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-border bg-muted/5">
+                  <th className="text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-6 py-3">User</th>
+                  <th className="text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-6 py-3">Role</th>
+                  <th className="text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 px-6 py-3">Joined</th>
+                  <th className="px-6 py-3" />
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {users.map((user) => (
+                  <tr key={user.id} className="hover:bg-muted/10 transition-colors group">
+                    <td className="px-6 py-3">
+                      <div>
+                        <p className="font-medium text-foreground text-sm">{user.full_name}</p>
+                        <p className="text-xs text-muted-foreground">{user.email}</p>
+                      </div>
+                    </td>
+                    <td className="px-6 py-3"><RoleBadge role={user.role} /></td>
+                    <td className="px-6 py-3 text-muted-foreground text-xs">{new Date(user.created_at).toLocaleDateString()}</td>
+                    <td className="px-6 py-3">
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end">
+                        <button
+                          onClick={() => setEditingUser(user)}
+                          className="p-1.5 hover:bg-muted rounded-lg text-muted-foreground hover:text-purple-500 transition-colors"
+                        >
+                          <Edit2 size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
@@ -189,10 +217,19 @@ export default function TenantDetailPage({ params }: { params: Promise<{ id: str
           onSaved={(updated) => { setTenant(updated); setEditing(false); }}
         />
       )}
+
+      {(showCreateUser || editingUser) && (
+        <SuperadminUserModal
+          isOpen={true}
+          user={editingUser || undefined}
+          targetTenantId={id}
+          onClose={() => { setShowCreateUser(false); setEditingUser(null); }}
+          onUpdate={loadData}
+        />
+      )}
     </div>
   );
 }
-
 function EditTenantModal({
   tenant,
   onClose,

@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Search, Users, ShieldCheck } from 'lucide-react';
+import { Search, Users, ShieldCheck, UserPlus, Edit2 } from 'lucide-react';
 import type { Profile, Tenant } from '@/types';
+import { SuperadminUserModal } from '@/components/superadmin/user-modal';
 
 interface ProfileWithTenant extends Omit<Profile, 'tenant'> {
   tenant: Pick<Tenant, 'id' | 'name' | 'slug'> | undefined;
@@ -14,28 +14,31 @@ export default function SuperadminUsersPage() {
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [tenantFilter, setTenantFilter] = useState<string>('all');
+  const [showCreateUser, setShowCreateUser] = useState(false);
+  const [editingUser, setEditingUser] = useState<ProfileWithTenant | null>(null);
 
   const [error, setError] = useState<string | null>(null);
- 
-  useEffect(() => {
-    async function load() {
-      try {
-        const res = await fetch('/api/superadmin/users');
-        const data = await res.json();
-        
-        if (!res.ok) {
-          throw new Error(data.error || 'Failed to fetch users');
-        }
-        
-        setUsers((data.profiles as ProfileWithTenant[]) || []);
-      } catch (e: any) {
-        console.error('Failed to load users:', e);
-        setError(e.message);
-      } finally {
-        setLoading(false);
+
+  const loadUsers = async () => {
+    try {
+      const res = await fetch('/api/superadmin/users');
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to fetch users');
       }
+      
+      setUsers((data.profiles as ProfileWithTenant[]) || []);
+    } catch (e: any) {
+      console.error('Failed to load users:', e);
+      setError(e.message);
+    } finally {
+      setLoading(false);
     }
-    load();
+  };
+
+  useEffect(() => {
+    loadUsers();
   }, []);
 
   const filtered = users.filter((u) => {
@@ -66,13 +69,22 @@ export default function SuperadminUsersPage() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          All Users
-        </h1>
-        <p className="text-muted-foreground">
-          View and manage users across all universities
-        </p>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            All Users
+          </h1>
+          <p className="text-muted-foreground">
+            View and manage users across all universities
+          </p>
+        </div>
+        <button
+          onClick={() => setShowCreateUser(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-purple-500/20 hover:bg-purple-500 transition-all active:scale-95"
+        >
+          <UserPlus size={16} />
+          Add User
+        </button>
       </div>
 
       {error && (
@@ -140,61 +152,78 @@ export default function SuperadminUsersPage() {
 
       <div className="bg-card/60 backdrop-blur-md rounded-2xl border border-border shadow-sm overflow-hidden">
         {loading ? (
-          <div className="p-12 text-center text-muted-foreground">Loading...</div>
+          <div className="p-12 text-center text-muted-foreground">
+            <div className="w-8 h-8 border-4 border-purple-500/20 border-t-purple-500 rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-sm">Retrieving users...</p>
+          </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20 text-muted-foreground">
             <Users size={40} className="mx-auto mb-3 opacity-20" />
             <p className="font-medium">No users found</p>
           </div>
         ) : (
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border bg-muted/20">
-                <th className="text-left text-xs font-black uppercase tracking-widest text-muted-foreground/60 px-6 py-3">User</th>
-                <th className="text-left text-xs font-black uppercase tracking-widest text-muted-foreground/60 px-6 py-3">University</th>
-                <th className="text-left text-xs font-black uppercase tracking-widest text-muted-foreground/60 px-6 py-3">Role</th>
-                <th className="text-left text-xs font-black uppercase tracking-widest text-muted-foreground/60 px-6 py-3">Hostel</th>
-                <th className="text-left text-xs font-black uppercase tracking-widest text-muted-foreground/60 px-6 py-3">Joined</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {filtered.map((user) => {
-                return (
-                  <tr key={user.id} className="hover:bg-muted/20 transition-colors">
-                    <td className="px-6 py-4">
-                      <div>
-                        <p className="font-medium text-foreground flex items-center gap-1.5">
-                          {user.full_name}
-                          {user.is_flagged && <span title="Flagged" className="text-red-500">⚑</span>}
-                        </p>
-                        <p className="text-xs text-muted-foreground">{user.email}</p>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-foreground">
-                        {user.tenant?.name || '—'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <RoleBadge role={user.role} />
-                    </td>
-                    <td className="px-6 py-4 text-muted-foreground text-sm">
-                      {user.hostel || '—'}
-                    </td>
-                    <td className="px-6 py-4 text-muted-foreground text-sm">
-                      {new Date(user.created_at).toLocaleDateString()}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-border bg-muted/20">
+                  <th className="text-left text-xs font-black uppercase tracking-widest text-muted-foreground/60 px-6 py-3">User</th>
+                  <th className="text-left text-xs font-black uppercase tracking-widest text-muted-foreground/60 px-6 py-3">University</th>
+                  <th className="text-left text-xs font-black uppercase tracking-widest text-muted-foreground/60 px-6 py-3">Role</th>
+                  <th className="text-left text-xs font-black uppercase tracking-widest text-muted-foreground/60 px-6 py-3">Joined</th>
+                  <th className="px-6 py-3" />
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {filtered.map((user) => {
+                  return (
+                    <tr key={user.id} className="hover:bg-muted/10 transition-colors group">
+                      <td className="px-6 py-4">
+                        <div>
+                          <p className="font-medium text-foreground text-sm flex items-center gap-1.5 line-clamp-1">
+                            {user.full_name}
+                            {user.is_flagged && <span title="Flagged" className="text-red-500">⚑</span>}
+                          </p>
+                          <p className="text-xs text-muted-foreground line-clamp-1">{user.email}</p>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-xs font-medium text-foreground bg-muted/50 px-2 py-0.5 rounded-md border border-border">
+                          {user.tenant?.name || '—'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <RoleBadge role={user.role} />
+                      </td>
+                      <td className="px-6 py-4 text-muted-foreground text-xs">
+                        {new Date(user.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end">
+                          <button
+                            onClick={() => setEditingUser(user)}
+                            className="p-1.5 hover:bg-muted rounded-lg text-muted-foreground hover:text-purple-500 transition-colors"
+                          >
+                            <Edit2 size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
-      <p className="text-xs text-muted-foreground text-center">
-        Showing {filtered.length} of {users.length} users
-      </p>
+      {(showCreateUser || editingUser) && (
+        <SuperadminUserModal
+          isOpen={true}
+          user={editingUser ? (editingUser as unknown as Profile) : undefined}
+          onClose={() => { setShowCreateUser(false); setEditingUser(null); }}
+          onUpdate={loadUsers}
+        />
+      )}
     </div>
   );
 }
