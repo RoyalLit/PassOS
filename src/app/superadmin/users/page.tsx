@@ -1,5 +1,7 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+
 import { Search, Users, ShieldCheck, UserPlus, Edit2 } from 'lucide-react';
 import type { Profile, Tenant } from '@/types';
 import { SuperadminUserModal } from '@/components/superadmin/user-modal';
