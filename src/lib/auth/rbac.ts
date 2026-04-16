@@ -93,6 +93,47 @@ export async function requireSuperAdmin(): Promise<Profile> {
   return requireRole('superadmin');
 }
 
+/**
+ * Validates superadmin status specifically for API routes.
+ * Checks JWT metadata first (fast, bypasses RLS).
+ * Then checks DB with service-role (robust, bypasses RLS).
+ */
+export async function validateSuperAdminServer(): Promise<{ user: any, profile: Profile | null }> {
+  try {
+    const supabase = await createServerSupabaseClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      throw new Error('Unauthorized');
+    }
+
+    // 1. Fast path: Check JWT metadata role
+    if (user.user_metadata?.role === 'superadmin') {
+      return { user, profile: null }; // Profile can be lazy-loaded later if needed
+    }
+
+    // 2. Fallback: Check database using service-role (bypasses RLS)
+    // We import createAdminClient here to avoid circular dependencies if any
+    const { createAdminClient } = await import('@/lib/supabase/admin');
+    const admin = createAdminClient();
+    
+    const { data: profile } = await admin
+      .from('profiles')
+      .select('*, tenant:tenants!tenant_id (*)')
+      .eq('id', user.id)
+      .single();
+
+    if (profile?.role === 'superadmin') {
+      return { user, profile: profile as Profile };
+    }
+
+    throw new Error('Forbidden');
+  } catch (error) {
+    console.error('[validateSuperAdminServer] Validation failed:', error instanceof Error ? error.message : 'Unknown error');
+    throw error;
+  }
+}
+
 export async function requireWarden(): Promise<Profile & { wardens?: Warden[] }> {
   const profile = await requireRole('warden') as Profile & { wardens?: Warden[] };
   const supabase = await createServerSupabaseClient();

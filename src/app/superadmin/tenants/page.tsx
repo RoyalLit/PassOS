@@ -11,15 +11,21 @@ export default function TenantsPage() {
   const [search, setSearch] = useState('');
   const [showCreate, setShowCreate] = useState(false);
   const [editing, setEditing] = useState<Tenant | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   async function loadData() {
     try {
       const res = await fetch('/api/superadmin/tenants');
-      if (!res.ok) throw new Error('Failed to fetch universities');
-      const { tenants } = await res.json();
-      setTenants(tenants || []);
-    } catch (e) {
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to fetch universities');
+      }
+      
+      setTenants(data.tenants || []);
+    } catch (e: any) {
       console.error('Failed to load universities:', e);
+      setError(e.message);
     } finally {
       setLoading(false);
     }
@@ -74,6 +80,16 @@ export default function TenantsPage() {
           Add University
         </button>
       </div>
+
+      {error && (
+        <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-500 text-sm flex items-center gap-3">
+          <Building2 className="w-5 h-5 shrink-0" />
+          <div>
+            <p className="font-bold">Data Load Error</p>
+            <p className="opacity-80">{error}</p>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-3 gap-4">
         {[

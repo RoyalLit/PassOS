@@ -15,15 +15,22 @@ export default function SuperadminUsersPage() {
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [tenantFilter, setTenantFilter] = useState<string>('all');
 
+  const [error, setError] = useState<string | null>(null);
+ 
   useEffect(() => {
     async function load() {
       try {
         const res = await fetch('/api/superadmin/users');
-        if (!res.ok) throw new Error('Failed to fetch');
-        const { profiles } = await res.json();
-        setUsers((profiles as ProfileWithTenant[]) || []);
-      } catch (e) {
+        const data = await res.json();
+        
+        if (!res.ok) {
+          throw new Error(data.error || 'Failed to fetch users');
+        }
+        
+        setUsers((data.profiles as ProfileWithTenant[]) || []);
+      } catch (e: any) {
         console.error('Failed to load users:', e);
+        setError(e.message);
       } finally {
         setLoading(false);
       }
@@ -67,6 +74,16 @@ export default function SuperadminUsersPage() {
           View and manage users across all universities
         </p>
       </div>
+
+      {error && (
+        <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-500 text-sm flex items-center gap-3">
+          <ShieldCheck className="w-5 h-5 shrink-0" />
+          <div>
+            <p className="font-bold">Data Load Error</p>
+            <p className="opacity-80">{error}</p>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {[

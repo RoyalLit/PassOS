@@ -1,53 +1,39 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
-import { createClient } from '@supabase/supabase-js';
-import { cookies } from 'next/headers';
+import { validateSuperAdminServer } from '@/lib/auth/rbac';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 export async function GET() {
-  // Step 1: Verify the caller is an authenticated superadmin using the anon SSR client
-  const cookieStore = await cookies();
-  const anonClient = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return cookieStore.getAll(); },
-        setAll() {},
-      },
+  try {
+    // 1. Env check: Ensure service role key exists
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.warn('[API/Superadmin/Users] SUPABASE_SERVICE_ROLE_KEY is missing from environment.');
+      return NextResponse.json({ 
+        error: 'System configuration error: Service role key missing.',
+        code: 'MISSING_ENV_VAR'
+      }, { status: 500 });
     }
-  );
 
-  const { data: { user } } = await anonClient.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // 2. Auth check: Must be a superadmin
+    await validateSuperAdminServer();
+
+    // 3. Data fetch using admin client (bypasses RLS)
+    const admin = createAdminClient();
+    const { data: profiles, error } = await admin
+      .from('profiles')
+      .select('*, tenant:tenants(id, name, slug)')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('[API/Superadmin/Users] Fetch error:', error.message);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ profiles });
+  } catch (error: any) {
+    const status = error.message === 'Unauthorized' ? 401 : 
+                   error.message === 'Forbidden' ? 403 : 500;
+    return NextResponse.json({ 
+      error: error.message || 'An unexpected error occurred' 
+    }, { status });
   }
-
-  // Step 2: Read canonical role from DB with service-role to bypass RLS
-  const adminClient = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
-
-  const { data: callerProfile } = await adminClient
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-
-  if (callerProfile?.role !== 'superadmin') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
-
-  // Step 3: Fetch all profiles across all tenants — service-role bypasses RLS
-  const { data: profiles, error } = await adminClient
-    .from('profiles')
-    .select('*, tenant:tenants(id, name, slug)')
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  return NextResponse.json({ profiles });
 }

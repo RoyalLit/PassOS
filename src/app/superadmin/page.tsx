@@ -27,15 +27,22 @@ export default function SuperadminDashboard() {
   } | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const [error, setError] = useState<string | null>(null);
+ 
   useEffect(() => {
     async function load() {
       try {
         const res = await fetch('/api/superadmin/dashboard');
-        if (!res.ok) throw new Error('Failed to fetch dashboard data');
         const json = await res.json();
+        
+        if (!res.ok) {
+          throw new Error(json.error || 'Failed to fetch dashboard data');
+        }
+        
         setData(json);
-      } catch (e) {
+      } catch (e: any) {
         console.error('Failed to load dashboard:', e);
+        setError(e.message);
       } finally {
         setLoading(false);
       }
@@ -45,13 +52,45 @@ export default function SuperadminDashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+          <p className="text-sm text-muted-foreground animate-pulse font-medium">Loading platform data...</p>
+        </div>
       </div>
     );
   }
 
-  const { tenants, profiles, recentTenants } = data!;
+  if (error || !data) {
+    return (
+      <div className="p-6 max-w-7xl mx-auto space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            Platform Dashboard
+          </h1>
+          <p className="text-muted-foreground">
+            Overview of all universities and users on PassOS
+          </p>
+        </div>
+        
+        <div className="p-8 bg-card/60 backdrop-blur-md border border-red-500/20 rounded-2xl text-center">
+          <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertTriangle className="w-8 h-8 text-red-500" />
+          </div>
+          <h2 className="text-lg font-bold text-foreground mb-2">Data Load Error</h2>
+          <p className="text-muted-foreground max-w-md mx-auto mb-6">
+            {error || 'An unexpected error occurred while loading the dashboard. Please check your system configuration.'}
+          </p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-purple-500/30"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
   const totalTenants = tenants.length;
   const activeTenants = tenants.filter(t => t.status === 'active').length;
   const trialTenants = tenants.filter(t => t.status === 'trial').length;
