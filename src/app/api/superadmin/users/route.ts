@@ -20,7 +20,7 @@ export async function GET() {
     const admin = createAdminClient();
     const { data: profiles, error } = await admin
       .from('profiles')
-      .select('*, tenant:tenants(id, name, slug)')
+      .select('*, tenant:tenants!tenant_id(id, name, slug)')
       .order('created_at', { ascending: false });
 
     if (error) {
