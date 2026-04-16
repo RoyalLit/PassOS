@@ -30,7 +30,7 @@ export function Toggle({
         disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
         enabled
           ? isBlue ? 'bg-blue-600 border-transparent' : 'bg-purple-600 border-transparent'
-          : 'bg-slate-100 border-slate-300',
+          : 'bg-slate-100 border-slate-300 dark:bg-slate-800 dark:border-slate-700',
         enabled ? 'focus:ring-blue-500' : 'focus:ring-slate-400'
       )}
     >
