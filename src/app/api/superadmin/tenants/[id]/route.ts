@@ -1,48 +1,45 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
-import { createClient } from '@supabase/supabase-js';
-import { cookies } from 'next/headers';
+import { validateSuperAdminServer } from '@/lib/auth/rbac';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
-  
-  const cookieStore = await cookies();
-  const anonClient = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return cookieStore.getAll(); },
-        setAll() {},
-      },
+  try {
+    const { id } = await params;
+    
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.warn('[API/Superadmin/TenantDetail] SUPABASE_SERVICE_ROLE_KEY is missing.');
+      return NextResponse.json({ 
+        error: 'System configuration error: Service role key missing.',
+        code: 'MISSING_ENV_VAR'
+      }, { status: 500 });
     }
-  );
 
-  const { data: { user } } = await anonClient.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    await validateSuperAdminServer();
+    const admin = createAdminClient();
 
-  const adminClient = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  );
+    const [{ data: tenant, error: tErr }, { data: users, error: uErr }] = await Promise.all([
+      admin.from('tenants').select('*').eq('id', id).single(),
+      admin.from('profiles').select('*').eq('tenant_id', id).order('created_at', { ascending: false }),
+    ]);
 
-  const { data: callerProfile } = await adminClient
-    .from('profiles').select('role').eq('id', user.id).single();
-  if (callerProfile?.role !== 'superadmin') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    if (tErr) {
+      console.error('[API/Superadmin/TenantDetail] Tenant fetch error:', tErr.message);
+      return NextResponse.json({ error: tErr.message }, { status: 500 });
+    }
+    if (uErr) {
+      console.error('[API/Superadmin/TenantDetail] Users fetch error:', uErr.message);
+      return NextResponse.json({ error: uErr.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ tenant, users });
+  } catch (error: any) {
+    const status = error.message === 'Unauthorized' ? 401 : 
+                   error.message === 'Forbidden' ? 403 : 500;
+    return NextResponse.json({ 
+      error: error.message || 'An unexpected error occurred' 
+    }, { status });
   }
-
-  const [{ data: tenant, error: tErr }, { data: users, error: uErr }] = await Promise.all([
-    adminClient.from('tenants').select('*').eq('id', id).single(),
-    adminClient.from('profiles').select('*').eq('tenant_id', id).order('created_at', { ascending: false }),
-  ]);
-
-  if (tErr) return NextResponse.json({ error: tErr.message }, { status: 500 });
-  if (uErr) return NextResponse.json({ error: uErr.message }, { status: 500 });
-
-  return NextResponse.json({ tenant, users });
 }
