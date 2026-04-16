@@ -38,7 +38,7 @@ export function SuperadminUserModal({ user, targetTenantId, isOpen, onClose, onU
   });
 
   useEffect(() => {
-    if (isOpen && !isEdit && !targetTenantId) {
+    if (isOpen && (!targetTenantId || isEdit)) {
       loadTenants();
     }
   }, [isOpen, isEdit, targetTenantId]);
@@ -165,12 +165,12 @@ export function SuperadminUserModal({ user, targetTenantId, isOpen, onClose, onU
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {!targetTenantId && !isEdit && (
+          <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            {(!targetTenantId || isEdit) && (
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1.5 flex items-center gap-2">
                   <Building className="w-4 h-4 text-muted-foreground" />
-                  Target University
+                  {isEdit ? 'Change University' : 'Target University'}
                 </label>
                 <div className="relative">
                   <select

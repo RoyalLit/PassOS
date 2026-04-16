@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { validateSuperAdminServer } from '@/lib/auth/rbac';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { updateUserSchema } from '@/lib/validators/user-schema';
+import { z } from 'zod';
 
 export async function PATCH(
   request: NextRequest,
@@ -18,20 +19,24 @@ export async function PATCH(
     const supabaseAdmin = createAdminClient();
     const body = await request.json();
     
-    const result = updateUserSchema.safeParse(body);
+    const result = updateUserSchema.extend({
+      tenant_id: z.string().uuid().optional()
+    }).safeParse(body);
+    
     if (!result.success) {
       return NextResponse.json({ error: 'Validation failed', details: result.error.format() }, { status: 400 });
     }
 
-    const { full_name, role, enrollment_number, phone, hostel, room_number, is_active, new_password } = result.data;
+    const { full_name, role, enrollment_number, phone, hostel, room_number, is_active, new_password, tenant_id } = result.data;
 
     // 1. Update Auth User if needed
-    if (full_name || role || new_password) {
+    if (full_name || role || new_password || tenant_id) {
       const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(user_id, {
         ...(new_password ? { password: new_password } : {}),
         user_metadata: {
           ...(full_name ? { full_name } : {}),
           ...(role ? { role } : {}),
+          ...(tenant_id ? { tenant_id } : {}),
         }
       });
       if (authError) {
@@ -45,6 +50,7 @@ export async function PATCH(
       .update({
         ...(full_name ? { full_name } : {}),
         ...(role ? { role } : {}),
+        ...(tenant_id ? { tenant_id } : {}),
         ...(enrollment_number !== undefined ? { enrollment_number: enrollment_number || null } : {}),
         ...(phone !== undefined ? { phone: phone || null } : {}),
         ...(hostel !== undefined ? { hostel: hostel || null } : {}),
