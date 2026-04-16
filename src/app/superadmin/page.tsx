@@ -91,6 +91,8 @@ export default function SuperadminDashboard() {
       </div>
     );
   }
+
+  const { tenants, profiles, recentTenants } = data!;
   const totalTenants = tenants.length;
   const activeTenants = tenants.filter(t => t.status === 'active').length;
   const trialTenants = tenants.filter(t => t.status === 'trial').length;
