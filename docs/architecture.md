@@ -37,8 +37,7 @@ The system enforces a strict state machine to prevent unauthorized movements.
 
 | Role | Access Level | Responsibilities |
 | :--- | :--- | :--- |
-| **Superadmin** | Global | Platform configuration, tenant creation, and system-wide audit logs. |
-| **Admin** | Tenant | University-wide management, staff onboarding, and global approvals. |
+| **Admin** | University | University-wide management, staff onboarding, and global approvals. |
 | **Warden** | Hostel | Hostel-specific approvals, student tracking, and escalation management. |
 | **Guard** | Gate | Real-time QR scanning and identity verification at campus gates. |
 | **Student** | Personal | Requesting passes, viewing digital identity, and managing profile. |

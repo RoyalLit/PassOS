@@ -48,32 +48,12 @@ This guide will help you get PassOS running on your local machine.
 
 ## 🏢 SaaS & Multi-Tenancy Setup
 
-PassOS is a multi-tenant platform. To initialize a new environment, you must bootstrap the first Superadmin.
+PassOS is a native multi-tenant platform. Each university/campus environment is isolated via a `tenant_id`. 
 
-### 1. Bootstrap the Superadmin
-After creating your first account via the UI (as a regular student or admin), you must manually promote it to `superadmin` in the Supabase SQL Editor:
-```sql
--- Replace with the ID of your first user
-UPDATE profiles 
-SET role = 'superadmin' 
-WHERE id = 'your-user-id';
-```
-
-### 2. Initialize the System Tenant
-Superadmins must belong to the `__system__` tenant. You can create this and assign your user via SQL:
-```sql
--- 1. Create the system tenant
-INSERT INTO tenants (name, slug, status)
-VALUES ('PassOS System', '__system__', 'active');
-
--- 2. Assign your user to this tenant
-UPDATE profiles
-SET tenant_id = (SELECT id FROM tenants WHERE slug = '__system__')
-WHERE role = 'superadmin';
-```
-
-### 3. Create Your First University
-Once you are logged in as a Superadmin, navigate to the **Superadmin Dashboard** (`/superadmin`) to create your first University/Campus tenant and its primary Admin account.
+To set up a local testing environment:
+1. Ensure your `.env.local` contains a valid `SUPABASE_SERVICE_ROLE_KEY`.
+2. Use the database migrations to initialize the core schema.
+3. For multi-tenant testing, ensure your test users are assigned a valid `tenant_id` in the `profiles` table.
 
 ## 🗄️ Database Setup
 

@@ -13,7 +13,7 @@ PassOS is a production-grade campus mobility and gate pass management system des
 ## 🚦 Project Status
 
 > [!IMPORTANT]
-> **Multi-Tenancy**: **Enabled**. PassOS is a native Multi-Tenant SaaS platform. It supports multiple isolated university/campus tenants within a single deployment, managed by a dedicated Superadmin layer.
+> **Multi-Tenancy**: **Enabled**. PassOS is a native Multi-Tenant SaaS platform. It supports multiple isolated university/campus tenants within a single deployment, providing complete data residency and security for each institution.
 
 ## 🚀 Technology Stack
 
@@ -46,13 +46,12 @@ PassOS is a production-grade campus mobility and gate pass management system des
 
 ## 🛠️ Core Functions & Features
 
-### 1. Hierarchical Role Based Access Control (RBAC)
-Dedicated portals for six distinct user roles, enabling secure operations from platform management to campus security.
+### Hierarchical Role Based Access Control (RBAC)
+Dedicated portals for specialized campus roles, enabling secure operations from university administration to gate security.
 
 | Role | Responsibility | Portal Access |
 | :--- | :--- | :--- |
-| **Superadmin** | Global platform config, tenant management, and system logs. | `/superadmin` |
-| **Admin** | University-level management, analytics, and global approvals. | `/admin` |
+| **Admin** | University-level management, analytics, and staff onboarding. | `/admin` |
 | **Warden** | Hostel-level supervision, student tracking, and local approvals. | `/warden` |
 | **Guard** | Gate security, QR scanning, and identity verification. | `/guard` |
 | **Student** | Pass requests, digital identity, and profile management. | `/student` |
@@ -71,25 +70,26 @@ Dedicated portals for six distinct user roles, enabling secure operations from p
 - **Profile Settings**: Personal details management and profile photo (Avatar) uploads.
 
 ### 4. Admin Dashboard
-- **Action Center**: Centralized approval system with multi-level delegation.
-- **User Management**: Creating and managing profiles for all campus roles.
+- **Action Center**: Centralized approval system with multi-level delegation for holiday and emergency passes.
+- **User Management**: Creating and managing profiles for all campus staff and residents.
 - **Student Directory**: Live location tracking and advanced filtering (by hostel, status, or year).
-- **System Analytics**: Visual charts showing pass issuance trends and compliance metrics.
+- **Compliance Reports**: Real-time summaries of campus attendance and pass usage trends.
 
 ### 5. Guard Terminal (Security)
-- **QR Scanner**: Optimized camera interface for scanning student passes.
-- **Identity Verification**: Real-time student photo and profile display upon scan.
-- **Scan Logs**: Detailed history of all gate entries and exits.
+- **QR Scanner**: High-speed camera interface optimized for gate security throughput.
+- **Identity Verification**: Instant display of student photo and authorized pass details upon scan.
+- **Gate Logs**: Detailed history of all entries and exits with timestamped evidence.
 
 ### 6. Parent Portal
-- **Ward Linking**: Securely link child's account using a unique Student ID.
-- **Decision Engine**: Approve or reject outing requests with optional feedback.
-- **Activity History**: Complete log of previous permissions and child's current status.
+- **Ward Linking**: Securely link child accounts using institutional verified identifiers.
+- **Decision Engine**: Approve or reject outing requests with optional parental feedback.
+- **Activity Monitoring**: Complete timeline of previous permissions and child's current on-campus status.
 
 ---
 
-## 🛡️ Security Architecture
-- **Tenant Isolation**: Strict RLS policies ensure data from one university is never visible to another.
-- **API Hardening**: All endpoints are protected by Zod schemas and standardized error handling.
-- **Tamper-Proof Passses**: QR codes are cryptographically signed using JWT (HS256).
+## 🛡️ Security & Multi-Tenancy Architecture
+- **Tenant Isolation**: Strict PostgreSQL Row Level Security (RLS) ensures that data from one university is never visible to another.
+- **System Tenancy**: Private platform-level configurations handle cross-university routing and data integrity.
+- **API Hardening**: Every endpoint is protected by Zod schema validation and role-based middleware.
+- **Tamper-Proof Passes**: Gatepasses are signed using JWT (HS256) to prevent local or digital tampering.
 - **Audit Logs**: Immutable history of all critical actions indexed by tenant and user.

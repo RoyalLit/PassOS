@@ -21,8 +21,8 @@ This document details the Supabase/PostgreSQL schema, Row Level Security (RLS) p
 > PassOS is fully configured for multi-university deployments. Isolation is enforced at the database level using `tenant_id` and Row Level Security (RLS).
 
 - **Status**: The `tenant_id` column is **Required** and enforced on all core tables.
-- **System Tenant**: The `__system__` tenant slug is reserved for Superadmins. Users belonging to this tenant can manage platform settings and view cross-tenant analytics.
-- **RLS Enforcement**: Every query includes an implicit or explicit filter on `tenant_id` based on the authenticated user's profile.
+- **System Tenant**: The `__system__` tenant slug is reserved for platform-level management. Users belonging to this tenant can manage global configurations and monitor platform-wide metrics.
+- **RLS Enforcement**: Every query includes an implicit filter on `tenant_id` based on the user's authenticated session, ensuring robust multi-tenant isolation.
 
 ## 🛡️ Row Level Security (RLS) Policies
 
@@ -32,7 +32,6 @@ PassOS uses fine-grained RLS to ensure data privacy and tenant isolation.
 - **Users**: Can read and update their own profile.
 - **Wardens**: Can read profiles of students in their assigned hostels.
 - **Admins**: Can read/create/update all profiles within their own tenant.
-- **Superadmins**: Can access all profiles across the entire platform.
 
 ### 🎫 Passes & Requests
 - **Students**: Can only see their own requests and active passes.
