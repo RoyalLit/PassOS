@@ -9,14 +9,18 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: user_id } = await params;
-    
-    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      return NextResponse.json({ error: 'System configuration error: Service role key missing.' }, { status: 500 });
-    }
-
-    await validateSuperAdminServer();
+    const { id } = await params;
+    const user_id = id;
+    const { user } = await validateSuperAdminServer();
     const supabaseAdmin = createAdminClient();
+    
+    // Fetch old profile for audit log
+    const { data: oldProfile } = await supabaseAdmin
+      .from('profiles')
+      .select('*')
+      .eq('id', user_id)
+      .single();
+
     const body = await request.json();
     
     const result = updateUserSchema.extend({
@@ -60,11 +64,28 @@ export async function PATCH(
       .eq('id', user_id);
 
     if (profileError) {
-      console.error('[Superadmin Users PATCH] Profile Error:', profileError.message);
+      console.error('[Superadmin Users PATCH] Profile Update Error:', profileError.message);
       return NextResponse.json({ error: profileError.message }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true });
+    const { data: newProfile } = await supabaseAdmin
+      .from('profiles')
+      .select('*')
+      .eq('id', user_id)
+      .single();
+
+    // Record Audit Log
+    const { recordAuditLog } = await import('@/lib/audit');
+    await recordAuditLog({
+      actorId: user.id,
+      action: 'update_user',
+      entityType: 'profile',
+      entityId: user_id,
+      oldData: oldProfile,
+      newData: newProfile
+    });
+
+    return NextResponse.json({ user: newProfile });
   } catch (error: any) {
     const status = error.message === 'Unauthorized' ? 401 : 
                    error.message === 'Forbidden' ? 403 : 500;
@@ -77,22 +98,32 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: user_id } = await params;
-    
-    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      return NextResponse.json({ error: 'System configuration error: Service role key missing.' }, { status: 500 });
-    }
-
-    await validateSuperAdminServer();
+    const { id } = await params;
+    const { user } = await validateSuperAdminServer();
     const supabaseAdmin = createAdminClient();
 
-    // deleteUser handles cascade to profiles table (due to FK with ON DELETE CASCADE)
-    const { error } = await supabaseAdmin.auth.admin.deleteUser(user_id);
+    // Fetch profile for audit log before deletion
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('*')
+      .eq('id', id)
+      .single();
 
+    const { error } = await supabaseAdmin.auth.admin.deleteUser(id);
     if (error) {
       console.error('[Superadmin Users DELETE] Error:', error.message);
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    // Record Audit Log
+    const { recordAuditLog } = await import('@/lib/audit');
+    await recordAuditLog({
+      actorId: user.id,
+      action: 'delete_user',
+      entityType: 'profile',
+      entityId: id,
+      oldData: profile
+    });
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

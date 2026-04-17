@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { validateSuperAdminServer } from '@/lib/auth/rbac';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { createTenantSchema, updateTenantSchema } from '@/lib/validators/tenant-schema';
 
 export async function GET(
   request: NextRequest,
@@ -35,6 +36,65 @@ export async function GET(
     }
 
     return NextResponse.json({ tenant, users });
+  } catch (error: any) {
+    const status = error.message === 'Unauthorized' ? 401 : 
+                   error.message === 'Forbidden' ? 403 : 500;
+    return NextResponse.json({ 
+      error: error.message || 'An unexpected error occurred' 
+    }, { status });
+  }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const { user } = await validateSuperAdminServer();
+    const admin = createAdminClient();
+    const body = await request.json();
+    
+    // Fetch current state for audit log
+    const { data: oldTenant } = await admin
+      .from('tenants')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    const result = updateTenantSchema.safeParse(body);
+    if (!result.success) {
+      return NextResponse.json({ error: 'Validation failed', details: result.error.format() }, { status: 400 });
+    }
+
+    const { error } = await admin
+      .from('tenants')
+      .update(result.data)
+      .eq('id', id);
+
+    if (error) {
+      console.error('[Superadmin Tenants PATCH] Error:', error.message);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    const { data: updatedTenant } = await admin
+      .from('tenants')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    // Record Audit Log
+    const { recordAuditLog } = await import('@/lib/audit');
+    await recordAuditLog({
+      actorId: user.id,
+      action: 'update_tenant',
+      entityType: 'tenant',
+      entityId: id,
+      oldData: oldTenant,
+      newData: updatedTenant
+    });
+
+    return NextResponse.json({ tenant: updatedTenant });
   } catch (error: any) {
     const status = error.message === 'Unauthorized' ? 401 : 
                    error.message === 'Forbidden' ? 403 : 500;

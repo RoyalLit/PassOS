@@ -55,7 +55,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'System configuration error: Service role key missing.' }, { status: 500 });
     }
 
-    await validateSuperAdminServer();
+    const { user } = await validateSuperAdminServer();
     const supabaseAdmin = createAdminClient();
     const body = await request.json();
     
@@ -90,7 +90,7 @@ export async function POST(request: Request) {
     }
 
     // 2. Create Profile
-    const { error: profileError } = await supabaseAdmin.from('profiles').insert({
+    const { data: profile, error: profileError } = await supabaseAdmin.from('profiles').insert({
       id: authUser.user.id,
       tenant_id,
       full_name,
@@ -100,7 +100,7 @@ export async function POST(request: Request) {
       enrollment_number,
       hostel,
       room_number
-    });
+    }).select().single();
 
     if (profileError) {
       console.error('[Superadmin Users POST] Profile Error:', profileError.message);
@@ -117,9 +117,24 @@ export async function POST(request: Request) {
       });
     }
 
+    // Record Audit Log
+    const { recordAuditLog } = await import('@/lib/audit');
+    await recordAuditLog({
+      actorId: user.id,
+      action: 'create_user',
+      entityType: 'profile',
+      entityId: profile.id,
+      newData: {
+        email,
+        role: profile.role,
+        tenant_id: profile.tenant_id,
+        full_name: profile.full_name
+      }
+    });
+
     return NextResponse.json({
       success: true,
-      user: { id: authUser.user.id, email, full_name, role },
+      user: profile,
       credentials: { email, temporary_password: tempPassword }
     });
   } catch (error: any) {

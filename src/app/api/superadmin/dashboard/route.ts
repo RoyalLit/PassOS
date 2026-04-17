@@ -15,16 +15,35 @@ export async function GET() {
     await validateSuperAdminServer();
     const admin = createAdminClient();
 
-    const [tenantsAll, profilesSummary, tenantsRecent] = await Promise.all([
+    const [tenantsAll, profilesSummary, tenantsRecent, auditRecent] = await Promise.all([
       admin.from('tenants').select('id, status, plan'),
       admin.from('profiles').select('id, role, tenant_id'),
       admin.from('tenants').select('id, name, slug, status, plan, created_at').order('created_at', { ascending: false }).limit(5),
+      admin
+        .from('audit_logs')
+        .select(`
+          id,
+          action,
+          entity_type,
+          entity_id,
+          created_at,
+          old_data,
+          new_data,
+          actor:profiles!actor_id (
+            id,
+            full_name,
+            email
+          )
+        `)
+        .order('created_at', { ascending: false })
+        .limit(10)
     ]);
 
     return NextResponse.json({
       tenants: tenantsAll.data || [],
       profiles: profilesSummary.data || [],
       recentTenants: tenantsRecent.data || [],
+      recentActivity: auditRecent.data || [],
     });
   } catch (error: any) {
     const status = error.message === 'Unauthorized' ? 401 : 

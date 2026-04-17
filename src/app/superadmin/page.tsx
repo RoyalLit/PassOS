@@ -19,11 +19,27 @@ interface ProfileSummary {
   tenant_id: string;
 }
 
+interface AuditLog {
+  id: string;
+  action: string;
+  entity_type: string;
+  entity_id: string;
+  created_at: string;
+  old_data: any;
+  new_data: any;
+  actor: {
+    id: string;
+    full_name: string;
+    email: string;
+  } | null;
+}
+
 export default function SuperadminDashboard() {
   const [data, setData] = useState<{
     tenants: Partial<Tenant>[];
     profiles: ProfileSummary[];
     recentTenants: Tenant[];
+    recentActivity: AuditLog[];
   } | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -92,7 +108,7 @@ export default function SuperadminDashboard() {
     );
   }
 
-  const { tenants, profiles, recentTenants } = data!;
+  const { tenants, profiles, recentTenants, recentActivity } = data!;
   const totalTenants = tenants.length;
   const activeTenants = tenants.filter(t => t.status === 'active').length;
   const trialTenants = tenants.filter(t => t.status === 'trial').length;
@@ -135,6 +151,26 @@ export default function SuperadminDashboard() {
     },
   ];
 
+  const formatActivityText = (log: AuditLog) => {
+    switch (log.action) {
+      case 'create_tenant':
+        return `Registered new university: ${log.new_data?.name || 'Unknown'}`;
+      case 'update_tenant':
+        return `Updated university settings for ${log.new_data?.name || 'a university'}`;
+      case 'create_user':
+        return `Added new ${log.new_data?.role || 'user'}`;
+      case 'update_user':
+        const migrated = log.old_data?.tenant_id !== log.new_data?.tenant_id;
+        return migrated 
+          ? `Migrated user ${log.new_data?.full_name} to another university`
+          : `Updated details for ${log.new_data?.full_name}`;
+      case 'delete_user':
+        return `Deleted user account: ${log.old_data?.full_name}`;
+      default:
+        return `${log.action.replace('_', ' ')} on ${log.entity_type}`;
+    }
+  };
+
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       <div>
@@ -169,76 +205,119 @@ export default function SuperadminDashboard() {
         })}
       </div>
 
-      <div>
-        <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
-          <Clock size={18} />
-          Recent Universities
-        </h2>
-        <div className="bg-card/60 backdrop-blur-md rounded-2xl border border-border shadow-sm overflow-hidden">
-          {(!recentTenants || recentTenants.length === 0) ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <Building2 size={32} className="mx-auto mb-2 opacity-30" />
-              <p>No universities yet. Create the first one!</p>
-            </div>
-          ) : (
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left text-xs font-black uppercase tracking-widest text-muted-foreground/60 px-6 py-3">
-                    University
-                  </th>
-                  <th className="text-left text-xs font-black uppercase tracking-widest text-muted-foreground/60 px-6 py-3">
-                    Slug
-                  </th>
-                  <th className="text-left text-xs font-black uppercase tracking-widest text-muted-foreground/60 px-6 py-3">
-                    Plan
-                  </th>
-                  <th className="text-left text-xs font-black uppercase tracking-widest text-muted-foreground/60 px-6 py-3">
-                    Status
-                  </th>
-                  <th className="text-left text-xs font-black uppercase tracking-widest text-muted-foreground/60 px-6 py-3">
-                    Joined
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {recentTenants.map((tenant) => (
-                  <tr key={tenant.id} className="hover:bg-muted/30 transition-colors">
-                    <td className="px-6 py-4">
-                      <span className="font-medium text-foreground">{tenant.name}</span>
-                    </td>
-                    <td className="px-6 py-4 text-muted-foreground text-sm font-mono">
-                      {tenant.slug}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-xs font-medium px-2 py-1 rounded-full bg-muted text-foreground capitalize">
-                        {tenant.plan}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <StatusBadge status={tenant.status} />
-                    </td>
-                    <td className="px-6 py-4 text-muted-foreground text-sm">
-                      {new Date(tenant.created_at).toLocaleDateString()}
-                    </td>
+      <div className="grid md:grid-cols-3 gap-6">
+        <div className="md:col-span-2 space-y-6">
+          <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+            <Building2 size={18} />
+            Recent Universities
+          </h2>
+          <div className="bg-card/60 backdrop-blur-md rounded-2xl border border-border shadow-sm overflow-hidden">
+            {(!recentTenants || recentTenants.length === 0) ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <Building2 size={32} className="mx-auto mb-2 opacity-30" />
+                <p>No universities yet. Create the first one!</p>
+              </div>
+            ) : (
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left text-xs font-black uppercase tracking-widest text-muted-foreground/60 px-6 py-3">
+                      University
+                    </th>
+                    <th className="text-left text-xs font-black uppercase tracking-widest text-muted-foreground/60 px-6 py-3">
+                      Plan
+                    </th>
+                    <th className="text-left text-xs font-black uppercase tracking-widest text-muted-foreground/60 px-6 py-3">
+                      Status
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {recentTenants.map((tenant) => (
+                    <tr key={tenant.id} className="hover:bg-muted/30 transition-colors">
+                      <td className="px-6 py-4">
+                        <span className="font-medium text-foreground text-sm">{tenant.name}</span>
+                        <p className="text-[10px] text-muted-foreground font-mono">/{tenant.slug}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded border border-border bg-muted/50 text-foreground uppercase">
+                          {tenant.plan}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <StatusBadge status={tenant.status} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+          <div className="flex justify-end">
+            <Link
+              href="/superadmin/tenants"
+              className="text-sm font-medium text-purple-600 hover:text-purple-500 dark:text-purple-400"
+            >
+              View all universities →
+            </Link>
+          </div>
         </div>
-        <div className="mt-4 flex justify-end">
-          <Link
-            href="/superadmin/tenants"
-            className="text-sm font-medium text-purple-600 hover:text-purple-500 dark:text-purple-400"
-          >
-            View all universities →
-          </Link>
+
+        <div className="space-y-6">
+          <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+            <Clock size={18} />
+            Recent Activity
+          </h2>
+          <div className="bg-card/60 backdrop-blur-md rounded-2xl border border-border shadow-sm p-4 space-y-4">
+            {recentActivity.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <p className="text-xs">No activity recorded yet</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {recentActivity.map((log) => (
+                  <div key={log.id} className="flex gap-3 text-sm animate-in slide-in-from-right-2 duration-300">
+                    <div className="mt-1">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border border-border ${
+                        log.action.includes('create') ? 'bg-green-500/10 text-green-500' :
+                        log.action.includes('delete') ? 'bg-red-500/10 text-red-500' : 
+                        'bg-blue-500/10 text-blue-500'
+                      }`}>
+                        <ShieldCheck size={14} />
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-foreground font-medium leading-tight">
+                        {formatActivityText(log)}
+                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-[10px] text-muted-foreground">
+                          {log.actor?.full_name || 'System'}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground/40">•</span>
+                        <span className="text-[10px] text-muted-foreground">
+                          {formatDistanceToNow(new Date(log.created_at))} ago
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="p-4 bg-muted/20 rounded-xl border border-border">
+            <p className="text-xs text-muted-foreground">
+              This feed shows the 10 most recent administrative actions across all tenants.
+            </p>
+          </div>
         </div>
       </div>
     </div>
   );
 }
+
+import { formatDistanceToNow } from 'date-fns';
+import { ShieldCheck } from 'lucide-react';
 
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
