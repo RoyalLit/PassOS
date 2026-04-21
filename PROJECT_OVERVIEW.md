@@ -85,6 +85,12 @@ Dedicated portals for specialized campus roles, enabling secure operations from 
 - **Decision Engine**: Approve or reject outing requests with optional parental feedback.
 - **Activity Monitoring**: Complete timeline of previous permissions and child's current on-campus status.
 
+### 7. Economic Impact (CAPEX & OPEX)
+PassOS is designed to minimize financial barriers for universities while maximizing administrative ROI.
+- **Low CAPEX (Capital Expenditure)**: Zero investment in servers or specialized hardware. Security guards use standard mobile devices, and the platform is 100% cloud-native.
+- **Efficient OPEX (Operational Expenditure)**: Replaces messy manual registers with a predictable subscription. Recovers up to 15+ hours/week of Warden/Admin time by automating approvals and data entry.
+- **Liability Reduction**: Forensic audit logs and cryptographic verification significantly reduce the university's legal risk in case of security incidents.
+
 ---
 
 ## 🛡️ Security & Multi-Tenancy Architecture
