@@ -1,6 +1,6 @@
 import { requireRole } from '@/lib/auth/rbac';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { Settings as SettingsIcon, Clock, Sun, Moon, Info } from 'lucide-react';
+import { Settings as SettingsIcon, Clock, Info } from 'lucide-react';
 import { TimeLimitsForm } from '@/components/admin/time-limits-form';
 import type { PassTimeLimit } from '@/types';
 

@@ -3,7 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { 
   ArrowLeft, Mail, Phone, MapPin, Users, 
   History, ShieldAlert, GraduationCap, Link2, 
-  Unlink, ExternalLink, Activity, AlertCircle, UserCog
+  Unlink, ExternalLink, Activity, AlertCircle
 } from 'lucide-react';
 import { ClientEditProfileButton } from '@/components/common/client-edit-profile-button';
 import { type Profile } from '@/types';
@@ -11,7 +11,7 @@ import { RevokePassButton } from '@/components/admin/revoke-pass-button';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { format } from 'date-fns';
-import { clsx } from 'clsx';
+import { clsx } from 'clsx';  // eslint-disable-line no-unused-vars
 import { STATUS_CONFIG, REQUEST_TYPES } from '@/lib/constants';
 import { RequestIcon } from '@/components/requests/request-icon';
 

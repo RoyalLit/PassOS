@@ -16,8 +16,8 @@ export interface RecordAuditLogParams {
   action: AuditLogAction;
   entityType: 'tenant' | 'profile' | 'system';
   entityId?: string;
-  oldData?: any;
-  newData?: any;
+  oldData?: Record<string, unknown>;
+  newData?: Record<string, unknown>;
 }
 
 /**

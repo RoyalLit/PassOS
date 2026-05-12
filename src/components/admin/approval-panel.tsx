@@ -71,8 +71,8 @@ const ApprovalPanelComponent = memo(function ApprovalPanel({ request }: { reques
             )}
           </div>
           <div>
-            <h3 className="font-black text-foreground text-lg leading-tight tracking-tight">{request.student?.full_name}</h3>
-            <p className={clsx("text-xs font-black uppercase tracking-widest mt-1 px-2 py-0.5 rounded border-2 inline-block shadow-sm", 
+            <h3 className="font-semibold text-foreground text-lg leading-tight tracking-tight">{request.student?.full_name}</h3>
+            <p className={clsx("text-xs font-semibold uppercase tracking-widest mt-1 px-2 py-0.5 rounded border-2 inline-block shadow-sm", 
               typeConfig?.color === 'blue' ? 'text-blue-500 border-blue-500/20 bg-blue-500/5' :
               typeConfig?.color === 'purple' ? 'text-purple-500 border-purple-500/20 bg-purple-500/5' :
               'text-muted-foreground border-border bg-muted/50'
@@ -82,8 +82,8 @@ const ApprovalPanelComponent = memo(function ApprovalPanel({ request }: { reques
           </div>
         </div>
         <div className="text-right">
-          <p className="text-[11px] font-black text-muted-foreground/60 uppercase tracking-widest">SUBMITTED</p>
-          <p className="text-sm font-black text-foreground mt-0.5">{format(new Date(request.created_at), 'MMM d, HH:mm')}</p>
+          <p className="text-[11px] font-semibold text-muted-foreground/60 uppercase tracking-widest">SUBMITTED</p>
+          <p className="text-sm font-semibold text-foreground mt-0.5">{format(new Date(request.created_at), 'MMM d, HH:mm')}</p>
         </div>
       </div>
 
@@ -91,26 +91,26 @@ const ApprovalPanelComponent = memo(function ApprovalPanel({ request }: { reques
         {/* Core details */}
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-blue-500/5 dark:bg-blue-500/10 rounded-2xl p-4 border-2 border-blue-500/20 shadow-sm group hover:border-blue-500/40 transition-all">
-            <p className="text-blue-600 dark:text-blue-400 font-black mb-2 flex items-center gap-1.5 text-xs uppercase tracking-widest">
+            <p className="text-blue-600 dark:text-blue-400 font-semibold mb-2 flex items-center gap-1.5 text-xs uppercase tracking-widest">
               <Clock className="w-4 h-4" /> Time Out
             </p>
-            <p className="text-lg font-black text-foreground tracking-tight">{format(new Date(request.departure_at), 'MMM d, HH:mm')}</p>
+            <p className="text-lg font-semibold text-foreground tracking-tight">{format(new Date(request.departure_at), 'MMM d, HH:mm')}</p>
           </div>
           <div className="bg-violet-500/5 dark:bg-violet-500/10 rounded-2xl p-4 border-2 border-violet-500/20 shadow-sm group hover:border-violet-500/40 transition-all">
-            <p className="text-violet-600 dark:text-violet-400 font-black mb-2 flex items-center gap-1.5 text-xs uppercase tracking-widest">
+            <p className="text-violet-600 dark:text-violet-400 font-semibold mb-2 flex items-center gap-1.5 text-xs uppercase tracking-widest">
               <Clock className="w-4 h-4" /> Time In
             </p>
-            <p className="text-lg font-black text-foreground tracking-tight">{format(new Date(request.return_by), 'MMM d, HH:mm')}</p>
+            <p className="text-lg font-semibold text-foreground tracking-tight">{format(new Date(request.return_by), 'MMM d, HH:mm')}</p>
           </div>
         </div>
 
         <div className="bg-muted/10 p-4 rounded-2xl border border-border">
-          <p className="text-xs font-black text-muted-foreground/60 uppercase tracking-widest mb-2">Destination</p>
-          <p className="text-foreground font-black text-xl tracking-tight leading-none">{request.destination}</p>
+          <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-widest mb-2">Destination</p>
+          <p className="text-foreground font-semibold text-xl tracking-tight leading-none">{request.destination}</p>
         </div>
 
         <div>
-          <p className="text-xs font-black text-muted-foreground/60 uppercase tracking-widest mb-2">Reason:</p>
+          <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-widest mb-2">Reason:</p>
           <div className="text-foreground/90 bg-muted/20 border-2 border-border/60 p-5 rounded-2xl flex items-start gap-3 relative shadow-sm">
             <span className="text-muted-foreground/10 text-6xl leading-none absolute -top-2 left-1 pointer-events-none font-serif">&ldquo;</span>
             <p className="italic text-base leading-relaxed font-semibold relative z-10 pl-3 pr-3">{request.reason}</p>
@@ -133,8 +133,8 @@ const ApprovalPanelComponent = memo(function ApprovalPanel({ request }: { reques
                 'text-amber-500'
               )} />
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-black text-foreground">Parental Decision</p>
-                <p className="text-[11px] font-black mt-1 flex items-center gap-1 uppercase tracking-widest group">
+                <p className="text-xs font-semibold text-foreground">Parental Decision</p>
+                <p className="text-[11px] font-semibold mt-1 flex items-center gap-1 uppercase tracking-widest group">
                   {parentApproval.decision === 'approved' ? <span className="text-green-500">Approved</span> :
                    parentApproval.decision === 'rejected' ? <span className="text-red-500">Access Denied</span> :
                    <span className="text-amber-500">Awaiting Response</span>}
@@ -161,14 +161,14 @@ const ApprovalPanelComponent = memo(function ApprovalPanel({ request }: { reques
             <button
               onClick={() => handleDecision('rejected')}
               disabled={submitting}
-              className="flex-1 h-12 bg-card border-2 border-red-500/20 text-red-500 font-black text-[10px] tracking-widest rounded-xl hover:bg-red-500/10 transition-all flex justify-center items-center gap-2 active:scale-95 disabled:opacity-50"
+              className="flex-1 h-12 bg-card border-2 border-red-500/20 text-red-500 font-semibold text-[10px] tracking-widest rounded-xl hover:bg-red-500/10 transition-all flex justify-center items-center gap-2 active:scale-95 disabled:opacity-50"
             >
               <X className="w-4 h-4" /> REJECT
             </button>
             <button
               onClick={() => handleDecision('approved')}
               disabled={submitting}
-              className="flex-[1.5] h-12 bg-green-600 text-white font-black text-xs tracking-widest rounded-xl hover:bg-green-700 transition-all flex justify-center items-center gap-2 shadow-xl shadow-green-500/20 active:scale-95 disabled:opacity-50"
+              className="flex-[1.5] h-12 bg-green-600 text-white font-semibold text-xs tracking-widest rounded-xl hover:bg-green-700 transition-all flex justify-center items-center gap-2 shadow-xl shadow-green-500/20 active:scale-95 disabled:opacity-50"
             >
               {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-5 h-5" />}
               APPROVE REQUEST

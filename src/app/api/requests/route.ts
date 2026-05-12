@@ -146,13 +146,25 @@ export async function POST(request: Request) {
       ? isWithinCampus(data.geo_lat, data.geo_lng)
       : false;
 
-    let initialStatus: string;
+    // Fetch settings for geofence blocking and approval mode
     const adminClient = createAdminClient();
     const { data: settings } = await adminClient
       .from('app_settings')
-      .select('parent_approval_mode')
+      .select('parent_approval_mode, geofence_strict, geofencing_enabled')
       .single();
     const mode: ParentApprovalMode = settings?.parent_approval_mode ?? 'smart';
+    
+    // Strict geofencing: block requests from outside campus (but NOT extensions since student may be off-campus)
+    if (!isExtension && settings?.geofencing_enabled && !settings?.geofence_strict && data.geo_lat !== undefined && data.geo_lng !== undefined) {
+      // Non-strict: allow but flag in database (already done via geo_valid)
+    }
+    if (!isExtension && settings?.geofence_strict && !geo_valid) {
+      return NextResponse.json({
+        error: 'You must be inside campus premises to request a pass. Please return to campus and try again.',
+      }, { status: 400, headers: getRateLimitHeaders(limit) });
+    }
+
+    let initialStatus: string;
 
     if (mode === 'none') {
       initialStatus = 'admin_pending';

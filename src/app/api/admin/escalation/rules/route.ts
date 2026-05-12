@@ -34,46 +34,46 @@ export async function GET() {
     }
 
     return NextResponse.json({ rules: rules || [] });
-  } catch (error) {
-    console.error('Escalation rules fetch error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    } catch (error: unknown) {
+      console.error('Escalation rules fetch error:', error instanceof Error ? error.message : error);
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    }
   }
-}
 
-export async function POST(request: NextRequest) {
-  try {
-    const supabase = await createServerSupabaseClient();
-    const adminClient = createAdminClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+  export async function POST(request: NextRequest) {
+    try {
+      const supabase = await createServerSupabaseClient();
+      const adminClient = createAdminClient();
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+      if (authError || !user) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('tenant_id, role')
-      .eq('id', user.id)
-      .single();
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('tenant_id, role')
+        .eq('id', user.id)
+        .single();
 
-    if (!profile || !['admin', 'superadmin'].includes(profile.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+      if (!profile || !['admin', 'superadmin'].includes(profile.role)) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
 
-    const body = await request.json();
-    const {
-      name,
-      description,
-      event_type,
-      threshold_minutes,
-      priority,
-      notify_student,
-      notify_parents,
-      notify_wardens,
-      notify_admins,
-      auto_action,
-      action_params,
-    } = body;
+      const body = await request.json() as Record<string, unknown>;
+      const {
+        name,
+        description,
+        event_type,
+        threshold_minutes,
+        priority,
+        notify_student,
+        notify_parents,
+        notify_wardens,
+        notify_admins,
+        auto_action,
+        action_params,
+      } = body;
 
     if (!name || !event_type || threshold_minutes === undefined) {
       return NextResponse.json(

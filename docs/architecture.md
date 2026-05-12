@@ -2,9 +2,37 @@
 
 This document describes the high-level architecture, security model, and core system flows of PassOS.
 
-## 🏗️ System Overview
+## 🏗️ System Architecture
 
-PassOS is a gatepass management system that uses a decentralized verification model. Passes are requested by students, approved by admins/parents, and verified by guards using cryptographically signed QR codes.
+PassOS uses a modern, serverless architecture centered around Supabase and Next.js.
+
+```mermaid
+graph LR
+    subgraph "Client Layer"
+        S[Student App]
+        G[Guard Terminal]
+        A[Admin Dashboard]
+    end
+
+    subgraph "Application Layer (Next.js)"
+        API[API Routes]
+        MW[Auth Middleware]
+    end
+
+    subgraph "Infrastructure Layer (Supabase)"
+        Auth[Supabase Auth]
+        DB[(PostgreSQL + RLS)]
+        Store[Storage Buckets]
+        Edge[Edge Functions]
+    end
+
+    Client --> MW
+    MW --> API
+    API --> DB
+    API --> Auth
+    API --> Store
+    Edge --> DB
+```
 
 ## 🔐 Security & Identity Model
 
@@ -16,32 +44,26 @@ PassOS uses **Compact JWTs (JSON Web Tokens)** signed with `HS256` for pass veri
 - **Payload**: Includes `pass_id`, `student_id`, `nonce`, and `valid_until`.
 - **Verification**: The Guard scans the QR, and the server verifies the integrity using the tenant-specific or global `PASS_SIGNING_SECRET`.
 
-### API Hardening
-All API endpoints are protected by:
-1. **Strict Zod Validation**: All inputs (body, query, params) are validated against schemas before processing.
-2. **Unified Error Handling**: Standardized responses that mask internal server details while providing actionable feedback to the client.
-3. **Role Enforcement**: Every request is verified via `requireRole` middleware to ensure the user has sufficient permissions for the specific tenant.
+---
 
 ## 🔄 Pass State Machine
 
 The system enforces a strict state machine to prevent unauthorized movements.
 
-| State | Description | Next Possible State |
-| :--- | :--- | :--- |
-| `pending` | Submitted by student, awaiting Parent/Warden/Admin approval. | `active`, `rejected` |
-| `active` | Fully approved and cryptographically signed. | `used_exit`, `revoked`, `expired` |
-| `used_exit` | Student has scanned out. | `used_entry`, `expired` |
-| `used_entry` | Student has scanned back in. Flow complete. | N/A |
-
-## 👥 System Roles & Portals
-
-| Role | Access Level | Responsibilities |
-| :--- | :--- | :--- |
-| **Admin** | University | University-wide management, staff onboarding, and global approvals. |
-| **Warden** | Hostel | Hostel-specific approvals, student tracking, and escalation management. |
-| **Guard** | Gate | Real-time QR scanning and identity verification at campus gates. |
-| **Student** | Personal | Requesting passes, viewing digital identity, and managing profile. |
-| **Parent** | Ward | Linkage to children, preliminary pass approvals, and status monitoring. |
+```mermaid
+stateDiagram-v2
+    [*] --> pending: Student Submits
+    pending --> active: Warden/Parent Approves
+    pending --> rejected: Warden/Parent Rejects
+    active --> used_exit: Guard Scans Out
+    active --> expired: Time Limit Reached
+    active --> revoked: Admin Cancels
+    used_exit --> used_entry: Guard Scans In
+    used_exit --> expired: Overdue Flagged
+    used_entry --> [*]: Flow Complete
+    expired --> [*]: Logged as Incident
+    rejected --> [*]
+```
 
 ---
 
@@ -49,9 +71,9 @@ The system enforces a strict state machine to prevent unauthorized movements.
 
 ### 1. The Warden Approval Flow
 1. **Request**: Student submits a pass request.
-2. **Parent Path**: For certain pass types (e.g., Overnight), the Parent must approve first.
+2. **Parent Path**: For certain pass types (e.g., Overnight), the Parent must approve first via a secure SMS link.
 3. **Warden Path**: The Warden reviews the request from their specific hostel dashboard.
-4. **Finalization**: For Day Outings, the Warden's approval is often sufficient. For high-risk requests, an Admin may perform final review.
+4. **Finalization**: Approval triggers the generation of the signed JWT payload.
 
 ### 2. Guard Scan Flow (`/api/scan`)
 1. **Guard Auth**: Verified via `requireRole('guard')`.

@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { 
-  UserPlus, Users, GraduationCap, User, ShieldCheck, 
+  UserPlus, Users, User, ShieldCheck, 
   X, Loader2, Search, Trash2, Copy, Check, ChevronDown,
-  Mail, Phone, Building, Bed, UserCog, AlertCircle
+  Mail, Phone, Building, Bed, UserCog, GraduationCap
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { toast } from 'sonner';
@@ -67,7 +67,7 @@ export default function UsersPage() {
   });
 
   const searchParams = useSearchParams();
-  const router = useRouter();
+  const router = useRouter(); // eslint-disable-line no-unused-vars
 
   useEffect(() => {
     fetchUsers().then(() => {

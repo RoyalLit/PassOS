@@ -2,7 +2,7 @@ import { requireRole } from '@/lib/auth/rbac';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { QRDisplay } from '@/components/passes/qr-display';
 import Link from 'next/link';
-import { ArrowLeft, ShieldAlert, ShieldX } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import type { Pass } from '@/types';
 
 export default async function MyPassesPage() {

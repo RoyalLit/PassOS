@@ -71,9 +71,10 @@ export default async function GuardDashboardPage() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center overflow-hidden border border-border">
-                          {student?.avatar_url ? (
-                            <img src={student.avatar_url} alt="" className="w-full h-full object-cover" />
-                          ) : (
+                        {student?.avatar_url ? (
+                             // eslint-disable-next-line @next/next/no-img-element
+                             <img src={student.avatar_url} alt="" className="w-full h-full object-cover" />
+                           ) : (
                             <User className="w-4 h-4 text-muted-foreground/30" />
                           )}
                         </div>

@@ -1,6 +1,5 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { requireRole } from '@/lib/auth/rbac';
-import { RequestCard } from '@/components/requests/request-card';
 import { BulkRequestList } from '@/components/requests/bulk-request-list';
 
 export default async function AdminRequestsPage() {

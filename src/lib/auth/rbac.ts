@@ -1,4 +1,5 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import type { User } from '@supabase/supabase-js';
 import type { UserRole, Profile, Warden } from '@/types';
 
 export async function getCurrentUser(): Promise<Profile | null> {
@@ -98,7 +99,7 @@ export async function requireSuperAdmin(): Promise<Profile> {
  * Checks JWT metadata first (fast, bypasses RLS).
  * Then checks DB with service-role (robust, bypasses RLS).
  */
-export async function validateSuperAdminServer(): Promise<{ user: any, profile: Profile | null }> {
+export async function validateSuperAdminServer(): Promise<{ user: User, profile: Profile | null }> {
   try {
     const supabase = await createServerSupabaseClient();
     const { data: { user } } = await supabase.auth.getUser();

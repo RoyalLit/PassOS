@@ -180,8 +180,8 @@ export function StudentDemoView() {
               <CheckCircle2 className="h-12 w-12" />
             </div>
             <h3 className="text-2xl font-bold text-slate-800 mb-2">Request Submitted!</h3>
-            <p className="text-slate-500 max-w-[280px] mb-8 leading-relaxed">
-              We've notified your parent. You'll get an alert when they respond.
+              <p className="text-slate-500 max-w-[280px] mb-8 leading-relaxed">
+                We&apos;ve notified your parent. You&apos;ll get an alert when they respond.
             </p>
             <Button 
               onClick={() => setStep('list')}

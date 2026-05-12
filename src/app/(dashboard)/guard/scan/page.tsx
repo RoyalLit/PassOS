@@ -229,8 +229,9 @@ export default function GuardScanPage() {
             <div className="w-36 h-36 rounded-full overflow-hidden border-4 border-muted flex items-center justify-center bg-muted/50 mb-6 shadow-inner relative group">
               <div className="absolute inset-0 bg-blue-500/5 animate-pulse group-hover:bg-transparent transition-colors" />
               {pendingPass.rosterMatch?.profiles?.avatar_url ? (
-                <img src={pendingPass.rosterMatch.profiles.avatar_url} alt="Student" className="w-full h-full object-cover" />
-              ) : (
+                 // eslint-disable-next-line @next/next/no-img-element
+                 <img src={pendingPass.rosterMatch.profiles.avatar_url} alt="Student" className="w-full h-full object-cover" />
+               ) : (
                 <User className="w-16 h-16 text-muted-foreground/30" />
               )}
             </div>

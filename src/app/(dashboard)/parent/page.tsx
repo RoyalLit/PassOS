@@ -134,8 +134,9 @@ function CampusStatusCard({ student, studentState, activePass }: {
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur flex items-center justify-center border border-white/20 overflow-hidden shrink-0">
               {student?.avatar_url ? (
-                <img src={student.avatar_url} alt="" className="w-full h-full object-cover" />
-              ) : (
+                 // eslint-disable-next-line @next/next/no-img-element
+                 <img src={student.avatar_url} alt="" className="w-full h-full object-cover" />
+               ) : (
                 <GraduationCap className="w-7 h-7 text-white/80" />
               )}
             </div>

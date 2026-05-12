@@ -9,6 +9,7 @@ export type ParentApprovalMode = 'none' | 'smart' | 'all';
 export interface AppSettings {
   id: string;
   geofencing_enabled: boolean;
+  geofence_strict: boolean;
   campus_lat: number;
   campus_lng: number;
   campus_radius_meters: number;
@@ -43,6 +44,7 @@ export async function getSettings(): Promise<AppSettings> {
     return {
       id: '',
       geofencing_enabled: false,
+      geofence_strict: false,
       campus_lat: 28.6139,
       campus_lng: 77.2090,
       campus_radius_meters: 500,
@@ -70,6 +72,7 @@ export async function getSettings(): Promise<AppSettings> {
   // Use DB value for parent_approval_mode if present; only fall back to 'smart'.
   return {
     parent_approval_mode: settings?.parent_approval_mode ?? 'smart',
+    geofence_strict: settings?.geofence_strict ?? false,
     ...settings,
   } as AppSettings;
 }

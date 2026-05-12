@@ -52,6 +52,9 @@ export async function PATCH(
   try {
     const { id } = await params;
     const { user } = await validateSuperAdminServer();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const admin = createAdminClient();
     const body = await request.json();
     

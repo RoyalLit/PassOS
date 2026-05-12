@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
-import { Loader2, CheckCircle, XCircle, GraduationCap, Info } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, Info } from 'lucide-react';
 import Link from 'next/link';
 
 export default function SignUp() {

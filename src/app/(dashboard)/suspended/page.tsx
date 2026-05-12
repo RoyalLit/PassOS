@@ -1,4 +1,4 @@
-import { AlertTriangle, Mail, Phone, ExternalLink } from 'lucide-react';
+import { AlertTriangle, Mail, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 
 export default function SuspendedPage() {

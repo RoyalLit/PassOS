@@ -72,7 +72,7 @@ export function ParentDemoView() {
                     <span className="text-[10px] font-bold uppercase tracking-wider">Reason</span>
                   </div>
                   <p className="text-sm font-medium text-slate-600 bg-slate-50 p-4 rounded-2xl border border-slate-100 italic">
-                    "Meeting friends for dinner and catching a movie. Will be back by 9:30 PM."
+                    &quot;Meeting friends for dinner and catching a movie. Will be back by 9:30 PM.&quot;
                   </p>
                 </div>
               </div>

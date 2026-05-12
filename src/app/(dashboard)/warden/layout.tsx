@@ -1,6 +1,4 @@
-import { requireWarden, getWardenHostels } from '@/lib/auth/rbac';
-import { Sidebar } from '@/components/layout/sidebar';
-import { redirect } from 'next/navigation';
+import { requireWarden } from '@/lib/auth/rbac';
 
 export const dynamic = 'force-dynamic';
 

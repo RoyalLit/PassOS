@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { requireRole } from '@/lib/auth/rbac';
 import { verifyQRPayload } from '@/lib/crypto/qr-signer';
-import { scanSchema } from '@/lib/validators/request-schema';
+import { scanSchema, type ScanInput } from '@/lib/validators/request-schema';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export async function POST(request: Request) {
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Validation failed' }, { status: 400 });
     }
 
-    const { qr_payload, scan_type, geo_lat, geo_lng } = result.data;
+    const { qr_payload, scan_type, geo_lat, geo_lng } = result.data as ScanInput;
 
     // 1. Cryptographic Verification
     const verification = await verifyQRPayload(qr_payload);

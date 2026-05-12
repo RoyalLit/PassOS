@@ -55,13 +55,13 @@ function NewRequestForm() {
             .single();
             
           if (passData?.request) {
-            const req = passData.request as unknown as Record<string, any>;
-            setValue('request_type', req.request_type);
-            setValue('destination', req.destination || 'Extension');
+            const req = passData.request as unknown as Record<string, unknown>;
+            setValue('request_type', String(req.request_type || ''));
+            setValue('destination', String(req.destination || 'Extension'));
             setValue('reason', 'Other');
-            setValue('manual_reason', req.reason || 'Extending pass');
+            setValue('manual_reason', String(req.reason || 'Extending pass'));
             if (req.departure_at) {
-              const depDate = new Date(req.departure_at);
+              const depDate = new Date(String(req.departure_at));
               const dateStr = depDate.getFullYear() + '-' + String(depDate.getMonth() + 1).padStart(2, '0') + '-' + String(depDate.getDate()).padStart(2, '0');
               setValue('start_date', dateStr);
               setValue('outing_date', dateStr);

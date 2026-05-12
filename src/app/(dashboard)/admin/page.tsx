@@ -7,7 +7,7 @@ import { ActivityCharts } from '@/components/admin/activity-charts';
 import { QuickActions } from '@/components/admin/quick-actions';
 import { MobilityPulse, type ScanWithPass } from '@/components/admin/mobility-pulse';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Filter, TrendingUp, TrendingDown, Users, Clock, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { TrendingUp, TrendingDown, Clock, AlertTriangle, ShieldCheck, Users } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 

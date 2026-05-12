@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { Loader2, XCircle } from 'lucide-react';
 
@@ -15,8 +16,10 @@ export default function CipherAccessPage() {
   const [error, setError] = useState('');
   const [attempts, setAttempts] = useState(0);
   const [lockedUntil, setLockedUntil] = useState<number | null>(null);
+  const [now, setNow] = useState(() => Date.now());
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -36,8 +39,20 @@ export default function CipherAccessPage() {
     checkSession();
   }, [router, supabase]);
 
-  const isLocked = lockedUntil !== null && Date.now() < lockedUntil;
-  const remainingTime = isLocked ? Math.ceil((lockedUntil! - Date.now()) / 1000) : 0;
+  useEffect(() => {
+    if (lockedUntil !== null && Date.now() < lockedUntil) {
+      intervalRef.current = setInterval(() => setNow(Date.now()), 1000);
+    } else {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [lockedUntil]);
+
+  const isLocked = lockedUntil !== null && now < lockedUntil;
+  const remainingTime = isLocked ? Math.ceil((lockedUntil! - now) / 1000) : 0;
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -180,12 +195,12 @@ export default function CipherAccessPage() {
         </form>
 
         <div className="mt-8 pt-6 border-t border-purple-500/10">
-          <a
+          <Link
             href="/"
             className="block text-center text-sm text-muted-foreground hover:text-purple-400 transition-colors"
           >
             Return to home
-          </a>
+          </Link>
         </div>
       </div>
     </div>

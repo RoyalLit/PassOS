@@ -54,16 +54,17 @@ export async function GET(request: NextRequest) {
       limit,
       offset,
     });
-  } catch (error) {
-    console.error('Escalation logs fetch error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    } catch (error: unknown) {
+      console.error('Escalation rules fetch error:', error instanceof Error ? error.message : error);
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    }
   }
-}
 
-export async function PATCH(request: NextRequest) {
-  try {
-    const supabase = await createServerSupabaseClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+  export async function POST(request: NextRequest) {
+    try {
+      const supabase = await createServerSupabaseClient();
+      const adminClient = createAdminClient();
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
