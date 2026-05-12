@@ -10,6 +10,16 @@ PassOS is a modern, production-grade gatepass management system designed for mul
 
 ---
 
+## 🖼️ Product Showcase
+
+| Admin Analytics Dashboard | Student Pass Generation |
+| :---: | :---: |
+| ![Dashboard](./public/showcase/1.png) | ![Pass](./public/showcase/2.png) |
+| **Action Center & Approvals** | **Campus Mobility Pulse** |
+| ![Action Center](./public/showcase/3-1.png) | ![Mobility](./public/showcase/4-1.png) |
+
+---
+
 ## 🌟 Vision & Impact
 
 PassOS replaces traditional, error-prone manual registers with a secure, digital ecosystem. It is built to handle the scale of multiple institutions while maintaining strict data residency and security for each.
