@@ -12,17 +12,17 @@ PassOS is a modern, production-grade gatepass management system designed for mul
 
 ## 🖼️ Product Showcase
 
-| Unified Platform Ecosystem | Student Request Interface |
+| 1. Unified Platform Ecosystem | 2. Student Request Interface |
 | :---: | :---: |
 | ![Ecosystem](./public/showcase/1.png) | ![Request](./public/showcase/2.png) |
-| **Administrative Action Center** | **Cryptographic Digital Pass** |
+| **3. Administrative Action Center** | **4. Cryptographic Digital Pass** |
 | ![Action Center](./public/showcase/3-1.png) | ![Digital Pass](./public/showcase/4-1.png) |
-| **Guard Scanner (Mobile)** | **Enterprise Security Protocol** |
-| ![Guard Scanner](./public/showcase/PassOS%20%20Smart%20Gate%20Pass%20System.png) | ![Security](./public/showcase/7.png) |
+| **5. Guard Scanner (Mobile)** | **6. Warden Monitoring Suite** |
+| ![Guard Scanner](./public/showcase/PassOS%20%20Smart%20Gate%20Pass%20System.png) | ![Warden Dashboard](./public/showcase/8.png) |
 
-| Warden Monitoring Suite (Dark Mode) |
+| 7. Enterprise Security Architecture |
 | :---: |
-| ![Warden Dashboard](./public/showcase/8.png) |
+| ![Security](./public/showcase/7.png) |
 
 ---
 
