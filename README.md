@@ -24,7 +24,7 @@ PassOS replaces traditional, error-prone manual registers with a secure, digital
 
 ```mermaid
 graph TD
-    A[Student] -->|Request Pass| B(Warden/Parent Approval)
+    A[Student] -->|Request Pass| B("Warden/Parent Approval")
     B -->|Approved| C{Active Pass}
     C -->|Generate QR| D[Guard Scanner]
     D -->|Scan Out| E[Off-Campus]

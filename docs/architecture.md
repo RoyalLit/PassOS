@@ -26,7 +26,9 @@ graph LR
         Edge[Edge Functions]
     end
 
-    Client --> MW
+    S --> MW
+    G --> MW
+    A --> MW
     MW --> API
     API --> DB
     API --> Auth
@@ -53,8 +55,8 @@ The system enforces a strict state machine to prevent unauthorized movements.
 ```mermaid
 stateDiagram-v2
     [*] --> pending: Student Submits
-    pending --> active: Warden/Parent Approves
-    pending --> rejected: Warden/Parent Rejects
+    pending --> active: "Warden/Parent Approves"
+    pending --> rejected: "Warden/Parent Rejects"
     active --> used_exit: Guard Scans Out
     active --> expired: Time Limit Reached
     active --> revoked: Admin Cancels
