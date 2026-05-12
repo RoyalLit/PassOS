@@ -3,8 +3,11 @@
  * PassOS | Smart Gate Pass System
  * Built with purpose by Pahul
  * 
- * This source code is the intellectual property of the author.
+ * PROPRIETARY AND CONFIDENTIAL
  * © 2026 Pahul. All rights reserved.
+ * 
+ * Unauthorized copying, modification, or distribution of this software 
+ * via any medium is strictly prohibited.
  * ---------------------------------------------------------------------------
  */
 
