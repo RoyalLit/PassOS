@@ -1,3 +1,13 @@
+/**
+ * ---------------------------------------------------------------------------
+ * PassOS | Smart Gate Pass System
+ * Built with purpose by Pahul
+ * 
+ * This source code is the intellectual property of the author.
+ * © 2026 Pahul. All rights reserved.
+ * ---------------------------------------------------------------------------
+ */
+
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
@@ -15,6 +25,9 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
   title: 'PassOS | Smart Gate Pass System',
   description: 'Production-grade campus access control and student mobility system',
+  authors: [{ name: 'Pahul' }],
+  creator: 'Pahul',
+  publisher: 'Pahul',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
@@ -52,6 +65,11 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} min-h-screen bg-background text-foreground flex flex-col transition-colors duration-300`}>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `console.log("%c[PassOS] Built with purpose by Pahul", "color: #2563eb; font-weight: bold; font-size: 1.2em;");`
+          }}
+        />
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
