@@ -18,10 +18,10 @@ Gatepasses are not just database entries; they are cryptographically signed toke
 - **JWT Signing**: When a pass is approved, the server generates a JWT containing the `pass_id` and `expiry`, signed with an institution-specific secret.
 - **Offline Integrity**: This allows guards to verify the authenticity of a pass even if the database is momentarily unreachable (though PassOS prefers online verification for state tracking).
 
-## 🛡️ API Hardening
+## 🛡️ API Hardening & Audit Trail
 - **Zod Validation**: No data enters the system without passing through a strict TypeScript schema.
 - **Middleware Role Checks**: Every route is wrapped in `requireRole('role_name')` which verifies both the user's role and their tenant membership.
-- **Audit Logging**: Every create, update, or delete action is logged in the `audit_logs` table with the actor's ID, IP address, and a timestamp.
+- **SHA-256 Chained Audit Logs**: Every administrative and state transition action is logged in the `audit_logs` table. To prevent tampering by high-privilege actors, each record is cryptographically chained to its predecessor using `SHA-256(content_fields || prev_hash)`. Any alteration breaks the validation function `verify_audit_chain()`, providing forensic guarantees.
 
 ---
 

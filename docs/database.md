@@ -47,10 +47,11 @@ PassOS uses fine-grained RLS to ensure data privacy and tenant isolation.
 ### `process_scan(...)`
 To prevent "double-scan" exploits, the system uses a PostgreSQL RPC that handles validation, logging, and state updates in a single atomic transaction within the correct tenant context.
 
-## 📋 Warden Schema Extension
-
-| Table | Description | Primary Key | Key Relationships |
-| :--- | :--- | :--- | :--- |
-| `wardens` | Links a profile to a specific geographical area (Hostel) | `id` (UUID) | `profile_id` -> `profiles.id` |
-
 This table allows a single user to be a Warden for multiple hostels/blocks if required.
+
+## 🔒 Cryptographic Audit Log Integrity
+
+The `audit_logs` table features database-enforced cryptographic integrity to protect against administrative tampering:
+- **Chained Validation**: Each audit log record contains a `record_hash` and `prev_hash`. The `record_hash` is computed dynamically as `SHA-256(content_fields || prev_hash)`.
+- **Tenant Scope**: Chains are partitioned per tenant, so each institution can independently verify the cryptographic continuity of their audit trail.
+- **Verification**: The database exposes a verification function `verify_audit_chain(p_tenant_id UUID)` that re-computes the hash chain from the genesis record, alerting security teams if any record was modified or deleted.
