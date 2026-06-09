@@ -3,6 +3,7 @@
 import { Loader2, MapPin, AlertCircle, Clock, Calendar, ArrowLeft } from 'lucide-react';
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { REQUEST_TYPES, PREDEFINED_REASONS } from '@/lib/constants';
 import { getSettings, AppSettings } from '@/lib/actions/settings';
@@ -149,7 +150,7 @@ function NewRequestForm() {
       router.push('/student');
       router.refresh();
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'An error occurred');
+      toast.error(error instanceof Error ? error.message : 'An error occurred');
     } finally {
       setIsSubmitting(false);
     }

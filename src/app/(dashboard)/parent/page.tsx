@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { toast } from 'sonner';
 import { format, formatDistanceToNow, differenceInMinutes } from 'date-fns';
 import { 
   CheckCircle, Clock, GraduationCap, Loader2, AlertTriangle, MapPin,
@@ -317,7 +318,7 @@ export default function ParentPortal() {
       setExpandedId(null);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to submit decision';
-      alert(message);
+      toast.error(message);
     } finally {
       setDeciding(null);
     }

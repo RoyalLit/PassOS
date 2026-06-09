@@ -1,9 +1,9 @@
 import { getAuthDiagnostics, requireWarden } from '@/lib/auth/rbac';
 import { Sidebar } from '@/components/layout/sidebar';
-import { LiveDataSync } from '@/components/common/live-data-sync';
 import { redirect } from 'next/navigation';
 import type { Warden } from '@/types';
 import { IdentityErrorView } from '@/components/auth/identity-error-view';
+import { PushNotificationProvider } from '@/hooks/use-push-notifications';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,17 +43,13 @@ export default async function DashboardLayout({
         wardens={wardens}
       />
       
-      <LiveDataSync 
-        tenantId={profile.tenant_id} 
-        role={profile.role} 
-        userId={profile.id} 
-      />
-      
-      <main className="flex-1 md:pl-64 min-h-screen bg-muted/30 transition-all duration-300">
-        <div className="max-w-[1600px] mx-auto p-4 md:p-8 lg:p-10 xl:p-12">
-          {children}
-        </div>
-      </main>
+      <PushNotificationProvider>
+        <main className="flex-1 md:pl-64 min-h-screen bg-muted/30 transition-all duration-300">
+          <div className="max-w-[1600px] mx-auto p-4 md:p-8 lg:p-10 xl:p-12">
+            {children}
+          </div>
+        </main>
+      </PushNotificationProvider>
     </div>
   );
 }

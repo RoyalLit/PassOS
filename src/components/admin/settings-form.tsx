@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { AppSettings, updateSettings, ParentApprovalMode } from '@/lib/actions/settings';
 import { Loader2, Save, MapPin, Navigation, Radius, Users, ShieldCheck, Zap } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -31,9 +32,9 @@ export function SettingsForm({ initialSettings }: { initialSettings: AppSettings
     try {
       await updateSettings(settings);
       router.refresh();
-      alert('Settings updated successfully!');
-    } catch (error) {
-      alert(error instanceof Error ? error.message : 'An error occurred');
+        toast.success('Settings updated successfully!');
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : 'An error occurred');
     } finally {
       setIsSaving(false);
     }

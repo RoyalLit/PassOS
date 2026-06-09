@@ -12,19 +12,22 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { useState } from 'react';
 
 export function AdminDemoView() {
+  const [now] = useState(() => Date.now());
+
   const mockActivityData = [
-    { created_at: new Date(Date.now() - 86400000 * 0).toISOString(), status: 'approved' },
-    { created_at: new Date(Date.now() - 86400000 * 0).toISOString(), status: 'pending' },
-    { created_at: new Date(Date.now() - 86400000 * 1).toISOString(), status: 'approved' },
-    { created_at: new Date(Date.now() - 86400000 * 1).toISOString(), status: 'rejected' },
-    { created_at: new Date(Date.now() - 86400000 * 2).toISOString(), status: 'approved' },
-    { created_at: new Date(Date.now() - 86400000 * 2).toISOString(), status: 'approved' },
-    { created_at: new Date(Date.now() - 86400000 * 3).toISOString(), status: 'approved' },
-    { created_at: new Date(Date.now() - 86400000 * 4).toISOString(), status: 'pending' },
-    { created_at: new Date(Date.now() - 86400000 * 5).toISOString(), status: 'approved' },
-    { created_at: new Date(Date.now() - 86400000 * 6).toISOString(), status: 'approved' },
+    { created_at: new Date(now - 86400000 * 0).toISOString(), status: 'approved' },
+    { created_at: new Date(now - 86400000 * 0).toISOString(), status: 'pending' },
+    { created_at: new Date(now - 86400000 * 1).toISOString(), status: 'approved' },
+    { created_at: new Date(now - 86400000 * 1).toISOString(), status: 'rejected' },
+    { created_at: new Date(now - 86400000 * 2).toISOString(), status: 'approved' },
+    { created_at: new Date(now - 86400000 * 2).toISOString(), status: 'approved' },
+    { created_at: new Date(now - 86400000 * 3).toISOString(), status: 'approved' },
+    { created_at: new Date(now - 86400000 * 4).toISOString(), status: 'pending' },
+    { created_at: new Date(now - 86400000 * 5).toISOString(), status: 'approved' },
+    { created_at: new Date(now - 86400000 * 6).toISOString(), status: 'approved' },
   ];
 
   const stats = [

@@ -139,18 +139,25 @@ export function EditUserModal({ user, isOpen, onClose, onUpdate, disableRoleChan
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+      onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
+    >
       <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={onClose} />
       
-      <div className="relative w-full max-w-lg bg-card rounded-2xl shadow-2xl border border-border p-6 max-h-[90vh] overflow-y-auto">
+      <div className="relative w-full max-w-lg bg-card rounded-2xl shadow-2xl border border-border p-6 max-h-[90vh] overflow-y-auto"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="edit-user-modal-title"
+      >
         <button
           onClick={onClose}
           className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+          aria-label="Close dialog"
         >
           <X className="w-5 h-5" />
         </button>
 
-        <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
+        <h2 id="edit-user-modal-title" className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
           <UserCog className="w-5 h-5 text-blue-500" />
           Profile & Settings
         </h2>

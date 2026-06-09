@@ -1,11 +1,10 @@
 import { requireRole } from '@/lib/auth/rbac';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { Search, Filter, Mail, Phone, ExternalLink } from 'lucide-react';
-import { ClientEditProfileButton } from '@/components/common/client-edit-profile-button';
+import { ClientEditProfileButton } from '@/components/realtime/client-edit-profile-button';
 import { type Profile } from '@/types';
 import Link from 'next/link';
-import { RealtimeRefresh } from '@/components/common/realtime-refresh';
-
+import Image from 'next/image';
 export default async function StudentsDirectory() {
   await requireRole('admin');
   const supabase = await createServerSupabaseClient();
@@ -21,7 +20,6 @@ export default async function StudentsDirectory() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <RealtimeRefresh tables={['student_states', 'profiles']} />
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Student Directory</h1>
@@ -67,7 +65,7 @@ export default async function StudentsDirectory() {
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold border border-blue-500/20 overflow-hidden">
                           {student.avatar_url ? (
-                            <img src={student.avatar_url} alt="" className="w-full h-full object-cover" />
+                            <Image src={student.avatar_url} alt="" width={40} height={40} className="w-full h-full object-cover" />
                           ) : (
                             student.full_name.charAt(0)
                           )}

@@ -6,6 +6,8 @@ import { requireRole } from '@/lib/auth/rbac';
 import { approvalSchema } from '@/lib/validators/request-schema';
 import { generatePass } from '@/app/api/passes/route';
 import { checkRateLimit, getRateLimitHeaders } from '@/lib/rate-limit';
+import { notifyUser, formatNotificationTemplate } from '@/lib/push/notifications';
+import { sendPassApprovedEmail, sendPassRejectedEmail, sendPassApprovedToParent } from '@/lib/email';
 
 function getClientIp(headers: Headers): string | null {
   const forwarded = headers.get('x-forwarded-for');
@@ -45,7 +47,7 @@ export async function POST(request: Request) {
     // Verify request exists
     const { data: passReq } = await supabase
       .from('pass_requests')
-      .select('*')
+      .select('id, status, tenant_id, request_type, student_id')
       .eq('id', request_id)
       .single();
 
@@ -70,7 +72,7 @@ export async function POST(request: Request) {
         })
         .eq('token', token)
         .eq('decision', 'escalated') // Only update if still in escalated state
-        .select('id'); // Return the updated row
+        .select('id');
       
       if (updateError) throw updateError;
       
@@ -130,6 +132,101 @@ export async function POST(request: Request) {
             final_status: finalStatus 
           });
         }
+      }
+
+      // Notify student
+      try {
+        const { data: studentProfile } = await supabase
+          .from('profiles')
+          .select('id, email, full_name, parent_id')
+          .eq('id', passReq.student_id)
+          .maybeSingle();
+
+        if (studentProfile) {
+          const passData = finalStatus === 'approved'
+            ? await supabase.from('passes').select('valid_from, valid_until').eq('request_id', request_id).maybeSingle()
+            : null;
+
+          if (finalStatus === 'approved') {
+            const { title, body } = formatNotificationTemplate('pass_approved', {
+              pass_type: passReq.request_type || 'pass',
+              valid_from: passData?.data?.valid_from ? new Date(passData.data.valid_from).toLocaleString() : '',
+              valid_until: passData?.data?.valid_until ? new Date(passData.data.valid_until).toLocaleString() : '',
+            });
+
+            await notifyUser(studentProfile.id, 'pass_approved', {
+              title,
+              body,
+              data: { request_id },
+              tag: `pass-approved-${request_id}`,
+            });
+
+            if (studentProfile.email) {
+              await sendPassApprovedEmail({
+                userId: studentProfile.id,
+                email: studentProfile.email,
+                name: studentProfile.full_name || 'Student',
+                requestType: passReq.request_type || 'pass',
+                validFrom: passData?.data?.valid_from ? new Date(passData.data.valid_from).toLocaleString() : 'N/A',
+                validUntil: passData?.data?.valid_until ? new Date(passData.data.valid_until).toLocaleString() : 'N/A',
+              });
+            }
+
+            // Notify parent
+            if (studentProfile.parent_id) {
+              const { data: parentProfile } = await supabase
+                .from('profiles')
+                .select('id, email, full_name')
+                .eq('id', studentProfile.parent_id)
+                .maybeSingle();
+
+              if (parentProfile) {
+                await notifyUser(parentProfile.id, 'pass_approved', {
+                  title: 'Pass Approved',
+                  body: `Your child ${studentProfile.full_name}'s pass has been approved.`,
+                  data: { request_id },
+                  tag: `pass-approved-${request_id}`,
+                });
+
+                if (parentProfile.email) {
+                  await sendPassApprovedToParent({
+                    parentUserId: parentProfile.id,
+                    parentEmail: parentProfile.email,
+                    parentName: parentProfile.full_name || 'Parent',
+                    studentName: studentProfile.full_name || 'Student',
+                    requestType: passReq.request_type || 'pass',
+                    validFrom: passData?.data?.valid_from ? new Date(passData.data.valid_from).toLocaleString() : 'N/A',
+                    validUntil: passData?.data?.valid_until ? new Date(passData.data.valid_until).toLocaleString() : 'N/A',
+                  });
+                }
+              }
+            }
+          } else {
+            const { title, body } = formatNotificationTemplate('pass_rejected', {
+              pass_type: passReq.request_type || 'pass',
+              reason: reason || 'No reason provided',
+            });
+
+            await notifyUser(studentProfile.id, 'pass_rejected', {
+              title,
+              body,
+              data: { request_id },
+              tag: `pass-rejected-${request_id}`,
+            });
+
+            if (studentProfile.email) {
+              await sendPassRejectedEmail({
+                userId: studentProfile.id,
+                email: studentProfile.email,
+                name: studentProfile.full_name || 'Student',
+                requestType: passReq.request_type || 'pass',
+                reason: reason || undefined,
+              });
+            }
+          }
+        }
+      } catch (notifError) {
+        console.error('[Approval] Notification error:', notifError);
       }
 
       return NextResponse.json({ success: true, final_status: finalStatus });

@@ -31,9 +31,9 @@ export default function SuperadminUsersPage() {
       }
       
       setUsers((data.profiles as ProfileWithTenant[]) || []);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error('Failed to load users:', e);
-      setError(e.message);
+      setError(e instanceof Error ? e.message : 'An error occurred');
     } finally {
       setLoading(false);
     }

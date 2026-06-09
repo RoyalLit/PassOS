@@ -39,9 +39,9 @@ export default function SuperadminAnalytics() {
           requests: data.requests || [],
           fraudFlags: data.fraudFlags || [],
         });
-      } catch (e: any) {
+      } catch (e: unknown) {
         console.error('Failed to load analytics:', e);
-        setError(e.message);
+        setError(e instanceof Error ? e.message : 'An error occurred');
       } finally {
         setLoading(false);
       }

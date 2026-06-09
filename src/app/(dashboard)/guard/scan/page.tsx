@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import { QRScanner } from '@/components/guard/qr-scanner';
 import { ScanResultView } from '@/components/guard/scan-result';
-import { useOfflineScanner } from '@/hooks/use-offline-scanner';
+import { useOfflineScanner, type OfflinePass } from '@/hooks/use-offline-scanner';
 import { WifiOff, Loader2, User, RefreshCw, Keyboard, Camera, Search } from 'lucide-react';
-import type { ScanVerifyResult } from '@/types';
+import type { Pass, Profile, ScanVerifyResult } from '@/types';
 
 export default function GuardScanPage() {
   const [scanType, setScanType] = useState<'exit' | 'entry'>('exit');
@@ -19,7 +19,7 @@ export default function GuardScanPage() {
     qr_payload: string;
     pass_id: string;
     student_id: string;
-    rosterMatch: any | null;
+    rosterMatch: OfflinePass | null;
   } | null>(null);
 
   const { isOnline, isSyncing, queue, enqueueScan, decodeLocalPass, lookupPassByEnrollment } = useOfflineScanner();
@@ -108,8 +108,8 @@ export default function GuardScanPage() {
            valid: true,
            result: 'valid',
            message: `[OFFLINE] ${scanType === 'exit' ? 'Exit Granted' : 'Welcome Back'}`,
-           pass: pendingPass.rosterMatch,
-           student: pendingPass.rosterMatch.profiles
+          pass: {} as Pass,
+            student: pendingPass.rosterMatch.profiles as unknown as Profile
          });
       } else {
         setResult({

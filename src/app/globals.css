@@ -32,9 +32,9 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
-    --success: #2563eb;
+    --success: #16a34a;
     --destructive: #ef4444;
-    --warning: #94a3b8;
+    --warning: #d97706;
   }
 
   .dark {
@@ -53,9 +53,9 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
-    --success: #3b82f6;
+    --success: #22c55e;
     --destructive: #ef4444;
-    --warning: #475569;
+    --warning: #f59e0b;
   }
 }
 
@@ -80,5 +80,14 @@
 
   .animate-scan-laser {
     animation: scan-laser 2s ease-in-out infinite alternate;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

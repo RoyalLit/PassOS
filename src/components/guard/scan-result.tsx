@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { clsx } from 'clsx';
 import { format } from 'date-fns';
 import { CheckCircle, XCircle, User, Activity, LogOut } from 'lucide-react';
@@ -29,8 +30,7 @@ export function ScanResultView({ result, onClose }: ScanResultViewProps) {
       <div className="p-6 relative">
         <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-24 h-24 bg-card rounded-full border-4 border-card shadow-2xl flex items-center justify-center overflow-hidden">
           {student?.avatar_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={student.avatar_url} alt="Student" className="w-full h-full object-cover" />
+            <Image src={student.avatar_url} alt="Student avatar" width={96} height={96} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full bg-muted flex items-center justify-center">
               <User className="w-10 h-10 text-muted-foreground/30" />

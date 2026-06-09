@@ -15,7 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Loader2, Plus, Pencil, Trash2, AlertTriangle, Check, Clock, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
-import { ClientEditProfileButton } from '@/components/common/client-edit-profile-button';
+import { ClientEditProfileButton } from '@/components/realtime/client-edit-profile-button';
 import type { EscalationRule, EscalationTemplate, EscalationLog, EscalationEventType, EscalationPriority, Profile } from '@/types';
 
 const EVENT_TYPES: { value: EscalationEventType; label: string }[] = [
@@ -133,6 +133,7 @@ export function EscalationManagement() {
   };
 
   const handleDelete = async (ruleId: string) => {
+    // TODO: Replace with confirmation modal component
     if (!confirm('Are you sure you want to delete this rule?')) return;
 
     try {
@@ -413,8 +414,12 @@ export function EscalationManagement() {
               <TableBody>
                 {logs.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                      No active escalations
+                    <TableCell colSpan={6} className="text-center py-12">
+                      <div className="flex flex-col items-center justify-center">
+                        <AlertTriangle className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                        <h3 className="text-lg font-semibold text-foreground mb-1">No active escalations</h3>
+                        <p className="text-sm text-muted-foreground">Any escalated issues will appear here</p>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : (

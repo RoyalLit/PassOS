@@ -31,9 +31,12 @@ export function BrandingProvider({ tenant, children }: BrandingProviderProps) {
     if (tenant.name && tenant.slug !== 'default') {
       const originalTitle = document.title;
       document.title = `${tenant.name} | ${originalTitle.split('|')[1] || 'PassOS'}`;
-      
+
       return () => {
         document.title = originalTitle;
+        document.documentElement.style.removeProperty('--primary');
+        document.documentElement.style.removeProperty('--ring');
+        document.documentElement.style.removeProperty('--brand-logo');
       };
     }
   }, [tenant]);

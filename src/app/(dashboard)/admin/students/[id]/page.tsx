@@ -5,13 +5,14 @@ import {
   History, ShieldAlert, GraduationCap, Link2, 
   Unlink, ExternalLink, Activity, AlertCircle
 } from 'lucide-react';
-import { ClientEditProfileButton } from '@/components/common/client-edit-profile-button';
+import { ClientEditProfileButton } from '@/components/realtime/client-edit-profile-button';
 import { type Profile } from '@/types';
 import { RevokePassButton } from '@/components/admin/revoke-pass-button';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { format } from 'date-fns';
-import { clsx } from 'clsx';  // eslint-disable-line no-unused-vars
+import Image from 'next/image';
+import { clsx } from 'clsx';   
 import { STATUS_CONFIG, REQUEST_TYPES } from '@/lib/constants';
 import { RequestIcon } from '@/components/requests/request-icon';
 
@@ -118,7 +119,7 @@ export default async function StudentDetailPage({
         
         <div className="w-32 h-32 rounded-3xl bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0 border-4 border-card shadow-xl overflow-hidden">
           {student.avatar_url ? (
-            <img src={student.avatar_url} alt="" className="w-full h-full object-cover" />
+            <Image src={student.avatar_url} alt="" width={128} height={128} className="w-full h-full object-cover" />
           ) : (
             <span className="text-4xl font-black">{student.full_name?.charAt(0) || '?'}</span>
           )}

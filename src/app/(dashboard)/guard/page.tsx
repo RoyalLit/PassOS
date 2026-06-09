@@ -3,7 +3,7 @@ import { getCurrentUser } from '@/lib/auth/rbac';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { redirect } from 'next/navigation';
-import { ShieldCheck, ShieldAlert, User } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, User, QrCode } from 'lucide-react';
 
 export default async function GuardDashboardPage() {
   const profile = await getCurrentUser();
@@ -59,8 +59,12 @@ export default async function GuardDashboardPage() {
             <tbody className="divide-y divide-border">
               {scans?.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-slate-400 italic">
-                    No scans recorded yet.
+                  <td colSpan={4} className="px-6 py-12 text-center">
+                    <div className="flex flex-col items-center justify-center">
+                      <QrCode className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                      <h3 className="text-lg font-semibold text-foreground mb-1">No scans yet</h3>
+                      <p className="text-sm text-muted-foreground">Scanned passes will appear here</p>
+                    </div>
                   </td>
                 </tr>
               )}

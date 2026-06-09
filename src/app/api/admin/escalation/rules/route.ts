@@ -24,7 +24,7 @@ export async function GET() {
 
     const { data: rules, error } = await adminClient
       .from('escalation_rules')
-      .select('*')
+      .select('id, tenant_id, name, description, event_type, threshold_minutes, priority, notify_student, notify_parents, notify_wardens, notify_admins, auto_action, action_params, is_active, created_by, created_at, updated_at')
       .eq('tenant_id', profile.tenant_id)
       .order('priority', { ascending: false })
       .order('threshold_minutes', { ascending: true });

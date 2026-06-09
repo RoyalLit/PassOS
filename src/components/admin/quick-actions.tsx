@@ -1,10 +1,11 @@
 'use client';
 
+import { memo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, Users, FileText, Settings } from 'lucide-react';
 import Link from 'next/link';
 
-export function QuickActions() {
+const QuickActions = memo(function QuickActions() {
   return (
     <div className="flex gap-2">
       <Link href="/admin/users?action=add">
@@ -21,4 +22,7 @@ export function QuickActions() {
       </Link>
     </div>
   );
-}
+});
+
+export { QuickActions };
+export default QuickActions;

@@ -32,11 +32,13 @@ export default async function WardenDashboardPage() {
   }
 
   const studentIds = hostelStudents?.map(s => s.id) || [];
-  console.log('Diagnostic: Warden Context:', {
-    tenantId: profile.tenant_id,
-    hostels: hostels,
-    studentCount: studentIds.length
-  });
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Diagnostic: Warden Context:', {
+      tenantId: profile.tenant_id,
+      hostels: hostels,
+      studentCount: studentIds.length
+    });
+  }
   
   // Get student states for hostel students
   const { data: studentStates } = studentIds.length > 0

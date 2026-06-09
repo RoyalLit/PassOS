@@ -38,7 +38,7 @@ export function QRScanner({ onScan, isProcessing }: QRScannerProps) {
           },
           (decodedText) => {
             if (active && !isProcessingRef.current) {
-              // Vibrate on successful scan if supported
+              if (!decodedText.startsWith('eyJ')) return;
               if (navigator.vibrate) navigator.vibrate(100);
               onScanRef.current(decodedText);
             }

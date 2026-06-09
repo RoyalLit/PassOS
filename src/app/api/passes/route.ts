@@ -23,7 +23,7 @@ export async function generatePass(request_id: string) {
   // Verify request is approved and pass not already generated
   const { data: passReq, error: reqError } = await supabase
     .from('pass_requests')
-    .select('*')
+    .select('id, status, tenant_id, student_id, departure_at, return_by')
     .eq('id', request_id)
     .single();
 

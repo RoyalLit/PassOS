@@ -45,11 +45,12 @@ export async function GET() {
       recentTenants: tenantsRecent.data || [],
       recentActivity: auditRecent.data || [],
     });
-  } catch (error: any) {
-    const status = error.message === 'Unauthorized' ? 401 : 
-                   error.message === 'Forbidden' ? 403 : 500;
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+    const status = message === 'Unauthorized' ? 401 : 
+                   message === 'Forbidden' ? 403 : 500;
     return NextResponse.json({ 
-      error: error.message || 'An unexpected error occurred' 
+      error: message
     }, { status });
   }
 }

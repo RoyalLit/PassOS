@@ -1,7 +1,12 @@
+import dynamic from 'next/dynamic';
 import { requireWarden } from '@/lib/auth/rbac';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { WardenAnalyticsCharts } from '@/components/warden/warden-analytics-charts';
 import { format, subDays } from 'date-fns';
+
+const WardenAnalyticsCharts = dynamic(
+  () => import('@/components/warden/warden-analytics-charts').then((mod) => ({ default: mod.WardenAnalyticsCharts })),
+  { loading: () => <div className="h-96 animate-pulse bg-muted rounded-xl" /> }
+);
 
 export default async function WardenAnalyticsPage() {
   const profile = await requireWarden();

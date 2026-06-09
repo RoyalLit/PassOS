@@ -96,7 +96,7 @@ self.addEventListener('push', (event: PushEvent) => {
   const options: NotificationOptions = {
     body: data.body || data.notification?.body || '',
     icon: data.icon || '/icons/icon-192x192.png',
-    badge: data.badge || '/icons/badge-72x72.png',
+    badge: data.badge || '/icons/icon-192x192.png',
     tag: data.tag || 'passos-notification',
     data: data.data || {},
     actions: data.actions || [],

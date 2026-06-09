@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Activity, ArrowUpRight, ArrowDownLeft, User } from 'lucide-react';
@@ -17,7 +18,7 @@ interface MobilityPulseProps {
   scans: ScanWithPass[];
 }
 
-export function MobilityPulse({ scans }: MobilityPulseProps) {
+const MobilityPulse = memo(function MobilityPulse({ scans }: MobilityPulseProps) {
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -101,4 +102,7 @@ export function MobilityPulse({ scans }: MobilityPulseProps) {
       </CardContent>
     </Card>
   );
-}
+});
+
+export { MobilityPulse };
+export default MobilityPulse;

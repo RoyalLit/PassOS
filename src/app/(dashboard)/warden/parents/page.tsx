@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { requireWarden } from '@/lib/auth/rbac';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { Badge } from '@/components/ui/badge';
@@ -5,7 +6,7 @@ import {
   Building2, User, Mail, Phone, Users, Search,
   CheckCircle2, UserCog
 } from 'lucide-react';
-import { ClientEditProfileButton } from '@/components/common/client-edit-profile-button';
+import { ClientEditProfileButton } from '@/components/realtime/client-edit-profile-button';
 import Link from 'next/link';
 import { clsx } from 'clsx';
 import type { Profile } from '@/types';
@@ -92,9 +93,10 @@ export default async function WardenParentsPage() {
                   <div className="flex items-start gap-4">
                     <div className="w-14 h-14 rounded-xl bg-purple-500/10 flex items-center justify-center shrink-0">
                       {parent.avatar_url ? (
-                        <img 
+                        <Image 
                           src={parent.avatar_url} 
                           alt="" 
+                          width={56} height={56}
                           className="w-full h-full rounded-xl object-cover"
                         />
                       ) : (
@@ -144,9 +146,10 @@ export default async function WardenParentsPage() {
                         >
                           <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
                             {child.avatar_url ? (
-                              <img 
+                              <Image 
                                 src={child.avatar_url} 
                                 alt="" 
+                                width={40} height={40}
                                 className="w-full h-full rounded-lg object-cover"
                               />
                             ) : (

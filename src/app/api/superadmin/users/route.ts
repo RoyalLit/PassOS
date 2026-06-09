@@ -33,8 +33,9 @@ export async function GET() {
     const admin = createAdminClient();
     const { data: profiles, error } = await admin
       .from('profiles')
-      .select('*, tenant:tenants!tenant_id(id, name, slug)')
-      .order('created_at', { ascending: false });
+      .select('id, full_name, email, role, tenant_id, is_active, is_flagged, created_at, tenant:tenants!tenant_id(id, name, slug)')
+      .order('created_at', { ascending: false })
+      .limit(100);
 
     if (error) {
       console.error('[API/Superadmin/Users] Fetch error:', error.message);
@@ -42,10 +43,11 @@ export async function GET() {
     }
 
     return NextResponse.json({ profiles });
-  } catch (error: any) {
-    const status = error.message === 'Unauthorized' ? 401 : 
-                   error.message === 'Forbidden' ? 403 : 500;
-    return NextResponse.json({ error: error.message || 'An unexpected error occurred' }, { status });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+    const status = message === 'Unauthorized' ? 401 : 
+                   message === 'Forbidden' ? 403 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }
 
@@ -124,6 +126,7 @@ export async function POST(request: Request) {
       action: 'create_user',
       entityType: 'profile',
       entityId: profile.id,
+      tenantId: profile.tenant_id,
       newData: {
         email,
         role: profile.role,
@@ -137,9 +140,10 @@ export async function POST(request: Request) {
       user: profile,
       credentials: { email, temporary_password: tempPassword }
     });
-  } catch (error: any) {
-    const status = error.message === 'Unauthorized' ? 401 : 
-                   error.message === 'Forbidden' ? 403 : 500;
-    return NextResponse.json({ error: error.message || 'An unexpected error occurred' }, { status });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+    const status = message === 'Unauthorized' ? 401 : 
+                   message === 'Forbidden' ? 403 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }

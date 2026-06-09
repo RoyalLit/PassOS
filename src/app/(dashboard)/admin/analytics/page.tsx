@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Activity, ShieldAlert, Users, Clock, AlertTriangle } from 'lucide-react';
 import { clsx } from 'clsx';
-import { useRealtime } from '@/hooks/use-realtime';
 
 interface AnalyticsData {
   stats: {
@@ -20,9 +19,6 @@ interface AnalyticsData {
 export default function AnalyticsDashboard() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
-
-  // Subscribe to changes affecting stats
-  useRealtime(['passes', 'pass_requests', 'student_states', 'fraud_flags']);
 
   useEffect(() => {
     const fetchData = async () => {

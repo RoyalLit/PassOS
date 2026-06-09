@@ -1,8 +1,9 @@
+import Image from 'next/image';
 import { requireWarden } from '@/lib/auth/rbac';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { Badge } from '@/components/ui/badge';
 import { Building2, User, Mail, Phone, AlertTriangle, Search } from 'lucide-react';
-import { ClientEditProfileButton } from '@/components/common/client-edit-profile-button';
+import { ClientEditProfileButton } from '@/components/realtime/client-edit-profile-button';
 import Link from 'next/link';
 import { clsx } from 'clsx';
 import type { Profile } from '@/types';
@@ -133,9 +134,10 @@ export default async function WardenStudentsPage({
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
                         {student.avatar_url ? (
-                          <img 
+                          <Image 
                             src={student.avatar_url} 
                             alt="" 
+                            width={48} height={48}
                             className="w-full h-full rounded-xl object-cover"
                           />
                         ) : (

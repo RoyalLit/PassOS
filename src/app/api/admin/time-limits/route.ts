@@ -22,7 +22,7 @@ export async function GET() {
     
     const { data: limits, error } = await supabase
       .from('pass_time_limits')
-      .select('*')
+      .select('id, pass_type, enabled, allowed_start, allowed_end, max_duration_hours, created_at')
       .is('tenant_id', null)
       .order('pass_type');
     
@@ -78,7 +78,7 @@ export async function PUT(request: Request) {
     // Fetch updated limits
     const { data: updatedLimits, error: fetchError } = await supabase
       .from('pass_time_limits')
-      .select('*')
+      .select('id, pass_type, enabled, allowed_start, allowed_end, max_duration_hours, created_at')
       .is('tenant_id', null)
       .order('pass_type');
     

@@ -16,6 +16,7 @@ export interface RecordAuditLogParams {
   action: AuditLogAction;
   entityType: 'tenant' | 'profile' | 'system';
   entityId?: string;
+  tenantId?: string;
   oldData?: Record<string, unknown>;
   newData?: Record<string, unknown>;
 }
@@ -29,6 +30,7 @@ export async function recordAuditLog({
   action,
   entityType,
   entityId,
+  tenantId,
   oldData,
   newData
 }: RecordAuditLogParams) {
@@ -42,11 +44,12 @@ export async function recordAuditLog({
 
     const { error } = await admin.from('audit_logs').insert({
       actor_id: actorId,
+      tenant_id: tenantId || null,
       action,
       entity_type: entityType,
-      entity_id: entityId,
-      old_data: oldData,
-      new_data: newData,
+      entity_id: entityId || null,
+      old_data: oldData || null,
+      new_data: newData || null,
       ip_address: ipAddress,
       user_agent: userAgent
     });

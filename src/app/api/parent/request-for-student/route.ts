@@ -25,7 +25,7 @@ export async function POST(request: Request) {
       .from('profiles')
       .select('id, role, full_name, email, tenant_id')
       .eq('id', user.id)
-      .single();
+      .maybeSingle();
 
     if (!parentProfile || parentProfile.role !== 'parent') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
       .from('profiles')
       .select('id, full_name, email, hostel, room_number, tenant_id')
       .eq('parent_id', user.id)
-      .single();
+      .maybeSingle();
 
     if (!linkedStudent) {
       return NextResponse.json(

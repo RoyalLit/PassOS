@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import type { FraudFlag, Profile } from '@/types';
 import { clsx } from 'clsx';
-import { ClientEditProfileButton } from '@/components/common/client-edit-profile-button';
+import { ClientEditProfileButton } from '@/components/realtime/client-edit-profile-button';
 
 interface FraudTableProps {
   flags: FraudFlag[];

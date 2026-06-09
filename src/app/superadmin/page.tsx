@@ -25,8 +25,8 @@ interface AuditLog {
   entity_type: string;
   entity_id: string;
   created_at: string;
-  old_data: any;
-  new_data: any;
+  old_data: Record<string, unknown> | null;
+  new_data: Record<string, unknown> | null;
   actor: {
     id: string;
     full_name: string;
@@ -56,9 +56,9 @@ export default function SuperadminDashboard() {
         }
         
         setData(json);
-      } catch (e: any) {
+      } catch (e: unknown) {
         console.error('Failed to load dashboard:', e);
-        setError(e.message);
+        setError(e instanceof Error ? e.message : 'An error occurred');
       } finally {
         setLoading(false);
       }

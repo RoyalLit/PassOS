@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
@@ -112,7 +113,7 @@ export function SuperadminSidebar({ userName, avatarUrl }: SuperadminSidebarProp
             <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-purple-600 via-indigo-500 to-blue-500 p-[2px] shadow-lg shadow-purple-500/20">
               <div className="w-full h-full rounded-full bg-card flex items-center justify-center text-sm font-medium text-foreground overflow-hidden">
                 {avatarUrl ? (
-                  <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                  <Image src={avatarUrl} alt="User avatar" width={36} height={36} className="w-full h-full object-cover" />
                 ) : (
                   userName.charAt(0).toUpperCase()
                 )}

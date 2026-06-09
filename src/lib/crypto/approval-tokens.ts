@@ -46,6 +46,8 @@ export async function verifyApprovalToken(
     const key = getKey();
     const { payload } = await jose.jwtVerify(token, key, {
       issuer: 'passos-approval',
+      algorithms: ['HS256'],
+      clockTolerance: '60s',
     });
 
     return {

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { ShieldX, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 interface RevokePassButtonProps {
   passId: string;
@@ -31,7 +32,7 @@ export function RevokePassButton({ passId, studentName }: RevokePassButtonProps)
       setIsOpen(false);
       router.refresh();
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Failed to revoke pass');
+      toast.error(error instanceof Error ? error.message : 'Failed to revoke pass');
     } finally {
       setIsRevoking(false);
     }

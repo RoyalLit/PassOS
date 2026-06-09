@@ -22,7 +22,7 @@ export async function GET() {
 
     const { data: tenants, error } = await admin
       .from('tenants')
-      .select('*')
+      .select('id, name, slug, domains, logo_url, brand_primary, brand_secondary, status, plan, settings, created_by, created_at, updated_at')
       .order('created_at', { ascending: false });
 
     if (error) throw error;

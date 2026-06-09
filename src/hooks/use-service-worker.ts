@@ -27,8 +27,7 @@ export function useServiceWorker() {
             if (newWorker) {
               newWorker.addEventListener('statechange', () => {
                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  // New version available
-                  console.log('New service worker version available');
+                  // New version available — user will be prompted to update
                 }
               });
             }

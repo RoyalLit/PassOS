@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 import { REQUEST_TYPES } from '@/lib/constants';
 import { RequestIcon } from '@/components/requests/request-icon';
 import { clsx } from 'clsx';
+import { FileX2 } from 'lucide-react';
 
 export default async function StudentHistoryPage() {
   const profile = await getCurrentUser();
@@ -48,8 +49,12 @@ export default async function StudentHistoryPage() {
             <tbody className="divide-y divide-slate-100">
               {requests?.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
-                    No requests found in your history.
+                  <td colSpan={5} className="px-6 py-12 text-center">
+                    <div className="flex flex-col items-center justify-center">
+                      <FileX2 className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                      <h3 className="text-lg font-semibold text-foreground mb-1">No history yet</h3>
+                      <p className="text-sm text-muted-foreground">Your completed pass requests will show up here</p>
+                    </div>
                   </td>
                 </tr>
               )}

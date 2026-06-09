@@ -10,6 +10,7 @@ import { clsx } from 'clsx';
 import { toast } from 'sonner';
 import { useSearchParams, useRouter } from 'next/navigation';
 import type { UserRole, Profile } from '@/types';
+import Image from 'next/image';
 import { EditUserModal } from '@/components/admin/edit-user-modal';
 
 
@@ -67,7 +68,7 @@ export default function UsersPage() {
   });
 
   const searchParams = useSearchParams();
-  const router = useRouter(); // eslint-disable-line no-unused-vars
+  const router = useRouter();  
 
   useEffect(() => {
     fetchUsers().then(() => {
@@ -168,6 +169,7 @@ export default function UsersPage() {
   };
 
   const handleDeleteUser = async (userId: string) => {
+    // TODO: Replace with confirmation modal component
     if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
       return;
     }
@@ -309,7 +311,7 @@ export default function UsersPage() {
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold border border-blue-500/20 overflow-hidden">
                             {user.avatar_url ? (
-                              <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
+                              <Image src={user.avatar_url} alt="" width={40} height={40} className="w-full h-full object-cover" />
                             ) : (
                               user.full_name.charAt(0).toUpperCase()
                             )}

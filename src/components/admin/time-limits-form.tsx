@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, Save, Sun, Moon, Clock, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { clsx } from 'clsx';
 import { Toggle } from '@/components/ui/toggle';
 import type { PassTimeLimit } from '@/types';
@@ -86,7 +87,7 @@ export function TimeLimitsForm({ initialLimits }: { initialLimits: PassTimeLimit
       router.refresh();
     } catch (error) {
       console.error('Save error:', error);
-      alert('Failed to save time limits');
+      toast.error('Failed to save time limits');
     } finally {
       setIsSaving(false);
     }

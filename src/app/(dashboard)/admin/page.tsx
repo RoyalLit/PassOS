@@ -1,15 +1,23 @@
+import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { requireRole } from '@/lib/auth/rbac';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { ApprovalPanel } from '@/components/admin/approval-panel';
 import { SearchInput } from '@/components/ui/search-input';
-import { RealtimeRefresh } from '@/components/common/realtime-refresh';
-import { ActivityCharts } from '@/components/admin/activity-charts';
 import { QuickActions } from '@/components/admin/quick-actions';
 import { MobilityPulse, type ScanWithPass } from '@/components/admin/mobility-pulse';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, TrendingDown, Clock, AlertTriangle, ShieldCheck, Users } from 'lucide-react';
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+
+const ApprovalPanel = dynamic(
+  () => import('@/components/admin/approval-panel').then((mod) => ({ default: mod.ApprovalPanel })),
+  { loading: () => <div className="h-32 animate-pulse bg-muted rounded-xl" /> }
+);
+
+const ActivityCharts = dynamic(
+  () => import('@/components/admin/activity-charts').then((mod) => ({ default: mod.ActivityCharts })),
+  { loading: () => <div className="h-72 animate-pulse bg-muted rounded-xl" /> }
+);
 
 export default async function AdminDashboard(props: { searchParams: Promise<{ q?: string }> }) {
   const searchParams = await props.searchParams;
@@ -19,15 +27,15 @@ export default async function AdminDashboard(props: { searchParams: Promise<{ q?
 
   const supabase = await createServerSupabaseClient();
 
-  // Fetch requests that require admin attention
-  const { data: requests } = await supabase
-    .from('pass_requests')
-    .select('*, student:profiles(*), approvals(*)')
-    .in('status', ['pending', 'admin_pending', 'parent_pending', 'parent_approved'])
-    .order('created_at', { ascending: false });
+  const last7Days = new Date();
+  last7Days.setDate(last7Days.getDate() - 7);
 
-  // Get counts
-  const [activePasses, overdueCount, fraudFlagsCount, todayStats] = await Promise.all([
+  const [requests, activePasses, overdueCount, fraudFlagsCount, todayStats, weekActivity, recentScans] = await Promise.all([
+    supabase
+      .from('pass_requests')
+      .select('*, student:profiles(*), approvals(*)')
+      .in('status', ['pending', 'admin_pending', 'parent_pending', 'parent_approved'])
+      .order('created_at', { ascending: false }),
     supabase
       .from('passes')
       .select('*', { count: 'exact', head: true })
@@ -38,31 +46,24 @@ export default async function AdminDashboard(props: { searchParams: Promise<{ q?
       .select('*', { count: 'exact', head: true })
       .eq('resolved', false),
     supabase.rpc('get_today_stats'),
+    supabase
+      .from('pass_requests')
+      .select('created_at, status')
+      .gte('created_at', last7Days.toISOString()),
+    supabase
+      .from('pass_scans')
+      .select(`
+        *,
+        pass:passes(
+          id,
+          student:profiles(full_name, avatar_url)
+        )
+      `)
+      .order('created_at', { ascending: false })
+      .limit(10),
   ]);
 
-  // Get today's activity for charts
-  const last7Days = new Date();
-  last7Days.setDate(last7Days.getDate() - 7);
-  
-  const { data: weekActivity } = await supabase
-    .from('pass_requests')
-    .select('created_at, status')
-    .gte('created_at', last7Days.toISOString());
-
-  // Get live mobility pulse (recent scans)
-  const { data: recentScans } = await supabase
-    .from('pass_scans')
-    .select(`
-      *,
-      pass:passes(
-        id,
-        student:profiles(full_name, avatar_url)
-      )
-    `)
-    .order('created_at', { ascending: false })
-    .limit(10);
-
-  const pendingRequests = (requests || []).filter(req => {
+  const pendingRequests = (requests?.data || []).filter(req => {
     if (!q) return true;
     return (
       req.student?.full_name?.toLowerCase().includes(q) ||
@@ -83,8 +84,6 @@ export default async function AdminDashboard(props: { searchParams: Promise<{ q?
 
   return (
     <div className="space-y-8">
-      <RealtimeRefresh tables={['pass_requests', 'passes', 'pass_scans', 'student_states', 'fraud_flags', 'escalation_logs']} />
-      
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
@@ -156,8 +155,8 @@ export default async function AdminDashboard(props: { searchParams: Promise<{ q?
 
       {/* Charts and Activity */}
       <div className="grid md:grid-cols-2 gap-6">
-        <ActivityCharts activityData={weekActivity || []} />
-        <MobilityPulse scans={(recentScans as unknown as ScanWithPass[]) || []} />
+        <ActivityCharts activityData={weekActivity?.data || []} />
+        <MobilityPulse scans={(recentScans?.data as unknown as ScanWithPass[]) || []} />
       </div>
 
       {/* Action Center */}

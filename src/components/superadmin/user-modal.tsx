@@ -81,8 +81,8 @@ export function SuperadminUserModal({ user, targetTenantId, isOpen, onClose, onU
         onUpdate?.();
         onClose();
       }
-    } catch (e: any) {
-      toast.error(e.message);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
@@ -101,8 +101,8 @@ export function SuperadminUserModal({ user, targetTenantId, isOpen, onClose, onU
       toast.success('User deleted successfully');
       onUpdate?.();
       onClose();
-    } catch (e: any) {
-      toast.error(e.message);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
@@ -305,7 +305,7 @@ export function SuperadminUserModal({ user, targetTenantId, isOpen, onClose, onU
                   placeholder="New password (leave blank to keep current)"
                   className="w-full px-4 py-2.5 bg-muted/30 border border-border rounded-xl text-sm focus:ring-2 focus:ring-purple-500 outline-none"
                 />
-                <p className="text-[10px] text-muted-foreground mt-1 px-1">Superadmins can forcefully reset any user's password here.</p>
+                <p className="text-[10px] text-muted-foreground mt-1 px-1">Superadmins can forcefully reset any user&apos;s password here.</p>
               </div>
             )}
 

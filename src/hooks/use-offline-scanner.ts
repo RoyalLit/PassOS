@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import * as jose from 'jose';
+import { decodeJwt } from 'jose';
 
 export type OfflinePass = {
   id: string;
@@ -166,7 +166,7 @@ export function useOfflineScanner() {
    */
   const decodeLocalPass = (qrToken: string) => {
     try {
-      const decoded = jose.decodeJwt(qrToken);
+      const decoded = decodeJwt(qrToken);
       const passId = decoded.pass_id as string | undefined;
       const studentId = decoded.student_id as string | undefined;
       

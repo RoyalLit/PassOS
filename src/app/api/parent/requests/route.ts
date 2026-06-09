@@ -23,7 +23,7 @@ export async function GET() {
       .from('profiles')
       .select('id, full_name, email, hostel, room_number, avatar_url')
       .eq('parent_id', parentProfile.id)
-      .single();
+      .maybeSingle();
 
     if (!student) {
       return NextResponse.json({ 
@@ -40,7 +40,7 @@ export async function GET() {
       // All pass requests for the student
       admin
         .from('pass_requests')
-        .select('*')
+        .select('id, student_id, request_type, reason, destination, departure_at, return_by, status, created_at, proof_urls, tenant_id')
         .eq('student_id', student.id)
         .order('created_at', { ascending: false })
         .limit(20),

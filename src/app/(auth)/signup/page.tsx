@@ -98,6 +98,7 @@ export default function SignUp() {
                 required
                 value={formData.email}
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
+                autoComplete="email"
                 className="w-full border border-border rounded-xl px-4 py-2.5 bg-background focus:ring-2 focus:ring-blue-500 outline-none transition-shadow placeholder:text-muted-foreground/40"
                 placeholder="you@email.com"
               />
@@ -110,6 +111,7 @@ export default function SignUp() {
                 minLength={6}
                 value={formData.password}
                 onChange={(e) => setFormData({...formData, password: e.target.value})}
+                autoComplete="new-password"
                 className="w-full border border-border rounded-xl px-4 py-2.5 bg-background focus:ring-2 focus:ring-blue-500 outline-none transition-shadow placeholder:text-muted-foreground/40"
                 placeholder="••••••••"
               />

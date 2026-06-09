@@ -3,10 +3,13 @@ import { requireRole } from '@/lib/auth/rbac';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createRequestSchema } from '@/lib/validators/request-schema';
-import { MAX_REQUESTS_PER_DAY } from '@/lib/constants';
+import { MAX_REQUESTS_PER_DAY, APPROVAL_TOKEN_EXPIRY_HOURS } from '@/lib/constants';
 import { isWithinCampus } from '@/lib/geo/campus-boundary';
 import type { ParentApprovalMode } from '@/lib/actions/settings';
 import { checkRateLimit, getRateLimitHeaders } from '@/lib/rate-limit';
+import { generateApprovalToken } from '@/lib/crypto/approval-tokens';
+import { notifyUser, formatNotificationTemplate } from '@/lib/push/notifications';
+import { sendParentApprovalEmail } from '@/lib/email';
 
 export async function POST(request: Request) {
   try {
@@ -111,7 +114,7 @@ export async function POST(request: Request) {
       const admin = createAdminClient();
       const { data: limits } = await admin
         .from('pass_time_limits')
-        .select('*')
+        .select('allowed_start, allowed_end, max_duration_hours')
         .eq('pass_type', data.request_type)
         .eq('enabled', true)
         .or('tenant_id.is.null,tenant_id.eq.' + (profile.tenant_id || 'null'))
@@ -151,7 +154,7 @@ export async function POST(request: Request) {
     const { data: settings } = await adminClient
       .from('app_settings')
       .select('parent_approval_mode, geofence_strict, geofencing_enabled')
-      .single();
+      .maybeSingle();
     const mode: ParentApprovalMode = settings?.parent_approval_mode ?? 'smart';
     
     // Strict geofencing: block requests from outside campus (but NOT extensions since student may be off-campus)
@@ -197,6 +200,64 @@ export async function POST(request: Request) {
     if (insertError) {
       console.error('[Pass Request] Insert error:', insertError);
       return NextResponse.json({ error: 'Failed to create pass request' }, { status: 500 });
+    }
+
+    // Notify parent if request needs parent approval
+    if (insertedRequest.status === 'parent_pending') {
+      try {
+        const { data: parentProfile } = await adminClient
+          .from('profiles')
+          .select('id, email, full_name')
+          .eq('id', profile.parent_id)
+          .maybeSingle();
+
+        if (parentProfile) {
+          const token = await generateApprovalToken({
+            request_id: insertedRequest.id,
+            parent_id: parentProfile.id,
+            student_name: profile.full_name || 'Student',
+          });
+
+          await adminClient.from('approvals').insert({
+            request_id: insertedRequest.id,
+            tenant_id: profile.tenant_id,
+            approver_id: parentProfile.id,
+            approver_type: 'parent',
+            decision: 'escalated',
+            token,
+            token_expires: new Date(Date.now() + APPROVAL_TOKEN_EXPIRY_HOURS * 60 * 60 * 1000).toISOString(),
+          });
+
+          const { title, body } = formatNotificationTemplate('parent_approval_needed', {
+            student_name: profile.full_name || 'Student',
+            pass_type: data.request_type,
+          });
+
+          await notifyUser(parentProfile.id, 'parent_approval_needed', {
+            title,
+            body,
+            data: { request_id: insertedRequest.id },
+            tag: `parent-approval-${insertedRequest.id}`,
+          });
+
+          if (parentProfile.email) {
+            await sendParentApprovalEmail({
+              parentUserId: parentProfile.id,
+              parentEmail: parentProfile.email,
+              parentName: parentProfile.full_name || 'Parent',
+              studentName: profile.full_name || 'Student',
+              requestType: data.request_type,
+              destination: data.destination,
+              departureAt: data.departure_at,
+              returnBy: data.return_by,
+              reason: data.reason,
+              approvalToken: token,
+            });
+          }
+        }
+      } catch (notifError) {
+        console.error('[Pass Request] Parent notification failed:', notifError);
+      }
     }
 
     return NextResponse.json({ data: insertedRequest }, { 

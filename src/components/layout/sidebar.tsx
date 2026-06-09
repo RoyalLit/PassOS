@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { 
@@ -13,7 +14,7 @@ import {
 import { clsx } from 'clsx';
 import type { UserRole, Warden } from '@/types';
 import { ThemeToggle } from './theme-toggle';
-import { ClientEditProfileButton } from '@/components/common/client-edit-profile-button';
+import { ClientEditProfileButton } from '@/components/realtime/client-edit-profile-button';
 
 interface SidebarProps {
   role: UserRole;
@@ -84,7 +85,7 @@ export function Sidebar({ role, userName, avatarUrl, wardens, id, email }: Sideb
     window.location.href = '/login';
   };
 
-  const getLinks = () => {
+  const getLinks = useCallback(() => {
     switch (role) {
       case 'student':
         return [
@@ -125,15 +126,16 @@ export function Sidebar({ role, userName, avatarUrl, wardens, id, email }: Sideb
       default:
         return [];
     }
-  };
+  }, [role]);
 
   const links = getLinks();
 
   return (
     <>
       <button 
-        className="md:hidden fixed top-4 right-4 z-50 p-2 bg-card rounded-md shadow-sm border border-border text-foreground"
+        className="md:hidden fixed top-4 right-4 z-50 p-3 bg-card rounded-md shadow-sm border border-border text-foreground"
         onClick={() => setIsOpen(!isOpen)}
+        aria-label="Toggle menu"
       >
         {isOpen ? <X size={20} /> : <Menu size={20} />}
       </button>
@@ -187,7 +189,7 @@ export function Sidebar({ role, userName, avatarUrl, wardens, id, email }: Sideb
           <div className="flex items-center gap-3 mb-4 px-2 group">
             <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-sm font-medium text-foreground border border-border shadow-sm overflow-hidden">
               {avatarUrl ? (
-                <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                <Image src={avatarUrl} alt="User avatar" width={32} height={32} className="w-full h-full object-cover" />
               ) : (
                 userName.charAt(0).toUpperCase()
               )}
@@ -199,7 +201,7 @@ export function Sidebar({ role, userName, avatarUrl, wardens, id, email }: Sideb
             {(role !== 'student' || pathname.startsWith('/student')) && (
               <Link 
                 href="/settings"
-                className="opacity-70 hover:opacity-100 transition-all hover:scale-110 active:scale-95 p-2 hover:bg-muted rounded-xl text-blue-600 dark:text-blue-400"
+                className="opacity-70 hover:opacity-100 transition-all hover:scale-110 active:scale-95 p-3 hover:bg-muted rounded-xl text-blue-600 dark:text-blue-400"
                 title="Profile Settings"
               >
                 <Settings size={18} />

@@ -53,7 +53,8 @@ export async function verifyQRPayload(token: string): Promise<QRVerifyResult> {
     // Using a 60s clock tolerance for robustness
     const { payload } = await jose.jwtVerify(token, key, {
       issuer: 'passos',
-      clockTolerance: '60s'
+      clockTolerance: '60s',
+      algorithms: ['HS256'],
     });
 
     return {

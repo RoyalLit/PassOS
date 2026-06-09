@@ -34,7 +34,7 @@ export async function POST(request: Request) {
       .from('profiles')
       .select('id, role')
       .eq('id', user.id)
-      .single();
+      .maybeSingle();
 
     if (!parentProfile || parentProfile.role !== 'parent') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
       .from('profiles')
       .select('id')
       .eq('parent_id', user.id)
-      .single();
+      .maybeSingle();
 
     if (!student) {
       return NextResponse.json({ error: 'No linked student found' }, { status: 404 });
@@ -62,7 +62,7 @@ export async function POST(request: Request) {
       .from('pass_requests')
       .select('id, student_id, status, tenant_id')
       .eq('id', request_id)
-      .single();
+      .maybeSingle();
 
     if (!passReq || passReq.student_id !== student.id) {
       return NextResponse.json({ error: 'Request not found or not linked to your student' }, { status: 404 });

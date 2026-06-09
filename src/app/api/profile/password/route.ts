@@ -52,7 +52,7 @@ export async function POST(request: Request) {
 
     if (signInError) {
       return NextResponse.json(
-        { error: 'Current password is incorrect' },
+        { error: 'Failed to verify current password' },
         { status: 400 }
       );
     }

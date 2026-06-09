@@ -27,7 +27,6 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LoginModal } from '@/components/auth/login-modal';
-import Image from 'next/image';
 
 function LoginChecker({ onLoginOpen }: { onLoginOpen: () => void }) {
   const searchParams = useSearchParams();
@@ -53,7 +52,12 @@ const NAV_LINKS: NavLink[] = [
 ];
 
 function scrollTo(id: string) {
-  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+  const el = document.getElementById(id);
+  if (el) {
+    const headerOffset = 64;
+    const top = el.getBoundingClientRect().top + window.scrollY - headerOffset;
+    window.scrollTo({ top, behavior: 'smooth' });
+  }
 }
 
 export function LandingContent() {
@@ -72,7 +76,7 @@ export function LandingContent() {
   return (
     <Suspense fallback={<div className="min-h-screen bg-background" />}>
       <LoginChecker onLoginOpen={openLogin} />
-      <div className="flex flex-col min-h-screen bg-background selection:bg-blue-100 selection:text-blue-900">
+      <div className="flex flex-col min-h-screen bg-background selection:bg-blue-100/30 selection:text-blue-900 dark:selection:bg-blue-900/30 dark:selection:text-blue-100">
 
         {/* ─────────────────────────── NAVBAR ─────────────────────────── */}
         <header className={`px-4 lg:px-10 h-16 flex items-center border-b fixed inset-x-0 top-0 z-50 bg-background/80 backdrop-blur-md transition-all duration-300 ${
@@ -205,9 +209,9 @@ export function LandingContent() {
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5 }}
-                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 text-[11px] font-bold uppercase tracking-widest mb-8 border border-blue-100 shadow-sm"
+                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-[11px] font-bold uppercase tracking-widest mb-8 border border-primary/20 shadow-sm"
                 >
-                  <span className="h-1.5 w-1.5 rounded-full bg-blue-600 animate-pulse" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
                   Modernizing Campus Security
                 </motion.div>
 
@@ -253,7 +257,7 @@ export function LandingContent() {
                   {/* Secondary: Demo */}
                   <Link
                     href="/demo"
-                    className="inline-flex items-center justify-center gap-2 h-14 px-8 rounded-2xl bg-slate-100 border border-slate-300 text-slate-800 font-bold text-base hover:bg-slate-200 transition-all active:scale-95 group"
+                    className="inline-flex items-center justify-center gap-2 h-14 px-8 rounded-2xl bg-muted border border-border text-foreground font-bold text-base hover:bg-muted/80 transition-all active:scale-95 group"
                   >
                     Explore Demo
                     <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -286,12 +290,12 @@ export function LandingContent() {
                   className="relative w-full max-w-lg"
                 >
                   {/* Main dashboard card */}
-                  <div className="relative bg-white rounded-3xl border border-slate-200/80 shadow-2xl shadow-slate-900/10 overflow-hidden">
+                  <div className="relative bg-card rounded-3xl border border-border/80 shadow-2xl shadow-slate-900/10 overflow-hidden">
                     {/* Browser bar */}
-                    <div className="h-9 bg-slate-50 border-b border-slate-100 flex items-center px-4 gap-1.5">
-                      <div className="h-2.5 w-2.5 rounded-full bg-slate-200" />
-                      <div className="h-2.5 w-2.5 rounded-full bg-slate-200" />
-                      <div className="h-2.5 w-2.5 rounded-full bg-slate-200" />
+                    <div className="h-9 bg-muted/50 border-b border-border/50 flex items-center px-4 gap-1.5">
+                      <div className="h-2.5 w-2.5 rounded-full bg-muted-foreground/20" />
+                      <div className="h-2.5 w-2.5 rounded-full bg-muted-foreground/20" />
+                      <div className="h-2.5 w-2.5 rounded-full bg-muted-foreground/20" />
                       <div className="mx-auto flex-1 max-w-[200px] h-5 bg-slate-100 rounded-md flex items-center justify-center">
                         <span className="text-[9px] text-slate-400 font-mono">app.passos.io/admin</span>
                       </div>
@@ -389,8 +393,8 @@ export function LandingContent() {
                 { label: '24/7 Campus Security', icon: Shield },
               ].map((stat, i) => (
                 <div key={i} className="flex flex-col items-center gap-2.5 text-center group">
-                  <div className="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center group-hover:bg-blue-100 transition-colors">
-                    <stat.icon className="h-5 w-5 text-blue-600" />
+                  <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors">
+                    <stat.icon className="h-5 w-5 text-primary" />
                   </div>
                   <span className="text-sm font-semibold text-foreground/80">{stat.label}</span>
                 </div>
@@ -597,14 +601,14 @@ export function LandingContent() {
                     whileHover={{ y: -6 }}
                     className="group bg-card rounded-3xl border border-border shadow-sm overflow-hidden flex flex-col transition-shadow hover:shadow-lg hover:shadow-slate-900/5"
                   >
-                    <div className="relative h-52 w-full bg-slate-100 border-b border-border/50 overflow-hidden flex items-center justify-center">
+                    <div className="relative h-52 w-full bg-muted border-b border-border/50 overflow-hidden flex items-center justify-center">
                       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.05)_0%,transparent_60%)]" />
                       {portal.preview}
                       <div className={`absolute inset-0 bg-gradient-to-b ${portal.accent} opacity-0 group-hover:opacity-5 transition-opacity duration-300 pointer-events-none`} />
                     </div>
                     <div className="p-5">
                       <div className="flex items-center gap-2.5 mb-2">
-                        <portal.icon className="h-5 w-5 text-blue-600" />
+                        <portal.icon className="h-5 w-5 text-primary" />
                         <h3 className="text-base font-bold text-foreground">{portal.title}</h3>
                       </div>
                       <p className="text-sm text-muted-foreground leading-relaxed">{portal.description}</p>

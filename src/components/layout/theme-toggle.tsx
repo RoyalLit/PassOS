@@ -2,23 +2,16 @@
 
 import { useTheme } from 'next-themes';
 import { Sun, Moon } from 'lucide-react';
-import { useState, useEffect } from 'react';
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) return <div className="p-2 w-9 h-9" />;
+  if (typeof window === 'undefined') return <div className="p-3 w-9 h-9" />;
 
   return (
     <button
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-      className="p-2 rounded-lg bg-muted text-muted-foreground hover:bg-muted hover:text-foreground transition-all shadow-sm border border-transparent hover:border-border"
+      className="p-3 rounded-lg bg-muted text-muted-foreground hover:bg-muted hover:text-foreground transition-all shadow-sm border border-transparent hover:border-border"
       aria-label="Toggle theme"
     >
       {theme === 'dark' ? (

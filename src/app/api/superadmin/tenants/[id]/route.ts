@@ -22,8 +22,8 @@ export async function GET(
     const admin = createAdminClient();
 
     const [{ data: tenant, error: tErr }, { data: users, error: uErr }] = await Promise.all([
-      admin.from('tenants').select('*').eq('id', id).single(),
-      admin.from('profiles').select('*').eq('tenant_id', id).order('created_at', { ascending: false }),
+      admin.from('tenants').select('id, name, slug, domains, logo_url, brand_primary, brand_secondary, status, plan, settings, created_by, created_at, updated_at').eq('id', id).single(),
+      admin.from('profiles').select('id, full_name, email, avatar_url, role, hostel, room_number, enrollment_number, tenant_id, is_active, phone, created_at').eq('tenant_id', id).order('created_at', { ascending: false }),
     ]);
 
     if (tErr) {
@@ -36,11 +36,12 @@ export async function GET(
     }
 
     return NextResponse.json({ tenant, users });
-  } catch (error: any) {
-    const status = error.message === 'Unauthorized' ? 401 : 
-                   error.message === 'Forbidden' ? 403 : 500;
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+    const status = message === 'Unauthorized' ? 401 : 
+                   message === 'Forbidden' ? 403 : 500;
     return NextResponse.json({ 
-      error: error.message || 'An unexpected error occurred' 
+      error: message
     }, { status });
   }
 }
@@ -61,7 +62,7 @@ export async function PATCH(
     // Fetch current state for audit log
     const { data: oldTenant } = await admin
       .from('tenants')
-      .select('*')
+      .select('id, name, slug, domains, logo_url, brand_primary, brand_secondary, status, plan, settings, created_by, created_at, updated_at')
       .eq('id', id)
       .single();
 
@@ -82,7 +83,7 @@ export async function PATCH(
 
     const { data: updatedTenant } = await admin
       .from('tenants')
-      .select('*')
+      .select('id, name, slug, domains, logo_url, brand_primary, brand_secondary, status, plan, settings, created_by, created_at, updated_at')
       .eq('id', id)
       .single();
 
@@ -93,16 +94,18 @@ export async function PATCH(
       action: 'update_tenant',
       entityType: 'tenant',
       entityId: id,
-      oldData: oldTenant,
-      newData: updatedTenant
+      tenantId: id,
+      oldData: oldTenant ?? undefined,
+      newData: updatedTenant ?? undefined
     });
 
     return NextResponse.json({ tenant: updatedTenant });
-  } catch (error: any) {
-    const status = error.message === 'Unauthorized' ? 401 : 
-                   error.message === 'Forbidden' ? 403 : 500;
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+    const status = message === 'Unauthorized' ? 401 : 
+                   message === 'Forbidden' ? 403 : 500;
     return NextResponse.json({ 
-      error: error.message || 'An unexpected error occurred' 
+      error: message
     }, { status });
   }
 }

@@ -196,10 +196,12 @@ export function ProfileSettings() {
       )}
 
       <div className="border-b border-border">
-        <nav className="flex gap-1 overflow-x-auto">
+        <nav className="flex gap-1 overflow-x-auto" role="tablist" aria-label="Profile section tabs">
           {tabs.map((tab) => (
             <button
               key={tab.id}
+              role="tab"
+              aria-selected={activeTab === tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={clsx(
                 'flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap',
@@ -309,7 +311,7 @@ function PasswordForm({ onSave, saving }: { onSave: (current: string, next: stri
 
   const handleSubmit = () => {
     if (next !== confirm) {
-      alert('Passwords do not match');
+      toast.error('Passwords do not match');
       return;
     }
     onSave(current, next);

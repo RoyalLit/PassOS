@@ -1,8 +1,13 @@
 import { requireRole } from '@/lib/auth/rbac';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { ShieldAlert, Filter } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { SearchInput } from '@/components/ui/search-input';
-import { FraudTable } from '@/components/admin/fraud-table';
+
+const FraudTable = dynamic(
+  () => import('@/components/admin/fraud-table').then((mod) => ({ default: mod.FraudTable })),
+  { loading: () => <div className="h-64 animate-pulse bg-muted rounded-xl" /> }
+);
 
 export default async function FraudDashboard(props: { searchParams: Promise<{ q?: string }> }) {
   const searchParams = await props.searchParams;

@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin';
 import { notifyUser } from '@/lib/push/notifications';
+import { sendOverdueAlertEmail } from '@/lib/email';
 import type { EscalationRule, EscalationLog, EscalationEventType } from '@/types';
 
 interface EscalationContext {
@@ -192,11 +193,13 @@ async function sendEscalationNotification(
   
   const { data: student } = await supabase
     .from('profiles')
-    .select('full_name')
+    .select('full_name, hostel, room_number')
     .eq('id', context.studentId)
     .single();
 
   const studentName = student?.full_name || 'Student';
+  const hostel = student?.hostel || 'N/A';
+  const roomNumber = student?.room_number || 'N/A';
   const overdueMinutes = context.details?.overdue_minutes as number;
 
   let title: string;
@@ -234,6 +237,32 @@ async function sendEscalationNotification(
     },
     tag: `escalation-${context.eventType}`,
   });
+
+  // Send email for overdue alerts to wardens/admins
+  if (context.eventType === 'pass_overdue' && (recipient.role === 'warden' || recipient.role === 'admin')) {
+    try {
+      const { data: wardenProfile } = await supabase
+        .from('profiles')
+        .select('email, full_name')
+        .eq('id', recipient.user_id)
+        .maybeSingle();
+
+      if (wardenProfile?.email) {
+        await sendOverdueAlertEmail({
+          wardenUserId: recipient.user_id,
+          email: wardenProfile.email,
+          name: wardenProfile.full_name || recipient.role,
+          studentName,
+          hostel,
+          roomNumber,
+          validUntil: (context.details?.valid_until as string) || 'N/A',
+          overdueMinutes: (context.details?.overdue_minutes as number) || 0,
+        });
+      }
+    } catch (emailError) {
+      console.error('[Escalation] Overdue email error:', emailError);
+    }
+  }
 
   return { success: result.sent > 0, error: result.errors?.join(', ') };
 }

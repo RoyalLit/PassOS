@@ -18,7 +18,7 @@ export async function GET() {
 
     const { data: tenants, error } = await admin
       .from('tenants')
-      .select('*')
+      .select('id, name, slug, domains, logo_url, brand_primary, brand_secondary, status, plan, settings, created_by, created_at, updated_at')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -27,11 +27,12 @@ export async function GET() {
     }
 
     return NextResponse.json({ tenants });
-  } catch (error: any) {
-    const status = error.message === 'Unauthorized' ? 401 : 
-                   error.message === 'Forbidden' ? 403 : 500;
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+    const status = message === 'Unauthorized' ? 401 : 
+                   message === 'Forbidden' ? 403 : 500;
     return NextResponse.json({ 
-      error: error.message || 'An unexpected error occurred' 
+      error: message
     }, { status });
   }
 }
@@ -82,15 +83,17 @@ export async function POST(request: Request) {
       action: 'create_tenant',
       entityType: 'tenant',
       entityId: tenant.id,
+      tenantId: tenant.id,
       newData: tenant
     });
 
     return NextResponse.json({ tenant });
-  } catch (error: any) {
-    const status = error.message === 'Unauthorized' ? 401 : 
-                   error.message === 'Forbidden' ? 403 : 500;
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+    const status = message === 'Unauthorized' ? 401 : 
+                   message === 'Forbidden' ? 403 : 500;
     return NextResponse.json({ 
-      error: error.message || 'An unexpected error occurred' 
+      error: message
     }, { status });
   }
 }

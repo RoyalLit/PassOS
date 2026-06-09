@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Loader2, MapPin, AlertCircle, Clock, Calendar, ArrowLeft, User, Users } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { REQUEST_TYPES, PREDEFINED_REASONS } from '@/lib/constants';
 import { getSettings, AppSettings } from '@/lib/actions/settings';
@@ -155,7 +156,7 @@ export default function ParentRequestPage() {
       router.push('/parent');
       router.refresh();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'An error occurred');
+      toast.error(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setIsSubmitting(false);
     }

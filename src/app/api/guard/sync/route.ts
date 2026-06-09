@@ -42,11 +42,12 @@ export async function GET() {
     }
 
     return NextResponse.json({ success: true, passes });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
     console.error('Guard sync auth error:', error);
     return NextResponse.json({ 
       error: 'Unauthorized or invalid session',
-      details: error.message
+      details: message
     }, { status: 401 });
   }
 }

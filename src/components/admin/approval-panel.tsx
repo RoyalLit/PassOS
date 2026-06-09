@@ -2,6 +2,7 @@
 
 import { useState, memo } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { format } from 'date-fns';
 import { Check, X, Loader2, User, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -63,7 +64,7 @@ const ApprovalPanelComponent = memo(function ApprovalPanel({ request }: { reques
             'border-border'
           )}>
             {request.student?.avatar_url ? (
-              <img src={request.student.avatar_url} alt="" className="w-full h-full object-cover" />
+              <Image src={request.student.avatar_url} alt="Student avatar" width={48} height={48} className="w-full h-full object-cover" />
             ) : (
               <div className="bg-muted w-full h-full flex items-center justify-center">
                 <RequestIcon iconName={typeConfig?.icon || 'AlertCircle'} className="w-6 h-6 text-muted-foreground" />

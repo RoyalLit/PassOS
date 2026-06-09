@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, memo } from 'react';
 import QRCode from 'qrcode';
 import { format } from 'date-fns';
 import { QrCode, Shield, Clock } from 'lucide-react';
 import type { Pass } from '@/types';
 
-export function QRDisplay({ pass }: { pass: Pass }) {
+const QRDisplay = memo(function QRDisplay({ pass }: { pass: Pass }) {
   const [qrSrc, setQrSrc] = useState('');
 
   useEffect(() => {
@@ -83,4 +83,7 @@ export function QRDisplay({ pass }: { pass: Pass }) {
       </div>
     </div>
   );
-}
+});
+
+export { QRDisplay };
+export default QRDisplay;

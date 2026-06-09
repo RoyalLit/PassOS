@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Building2, Plus, Search, MoreHorizontal, Trash2, Edit2, Eye } from 'lucide-react';
+import { toast } from 'sonner';
 import type { Tenant, TenantStatus, TenantPlan } from '@/types';
 
 export default function TenantsPage() {
@@ -23,9 +24,9 @@ export default function TenantsPage() {
       }
       
       setTenants(data.tenants || []);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error('Failed to load universities:', e);
-      setError(e.message);
+      setError(e instanceof Error ? e.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
@@ -208,12 +209,13 @@ export default function TenantsPage() {
                       {tenant.slug !== '__system__' && (
                         <button
                           onClick={async () => {
+                            // TODO: Replace with confirmation modal component
                             if (!confirm(`Delete ${tenant.name}?`)) return;
                             const res = await fetch(`/api/tenants/${tenant.id}`, { method: 'DELETE' });
                             if (res.ok) loadData();
                             else {
                               const { error } = await res.json();
-                              alert(error || 'Delete failed');
+                              toast.error(error || 'Delete failed');
                             }
                           }}
                           className="p-1.5 rounded-md hover:bg-red-500/10 text-muted-foreground hover:text-red-500 transition-colors"

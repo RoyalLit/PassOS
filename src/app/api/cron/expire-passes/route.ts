@@ -3,9 +3,18 @@ import { createAdminClient } from '@/lib/supabase/admin';
 
 // This route is called by Vercel Cron every 5 minutes.
 // Secured via CRON_SECRET env var.
+function safeCompare(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return result === 0;
+}
+
 export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!authHeader || !safeCompare(authHeader, `Bearer ${process.env.CRON_SECRET}`)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -94,8 +103,6 @@ export async function GET(request: Request) {
       }
     }
   }
-
-  console.log(`[cron/expire-passes] Expired: ${expiredPasses?.length ?? 0}, Overdue: ${overdueCount}`);
 
   return NextResponse.json({
     success: true,

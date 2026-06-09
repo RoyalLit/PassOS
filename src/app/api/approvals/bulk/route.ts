@@ -91,7 +91,6 @@ export async function POST(request: Request) {
     const results = { successful: 0, failed: 0 };
     
     if (finalStatus === 'approved') {
-      console.log(`Spawning passes for ${validRequestIds.length} bulk approved requests...`);
       for (const reqId of validRequestIds) {
         try {
           await generatePass(reqId);

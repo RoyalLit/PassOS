@@ -17,7 +17,7 @@ export async function PATCH(
     // Fetch old profile for audit log
     const { data: oldProfile } = await supabaseAdmin
       .from('profiles')
-      .select('*')
+      .select('id, role, full_name, enrollment_number, email, phone, avatar_url, hostel, room_number, parent_id, is_active, is_flagged, flag_reason, metadata, tenant_id, created_at, updated_at')
       .eq('id', user_id)
       .single();
 
@@ -70,7 +70,7 @@ export async function PATCH(
 
     const { data: newProfile } = await supabaseAdmin
       .from('profiles')
-      .select('*')
+      .select('id, role, full_name, enrollment_number, email, phone, avatar_url, hostel, room_number, parent_id, is_active, is_flagged, flag_reason, metadata, tenant_id, created_at, updated_at')
       .eq('id', user_id)
       .single();
 
@@ -81,15 +81,17 @@ export async function PATCH(
       action: 'update_user',
       entityType: 'profile',
       entityId: user_id,
-      oldData: oldProfile,
-      newData: newProfile
+      tenantId: newProfile?.tenant_id,
+      oldData: oldProfile ?? undefined,
+      newData: newProfile ?? undefined
     });
 
     return NextResponse.json({ user: newProfile });
-  } catch (error: any) {
-    const status = error.message === 'Unauthorized' ? 401 : 
-                   error.message === 'Forbidden' ? 403 : 500;
-    return NextResponse.json({ error: error.message || 'An unexpected error occurred' }, { status });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+    const status = message === 'Unauthorized' ? 401 : 
+                   message === 'Forbidden' ? 403 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }
 
@@ -105,7 +107,7 @@ export async function DELETE(
     // Fetch profile for audit log before deletion
     const { data: profile } = await supabaseAdmin
       .from('profiles')
-      .select('*')
+      .select('id, role, full_name, enrollment_number, email, phone, avatar_url, hostel, room_number, parent_id, is_active, is_flagged, flag_reason, metadata, tenant_id, created_at, updated_at')
       .eq('id', id)
       .single();
 
@@ -122,13 +124,15 @@ export async function DELETE(
       action: 'delete_user',
       entityType: 'profile',
       entityId: id,
-      oldData: profile
+      tenantId: profile?.tenant_id,
+      oldData: profile ?? undefined
     });
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
-    const status = error.message === 'Unauthorized' ? 401 : 
-                   error.message === 'Forbidden' ? 403 : 500;
-    return NextResponse.json({ error: error.message || 'An unexpected error occurred' }, { status });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+    const status = message === 'Unauthorized' ? 401 : 
+                   message === 'Forbidden' ? 403 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }

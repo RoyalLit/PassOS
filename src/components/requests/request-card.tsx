@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, memo } from 'react';
+import Image from 'next/image';
 import { format } from 'date-fns';
 import { Calendar, MapPin, Clock, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ClientEditProfileButton } from '@/components/common/client-edit-profile-button';
+import { toast } from 'sonner';
+import { ClientEditProfileButton } from '@/components/realtime/client-edit-profile-button';
 import type { PassRequest, Profile } from '@/types';
 
 interface RequestCardProps {
@@ -38,7 +40,7 @@ const RequestCardComponent = memo(function RequestCard({ request, isAdminView = 
       
       router.refresh();
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'An error occurred');
+      toast.error(error instanceof Error ? error.message : 'An error occurred');
     } finally {
       setLoading(null);
     }
@@ -54,7 +56,7 @@ const RequestCardComponent = memo(function RequestCard({ request, isAdminView = 
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center overflow-hidden border border-border">
                 {request.student.avatar_url ? (
-                  <img src={request.student.avatar_url} alt="" className="w-full h-full object-cover" />
+                  <Image src={request.student.avatar_url} alt="Student avatar" width={40} height={40} className="w-full h-full object-cover" />
                 ) : (
                   <span className="text-xs font-bold text-blue-600">{request.student.full_name.charAt(0).toUpperCase()}</span>
                 )}

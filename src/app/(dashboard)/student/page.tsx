@@ -1,7 +1,8 @@
 import { requireRole } from '@/lib/auth/rbac';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import Link from 'next/link';
-import { Plus, Clock, Users, CheckCircle2 } from 'lucide-react';
+import { Plus, Clock, Users, CheckCircle2, FileX2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { STATUS_CONFIG, REQUEST_TYPES } from '@/lib/constants';
 import { clsx } from 'clsx';
 import { format } from 'date-fns';
@@ -139,8 +140,13 @@ export default async function StudentDashboard() {
             </div>
             
             {typedRequests.length === 0 ? (
-              <div className="p-12 text-center text-muted-foreground">
-                <p className="text-sm">No recent pass requests found.</p>
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <FileX2 className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                <h3 className="text-lg font-semibold text-foreground mb-1">No recent requests</h3>
+                <p className="text-sm text-muted-foreground mb-4">You haven&apos;t made any pass requests yet.</p>
+                <Link href="/student/new-request">
+                  <Button>Create your first pass request</Button>
+                </Link>
               </div>
             ) : (
               <div className="divide-y divide-border">

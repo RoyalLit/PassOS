@@ -33,7 +33,7 @@ export async function GET(request: Request) {
     // Scope to the admin's tenant to prevent cross-tenant data access
     let query = supabase
       .from('profiles')
-      .select('*')
+      .select('id, full_name, email, avatar_url, role, hostel, room_number, enrollment_number, tenant_id, is_active, parent_id, phone, created_at, updated_at')
       .eq('tenant_id', adminProfile.tenant_id)
       .order('created_at', { ascending: false });
 
@@ -41,7 +41,7 @@ export async function GET(request: Request) {
       query = query.eq('role', role);
     }
 
-    const { data: users, error } = await query;
+    const { data: users, error } = await query.limit(200);
 
     if (error) throw error;
 
