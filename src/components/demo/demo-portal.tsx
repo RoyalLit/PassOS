@@ -13,17 +13,12 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import dynamic from 'next/dynamic';
 
-import { StudentDemoView } from './student-view';
-import { ParentDemoView } from './parent-view';
-import { AdminDemoView } from './admin-view';
-import { GuardDemoView } from './guard-view';
-
-// Mock components for the portals
-const StudentDemo = () => <StudentDemoView />;
-const ParentDemo = () => <ParentDemoView />;
-const AdminDemo = () => <AdminDemoView />;
-const GuardDemo = () => <GuardDemoView />;
+const StudentDemoView = dynamic(() => import('./student-view').then(m => ({ default: m.StudentDemoView })), { ssr: false });
+const ParentDemoView = dynamic(() => import('./parent-view').then(m => ({ default: m.ParentDemoView })), { ssr: false });
+const AdminDemoView = dynamic(() => import('./admin-view').then(m => ({ default: m.AdminDemoView })), { ssr: false });
+const GuardDemoView = dynamic(() => import('./guard-view').then(m => ({ default: m.GuardDemoView })), { ssr: false });
 
 const roles = [
   { 
@@ -173,10 +168,10 @@ export function DemoPortal({ initialRole }: { initialRole: string }) {
 
               {/* Perspective Content */}
               <div className="flex-1 overflow-y-auto bg-white p-6 md:p-10">
-                {activeRole === 'student' && <StudentDemo />}
-                {activeRole === 'parent' && <ParentDemo />}
-                {activeRole === 'admin' && <AdminDemo />}
-                {activeRole === 'guard' && <GuardDemo />}
+                {activeRole === 'student' && <StudentDemoView />}
+                {activeRole === 'parent' && <ParentDemoView />}
+                {activeRole === 'admin' && <AdminDemoView />}
+                {activeRole === 'guard' && <GuardDemoView />}
               </div>
             </motion.div>
           </AnimatePresence>

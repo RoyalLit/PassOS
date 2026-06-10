@@ -1,8 +1,9 @@
+import { cache } from 'react';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import type { User } from '@supabase/supabase-js';
 import type { UserRole, Profile, Warden } from '@/types';
 
-export async function getCurrentUser(): Promise<Profile | null> {
+export const getCurrentUser = cache(async (): Promise<Profile | null> => {
   try {
     const supabase = await createServerSupabaseClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -40,7 +41,7 @@ export async function getCurrentUser(): Promise<Profile | null> {
     console.error('Unexpected error in getCurrentUser:', message);
     return null;
   }
-}
+});
 
 /**
  * Diagnostic helper to detect the exact nature of an auth failure.

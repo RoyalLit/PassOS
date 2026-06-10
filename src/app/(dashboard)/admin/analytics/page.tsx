@@ -1,9 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useEffect, useState, Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import { Activity, ShieldAlert, Users, Clock, AlertTriangle } from 'lucide-react';
 import { clsx } from 'clsx';
+
+const RechartsBarChart = dynamic(
+  () => import('./recharts-chart'),
+  { ssr: false, loading: () => <div className="h-72 w-full animate-pulse bg-muted rounded-2xl" /> }
+);
 
 interface AnalyticsData {
   stats: {
@@ -59,25 +64,7 @@ export default function AnalyticsDashboard() {
         <div className="lg:col-span-2 bg-card rounded-2xl shadow-sm border border-border p-6">
           <h2 className="text-lg font-bold text-foreground mb-6">Pass Issuance (Last 7 Days)</h2>
           <div className="h-72 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data.chart_data}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                <XAxis dataKey="date" tickFormatter={(val) => val.split('-').slice(1).join('/')} stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} />
-                <YAxis allowDecimals={false} stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} />
-                <Tooltip 
-                  cursor={{ fill: 'hsl(var(--muted))', opacity: 0.3 }} 
-                  contentStyle={{
-                    backgroundColor: 'hsl(var(--card))', 
-                    backdropFilter: 'blur(8px)', 
-                    borderRadius: '12px', 
-                    border: '1px solid hsl(var(--border))', 
-                    boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', 
-                    color: 'hsl(var(--foreground))' 
-                  }} 
-                />
-                <Bar dataKey="passes" fill="var(--primary)" radius={[4, 4, 0, 0]} maxBarSize={50} />
-              </BarChart>
-            </ResponsiveContainer>
+            <RechartsBarChart data={data.chart_data} />
           </div>
         </div>
 

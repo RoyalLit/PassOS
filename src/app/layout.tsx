@@ -52,7 +52,6 @@ export const metadata: Metadata = {
 
 import { ThemeProvider } from '@/components/layout/theme-provider';
 import { Toaster } from 'sonner';
-import { getCurrentUser } from '@/lib/auth/rbac';
 import { BrandingProvider } from '@/components/layout/branding-provider';
 
 export default async function RootLayout({
@@ -60,8 +59,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const user = await getCurrentUser();
-
   return (
     <html lang="en">
       <body className={`${inter.className} min-h-screen bg-background text-foreground flex flex-col transition-colors duration-300`}>
@@ -74,7 +71,7 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <BrandingProvider tenant={user?.tenant}>
+          <BrandingProvider>
             <main className="flex-1">
               {children}
             </main>

@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { Html5Qrcode } from 'html5-qrcode';
+import { useEffect, useRef, useState, lazy, Suspense } from 'react';
 import { Loader2, Camera, ShieldAlert } from 'lucide-react';
 
 interface QRScannerProps {
@@ -11,7 +10,7 @@ interface QRScannerProps {
 
 export function QRScanner({ onScan, isProcessing }: QRScannerProps) {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
-  const scannerRef = useRef<Html5Qrcode | null>(null);
+  const scannerRef = useRef<any | null>(null);
 
   const isProcessingRef = useRef(isProcessing);
   const onScanRef = useRef(onScan);
@@ -26,6 +25,8 @@ export function QRScanner({ onScan, isProcessing }: QRScannerProps) {
 
     async function initScanner() {
       try {
+        const { Html5Qrcode } = await import('html5-qrcode');
+        if (!active) return;
         const scanner = new Html5Qrcode('qr-reader');
         scannerRef.current = scanner;
         

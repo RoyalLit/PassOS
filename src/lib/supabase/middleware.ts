@@ -21,13 +21,15 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
+  // Refresh the session if the JWT is expired, but don't block on getUser().
+  // The server component that actually needs the user will call getUser() itself.
+  // This middleware only ensures the refresh token cookie is updated.
+  const { error } = await supabase.auth.getUser();
 
-  if (error || !user) {
-    await supabase.auth.refreshSession();
+  if (error) {
+    // Session is invalid/expired — let the calling page handle auth.
+    // No need to call refreshSession() here; the server component
+    // will detect the missing session and redirect to login.
   }
 
   return supabaseResponse;
